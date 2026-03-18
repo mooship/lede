@@ -64,6 +64,8 @@ export function CategoryNav({ active, onChange }: Props) {
           overflowX: 'auto',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
+          overscrollBehaviorX: 'contain',
+          touchAction: 'pan-x',
         }}
       >
         {TABS.map((tab, index) => {
