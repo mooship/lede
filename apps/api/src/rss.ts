@@ -36,12 +36,10 @@ function decodeHtmlEntities(text: string): string {
 }
 
 function stripHtml(html: string): string {
-  return decodeHtmlEntities(
-    html
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim(),
-  )
+  return decodeHtmlEntities(html)
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 function resolveText(value: unknown): string {

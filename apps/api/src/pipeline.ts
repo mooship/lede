@@ -160,7 +160,7 @@ ${categoryBlocks.join('\n\n')}`
 
   try {
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-sonnet-4-6',
       max_tokens: 150,
       messages: [{ role: 'user', content: prompt }],
     })
@@ -232,16 +232,17 @@ function createSummariser(env: Env): (item: RssItem) => Promise<string> {
 
   if (env.ANTHROPIC_API_KEY) {
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
-    console.log('[summariser] Claude Haiku')
+    console.log('[summariser] Claude Sonnet')
     return async (item) => {
       try {
         const msg = await client.messages.create({
-          model: 'claude-haiku-4-5-20251001',
+          model: 'claude-sonnet-4-6',
           max_tokens: 400,
           messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
         })
         const block = msg.content[0]
-        return block?.type === 'text' ? block.text : ''
+        const text = block?.type === 'text' ? block.text : ''
+        return text.replace(/^#+\s+\S[^\n]*\n+/, '')
       } catch (err) {
         console.error(`[summariser] Claude failed for "${item.title}", falling back to raw:`, err)
         return raw(item)
