@@ -34,6 +34,25 @@ export function normaliseTitle(title: string): string {
     .trim()
 }
 
+function hostnameFromUrl(url: string | undefined | null): string {
+  if (!url) return ''
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return ''
+  }
+}
+
+function groupByCategory<T extends { category: Category }>(items: T[]): Map<Category, T[]> {
+  const map = new Map<Category, T[]>()
+  for (const item of items) {
+    const bucket = map.get(item.category) ?? []
+    bucket.push(item)
+    map.set(item.category, bucket)
+  }
+  return map
+}
+
 export function deduplicateByTitle(
   items: Array<RssItem & { category: Category }>,
 ): Array<RssItem & { category: Category }> {
@@ -57,17 +76,116 @@ export function deduplicateByTitle(
   return result
 }
 
+export type ScoredItem = RssItem & { category: Category; sourceScore: number }
+
+export function scoreBySourceOverlap(
+  pool: Array<RssItem & { category: Category }>,
+  unique: Array<RssItem & { category: Category }>,
+): ScoredItem[] {
+  const poolNorm = pool.map((p) => ({ norm: normaliseTitle(p.title), hostname: hostnameFromUrl(p.link) }))
+
+  return unique.map((u) => {
+    const normU = normaliseTitle(u.title)
+    const hostnames = new Set<string>()
+
+    for (const p of poolNorm) {
+      if (p.norm.includes(normU) || normU.includes(p.norm)) {
+        if (p.hostname) hostnames.add(p.hostname)
+      }
+    }
+
+    return { ...u, sourceScore: Math.max(hostnames.size, 1) }
+  })
+}
+
+export async function curateWithClaude(
+  scored: ScoredItem[],
+  env: Env,
+): Promise<Array<RssItem & { category: Category }>> {
+  const byCategory = groupByCategory(scored)
+
+  const fallbackSort = (items: ScoredItem[]): ScoredItem[] =>
+    [...items].sort((a, b) => {
+      if (b.sourceScore !== a.sourceScore) return b.sourceScore - a.sourceScore
+      const da = a.pubDate ? new Date(a.pubDate).getTime() : 0
+      const db = b.pubDate ? new Date(b.pubDate).getTime() : 0
+      return db - da
+    })
+
+  if (!env.ANTHROPIC_API_KEY) {
+    const result: Array<RssItem & { category: Category }> = []
+    for (const [category, bucket] of byCategory) {
+      result.push(...fallbackSort(bucket).slice(0, STORIES_PER_CATEGORY[category]))
+    }
+    return result
+  }
+
+  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
+
+  const categoryResults = await Promise.allSettled(
+    Array.from(byCategory.entries()).map(async ([category, bucket]) => {
+      const limit = STORIES_PER_CATEGORY[category]
+      const storyList = bucket
+        .map((item, i) => `${i + 1}. [sources: ${item.sourceScore}] ${item.title}`)
+        .join('\n')
+
+      const prompt = `You are a news editor selecting the most significant stories for a daily digest.
+
+Category: ${category}
+Select up to ${limit} stories. Only include stories that are genuinely newsworthy — prefer stories covered by multiple sources and broadly significant over niche ones. Include fewer if the remaining stories are not worth publishing.
+Return ONLY a JSON array of the 1-based numbers you selected, e.g. [1, 3, 5, 7]. No other text.
+
+Stories:
+${storyList}`
+
+      try {
+        const msg = await client.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 100,
+          messages: [{ role: 'user', content: prompt }],
+        })
+        const block = msg.content[0]
+        const text = block?.type === 'text' ? block.text : ''
+        const match = text.match(/\[[\d,\s]+\]/)
+
+        if (!match) {
+          console.warn(`[curate] no JSON array in Claude response for ${category}, falling back`)
+          return fallbackSort(bucket).slice(0, limit)
+        }
+
+        const indices: number[] = JSON.parse(match[0])
+        const seen = new Set<number>()
+        const validIndices = indices.filter((idx) => {
+          if (!Number.isInteger(idx) || idx < 1 || idx > bucket.length || seen.has(idx)) {
+            return false
+          }
+          seen.add(idx)
+          return true
+        })
+
+        const selected = validIndices.slice(0, limit).map((idx) => bucket[idx - 1] as ScoredItem)
+        console.log(`[curate] Claude selected ${selected.length}/${bucket.length} for ${category}`)
+        return selected
+      } catch (err) {
+        console.warn(`[curate] Claude failed for ${category}, falling back:`, err)
+        return fallbackSort(bucket).slice(0, limit)
+      }
+    }),
+  )
+
+  const result: Array<RssItem & { category: Category }> = []
+  for (const outcome of categoryResults) {
+    if (outcome.status === 'fulfilled') {
+      result.push(...outcome.value)
+    }
+  }
+  return result
+}
+
 export function selectStories(
   items: Array<RssItem & { category: Category }>,
 ): Array<RssItem & { category: Category }> {
-  const byCategory = new Map<Category, Array<RssItem & { category: Category }>>()
-
-  for (const item of items) {
-    const bucket = byCategory.get(item.category) ?? []
-    bucket.push(item)
-    byCategory.set(item.category, bucket)
-  }
-
+  const byCategory = groupByCategory(items)
   const selected: Array<RssItem & { category: Category }> = []
 
   for (const [category, bucket] of byCategory) {
@@ -143,7 +261,8 @@ export async function buildEdition(env: Env): Promise<void> {
 
   const filtered = allItems.filter((item) => !isJunk(item.title))
   const unique = deduplicateByTitle(filtered)
-  const selected = selectStories(unique)
+  const scored = scoreBySourceOverlap(filtered, unique)
+  const selected = await curateWithClaude(scored, env)
 
   const enriched = await Promise.all(
     selected.map(async (item) => {
@@ -180,13 +299,7 @@ export async function buildEdition(env: Env): Promise<void> {
       category: story.category,
       link: story.link,
       pubDate: story.pubDate || null,
-      source: (() => {
-        try {
-          return story.link ? new URL(story.link).hostname.replace(/^www\./, '') : ''
-        } catch {
-          return ''
-        }
-      })(),
+      source: hostnameFromUrl(story.link),
       position: i,
     })),
   )
