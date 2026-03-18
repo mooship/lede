@@ -200,7 +200,7 @@ function StoryPage() {
               padding: 0,
             }}
           >
-            ↗ Share
+            Share
           </button>
         </div>
       </main>
