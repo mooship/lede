@@ -13,7 +13,8 @@
       "!**/dist",
       "!**/styled-system",
       "!**/migrations",
-      "!**/.wrangler"
+      "!**/.wrangler",
+      "!**/routeTree.gen.ts"
     ]
   },
   "formatter": {

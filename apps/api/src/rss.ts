@@ -96,12 +96,10 @@ export async function fetchFeed(url: string): Promise<RssItem[]> {
   return (Array.isArray(items) ? items : [items]).map((item: unknown) => {
     const i = item as Record<string, unknown>
     return {
-      title: resolveText(i['title']),
-      description: resolveText(
-        i['content:encoded'] ?? i['description'] ?? i['summary'] ?? i['content'],
-      ),
-      link: resolveLink(i['link']),
-      pubDate: resolveText(i['pubDate'] ?? i['updated'] ?? ''),
+      title: resolveText(i.title),
+      description: resolveText(i['content:encoded'] ?? i.description ?? i.summary ?? i.content),
+      link: resolveLink(i.link),
+      pubDate: resolveText(i.pubDate ?? i.updated ?? ''),
     }
   })
 }

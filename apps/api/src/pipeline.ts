@@ -27,8 +27,12 @@ const JUNK_PATTERNS = [
   /sponsored/i,
 ]
 
-export function isJunk(title: string): boolean {
-  return JUNK_PATTERNS.some((p) => p.test(title))
+export function isJunk(title: string, description = ''): boolean {
+  if (JUNK_PATTERNS.some((p) => p.test(title))) {
+    return true
+  }
+  const digestMatches = description.match(/read the full story/gi)
+  return digestMatches !== null && digestMatches.length > 1
 }
 
 export function normaliseTitle(title: string): string {
@@ -165,7 +169,7 @@ ${categoryBlocks.join('\n\n')}`
 
   try {
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-sonnet-4-6',
       max_tokens: 150,
       messages: [{ role: 'user', content: prompt }],
     })
@@ -243,8 +247,8 @@ Article: ${(item.articleText ?? item.description).slice(0, MAX_DESCRIPTION_CHARS
 type SummariseResult = { byline: string; summary: string }
 
 function parseSummariseResponse(text: string, fallbackByline: string): SummariseResult {
-  const bylineMatch = text.match(/^BYLINE:\s*(.+)/m)
-  const summaryMatch = text.match(/^SUMMARY:\s*([\s\S]+)/m)
+  const bylineMatch = text.match(/^\*{0,2}BYLINE:\*{0,2}\s*(.+)/m)
+  const summaryMatch = text.match(/^\*{0,2}SUMMARY:\*{0,2}\s*([\s\S]+)/m)
   const byline = bylineMatch?.[1]?.trim() ?? fallbackByline
   const summary = (summaryMatch?.[1]?.trim() ?? text).replace(/^#+\s+\S[^\n]*\n+/, '')
   return { byline, summary }
@@ -258,11 +262,11 @@ function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult>
 
   if (env.ANTHROPIC_API_KEY) {
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
-    console.log('[summariser] Claude Haiku')
+    console.log('[summariser] Claude Sonnet')
     return async (item) => {
       try {
         const msg = await client.messages.create({
-          model: 'claude-haiku-4-5-20251001',
+          model: 'claude-sonnet-4-6',
           max_tokens: 500,
           messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
         })
@@ -308,7 +312,7 @@ export async function buildEdition(env: Env): Promise<void> {
     ),
   )
 
-  const filtered = allItems.filter((item) => !isJunk(item.title))
+  const filtered = allItems.filter((item) => !isJunk(item.title, item.description))
   const unique = deduplicateByTitle(filtered)
   const scored = scoreBySourceOverlap(filtered, unique)
   const selected = await curateWithClaude(scored, env)
