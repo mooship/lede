@@ -16,6 +16,6 @@ export async function createContext(req: Request, env: Env): Promise<Context> {
   const enc = new TextEncoder()
   const a = enc.encode(token)
   const b = enc.encode(env.ADMIN_SECRET)
-  const isAdmin = a.length === b.length && crypto.subtle.timingSafeEqual(a, b)
+  const isAdmin = a.length === b.length && (crypto.subtle as any).timingSafeEqual(a, b)
   return { isAdmin, env }
 }

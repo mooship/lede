@@ -71,7 +71,7 @@ function resolveLink(value: unknown): string {
 }
 
 export async function fetchArticleText(url: string): Promise<string> {
-  const html = await ofetch<string>(url, { responseType: 'text', timeout: 5000 })
+  const html = await ofetch<string, 'text'>(url, { responseType: 'text', timeout: 5000 })
   const root = parse(html)
 
   for (const el of root.querySelectorAll('script, style, nav, header, footer, aside')) {
