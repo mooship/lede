@@ -6,7 +6,7 @@ export const FEEDS: Record<Category, string[]> = {
     'https://www.theguardian.com/world/rss',
     'https://rss.dw.com/rdf/rss-en-world',
     'https://www.aljazeera.com/xml/rss/all.xml',
-    'https://apnews.com/apf-world-news',
+    'https://feeds.npr.org/1004/rss.xml',
     'https://www.france24.com/en/rss',
   ],
   Technology: [
@@ -19,15 +19,15 @@ export const FEEDS: Record<Category, string[]> = {
   Science: [
     'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',
     'https://www.newscientist.com/feed/home/',
-    'https://www.sciencedaily.com/rss/top/science.xml',
+    'https://www.scientificamerican.com/feed/',
     'https://www.nature.com/nature.rss',
-    'https://phys.org/rss-feed/',
   ],
   'Business / Economy': [
     'https://feeds.bbci.co.uk/news/business/rss.xml',
     'https://www.theguardian.com/business/rss',
     'https://rss.dw.com/rdf/rss-en-business',
-    'https://www.ft.com/?format=rss',
+    'https://feeds.npr.org/1006/rss.xml',
+    'https://www.cnbc.com/id/10001147/device/rss/rss.html',
   ],
 }
 
