@@ -49,13 +49,12 @@ const mockDb = {
   ),
 }
 
-function makeEnv(adminId = 'admin-123') {
+function makeEnv() {
   return {
     DATABASE_URL: 'postgres://test',
     ANTHROPIC_API_KEY: 'key',
     GEMINI_API_KEY: undefined,
-    CLERK_SECRET_KEY: 'clerk',
-    CLERK_ADMIN_USER_ID: adminId,
+    ADMIN_SECRET: 'test-secret',
     WEB_ORIGIN: 'http://localhost:5173',
     BUILD_CRON_ENABLED: 'true',
   }
@@ -75,7 +74,7 @@ describe('edition.today', () => {
     mockDb.query.editions.findFirst.mockResolvedValue(undefined)
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ userId: null, env: makeEnv() })
+    const caller = factory({ isAdmin: false, env: makeEnv() })
     const result = await caller.edition.today()
     expect(result).toBeNull()
   })
@@ -85,7 +84,7 @@ describe('edition.today', () => {
     mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s, pubDate: s.pubDate })))
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ userId: null, env: makeEnv() })
+    const caller = factory({ isAdmin: false, env: makeEnv() })
     const result = await caller.edition.today()
     expect(Array.isArray(result)).toBe(true)
   })
@@ -99,22 +98,15 @@ describe('edition.build', () => {
   it('rejects unauthenticated calls', async () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ userId: null, env: makeEnv() })
+    const caller = factory({ isAdmin: false, env: makeEnv() })
     await expect(caller.edition.build()).rejects.toThrow()
   })
 
-  it('rejects non-admin users', async () => {
-    const router = await getRouter()
-    const factory = createCallerFactory(router)
-    const caller = factory({ userId: 'other-user', env: makeEnv('admin-123') })
-    await expect(caller.edition.build()).rejects.toThrow()
-  })
-
-  it('calls buildEdition for admin user', async () => {
+  it('calls buildEdition for admin', async () => {
     const { buildEdition } = await import('./pipeline.js')
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ userId: 'admin-123', env: makeEnv('admin-123') })
+    const caller = factory({ isAdmin: true, env: makeEnv() })
     const result = await caller.edition.build()
     expect(buildEdition).toHaveBeenCalledOnce()
     expect(result).toEqual({ ok: true })

@@ -10,10 +10,10 @@ const t = initTRPC.context<Context>().create()
 const router = t.router
 const publicProcedure = t.procedure
 const protectedProcedure = t.procedure.use(({ ctx, next }) => {
-  if (!ctx.userId || ctx.userId !== ctx.env.CLERK_ADMIN_USER_ID) {
+  if (!ctx.isAdmin) {
     throw new TRPCError({ code: 'UNAUTHORIZED' })
   }
-  return next({ ctx: { ...ctx, userId: ctx.userId } })
+  return next({ ctx })
 })
 
 const editionRouter = router({

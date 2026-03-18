@@ -1,6 +1,5 @@
 import '@fontsource-variable/syne'
 import '@fontsource/instrument-serif'
-import { ClerkProvider } from '@clerk/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
@@ -68,11 +67,6 @@ const rootEl = document.getElementById('root')
 if (!rootEl) throw new Error('Root element not found')
 createRoot(rootEl).render(
   <StrictMode>
-    <ClerkProvider
-      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ''}
-      clerkJSUrl="https://js.clerk.com"
-    >
-      <App />
-    </ClerkProvider>
+    <App />
   </StrictMode>,
 )

@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@ark-ui/react": "latest",
-    "@clerk/react": "latest",
     "@lede/api": "*",
     "@park-ui/panda-preset": "latest",
     "@tanstack/react-query": "latest",
