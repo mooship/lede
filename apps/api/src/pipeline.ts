@@ -91,34 +91,49 @@ const SUMMARISE_PROMPT = (item: RssItem) =>
   `You are a news summariser. Write an approximately 150-word summary of the following article.\nBe factual and concise. Use British English spelling and grammar. Output only the summary, no preamble.\n\nTitle: ${item.title}\nDescription: ${item.description.slice(0, MAX_DESCRIPTION_CHARS)}`
 
 function createSummariser(env: Env): (item: RssItem) => Promise<string> {
+  const raw = async (item: RssItem) => item.description || item.title
+
+  const gemini = env.GEMINI_API_KEY
+    ? (() => {
+        const genai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY! })
+        return async (item: RssItem) => {
+          const res = await genai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: SUMMARISE_PROMPT(item),
+          })
+          return res.text ?? ''
+        }
+      })()
+    : null
+
   if (env.ANTHROPIC_API_KEY) {
-    console.log('[summariser] using Anthropic claude-haiku-4-5-20251001')
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
+    const fallback = gemini ?? raw
+    const fallbackName = gemini ? 'Gemini' : 'raw description'
+    console.log(`[summariser] Anthropic (fallback: ${fallbackName})`)
     return async (item) => {
-      const msg = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
-        messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
-      })
-      const block = msg.content[0]
-      return block?.type === 'text' ? block.text : ''
+      try {
+        const msg = await client.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 400,
+          messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
+        })
+        const block = msg.content[0]
+        return block?.type === 'text' ? block.text : ''
+      } catch (err) {
+        console.error(`[summariser] Anthropic failed for "${item.title}", falling back to ${fallbackName}:`, err)
+        return fallback(item)
+      }
     }
   }
 
-  if (env.GEMINI_API_KEY) {
-    console.log('[summariser] using Gemini gemini-2.0-flash-lite')
-    const genai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY })
-    return async (item) => {
-      const res = await genai.models.generateContent({
-        model: 'gemini-2.0-flash-lite',
-        contents: SUMMARISE_PROMPT(item),
-      })
-      return res.text ?? ''
-    }
+  if (gemini) {
+    console.log('[summariser] Gemini gemini-3-flash-preview')
+    return gemini
   }
 
-  console.log('[summariser] no AI key set — using raw description')
-  return async (item) => item.description || item.title
+  console.log('[summariser] no AI key — using raw description')
+  return raw
 }
 
 export async function buildEdition(env: Env): Promise<void> {
