@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { MUTED } from '../colors.js'
 import { CategoryNav } from '../components/CategoryNav.js'
+import { Footer } from '../components/Footer.js'
 import { Masthead } from '../components/Masthead.js'
 import { PageMessage } from '../components/PageMessage.js'
 import { StoryList } from '../components/StoryList.js'
@@ -46,6 +47,7 @@ function IndexPage() {
             Today's edition isn't ready yet. Next build at {nextBuildTime}.
           </p>
         </div>
+        <Footer />
       </div>
     )
   }
@@ -60,6 +62,7 @@ function IndexPage() {
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0' }}>
         <StoryList stories={filtered} />
       </div>
+      <Footer />
     </div>
   )
 }
