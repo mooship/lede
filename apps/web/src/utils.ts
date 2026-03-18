@@ -1,7 +1,9 @@
-export function msUntilMidnightSAST(): number {
+export function msUntilNextEdition(): number {
   const now = new Date()
-  const midnight = new Date()
-  midnight.setUTCHours(22, 0, 0, 0)
-  if (midnight <= now) midnight.setUTCDate(midnight.getUTCDate() + 1)
-  return midnight.getTime() - now.getTime()
+  const next = new Date()
+  next.setUTCHours(4, 0, 0, 0)
+  if (next <= now) {
+    next.setUTCDate(next.getUTCDate() + 1)
+  }
+  return next.getTime() - now.getTime()
 }

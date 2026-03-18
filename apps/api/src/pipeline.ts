@@ -35,7 +35,9 @@ export function normaliseTitle(title: string): string {
 }
 
 function hostnameFromUrl(url: string | undefined | null): string {
-  if (!url) return ''
+  if (!url) {
+    return ''
+  }
   try {
     return new URL(url).hostname.replace(/^www\./, '')
   } catch {
@@ -90,7 +92,9 @@ export function scoreBySourceOverlap(
 
     for (const p of poolNorm) {
       if (p.norm.includes(normU) || normU.includes(p.norm)) {
-        if (p.hostname) hostnames.add(p.hostname)
+        if (p.hostname) {
+        hostnames.add(p.hostname)
+      }
       }
     }
 
@@ -106,7 +110,9 @@ export async function curateWithClaude(
 
   const fallbackSort = (items: ScoredItem[]): ScoredItem[] =>
     [...items].sort((a, b) => {
-      if (b.sourceScore !== a.sourceScore) return b.sourceScore - a.sourceScore
+      if (b.sourceScore !== a.sourceScore) {
+        return b.sourceScore - a.sourceScore
+      }
       const da = a.pubDate ? new Date(a.pubDate).getTime() : 0
       const db = b.pubDate ? new Date(b.pubDate).getTime() : 0
       return db - da
