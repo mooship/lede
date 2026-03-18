@@ -24,5 +24,10 @@ export const FEEDS: Record<Category, string[]> = {
   ],
 }
 
-export const STORIES_PER_CATEGORY = 3
-export const TARGET_STORY_COUNT = 12
+export const STORIES_PER_CATEGORY: Record<Category, number> = {
+  'World / Politics': 5,
+  'Technology': 3,
+  'Science': 3,
+  'Business / Economy': 3,
+}
+export const TARGET_STORY_COUNT = 14

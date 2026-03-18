@@ -70,13 +70,13 @@ export function selectStories(
 
   const selected: Array<RssItem & { category: Category }> = []
 
-  for (const [, bucket] of byCategory) {
+  for (const [category, bucket] of byCategory) {
     const sorted = [...bucket].sort((a, b) => {
       const da = a.pubDate ? new Date(a.pubDate).getTime() : 0
       const db = b.pubDate ? new Date(b.pubDate).getTime() : 0
       return db - da
     })
-    selected.push(...sorted.slice(0, STORIES_PER_CATEGORY))
+    selected.push(...sorted.slice(0, STORIES_PER_CATEGORY[category]))
   }
 
   return selected
