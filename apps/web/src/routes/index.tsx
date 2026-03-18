@@ -22,7 +22,7 @@ function IndexPage() {
     return <PageMessage message="Something went wrong. Please try again." color="#e85a3c" />
   }
 
-  if (data === null) {
+  if (data == null) {
     const nextBuild = new Date()
     nextBuild.setUTCHours(4, 0, 0, 0)
     if (nextBuild <= new Date()) {
@@ -62,6 +62,8 @@ function IndexPage() {
     </div>
   )
 }
+
+export default IndexPage
 
 export const Route = createFileRoute('/')({
   component: IndexPage,

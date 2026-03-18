@@ -16,24 +16,24 @@ const story: Story = {
 
 describe('StoryCard', () => {
   it('renders collapsed by default', () => {
-    render(<StoryCard story={story} />)
+    render(<StoryCard story={story} position={1} />)
     expect(screen.queryByText(story.summary)).not.toBeInTheDocument()
   })
 
   it('expands on click to show summary', async () => {
-    render(<StoryCard story={story} />)
+    render(<StoryCard story={story} position={1} />)
     await userEvent.click(screen.getByRole('article'))
     expect(screen.getByText(story.summary)).toBeInTheDocument()
   })
 
   it('shows share button when expanded', async () => {
-    render(<StoryCard story={story} />)
+    render(<StoryCard story={story} position={1} />)
     await userEvent.click(screen.getByRole('article'))
     expect(screen.getByRole('button', { name: /share/i })).toBeInTheDocument()
   })
 
   it('collapses when clicked again', async () => {
-    render(<StoryCard story={story} />)
+    render(<StoryCard story={story} position={1} />)
     const article = screen.getByRole('article')
     await userEvent.click(article)
     await userEvent.click(article)

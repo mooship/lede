@@ -41,7 +41,7 @@ async function renderIndex(overrides: {
 
 describe('Index page (App)', () => {
   it('shows loading indicator when in-flight', async () => {
-    await renderIndex({ isLoading: true, data: undefined })
+    await renderIndex({ isLoading: true })
     expect(screen.getByText(/loading/i)).toBeInTheDocument()
   })
 

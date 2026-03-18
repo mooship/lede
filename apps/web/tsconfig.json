@@ -1,8 +1,8 @@
 {
   "extends": "@lede/tsconfig/react.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "noEmit": true
+    "noEmit": true,
+    "types": ["vite/client", "vitest/globals"]
   },
   "include": ["src"]
 }
