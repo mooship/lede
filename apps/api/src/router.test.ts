@@ -2,7 +2,6 @@ import type { Story } from '@lede/api'
 import { createCallerFactory } from '@trpc/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// Mock the db module
 vi.mock('@lede/db', () => ({
   createDb: vi.fn(() => mockDb),
   schema: {
@@ -11,12 +10,10 @@ vi.mock('@lede/db', () => ({
   },
 }))
 
-// Mock the pipeline
 vi.mock('./pipeline.js', () => ({
   buildEdition: vi.fn(),
 }))
 
-// Mock drizzle-orm eq
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn((a, b) => `${String(a)}=${b}`),
 }))

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "build": "tsc --noEmit",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler secret bulk .secrets.production.json --env production && wrangler deploy --env production",
     "test": "vitest run",
     "lint": "biome check --write .",
     "typecheck": "tsc --noEmit"

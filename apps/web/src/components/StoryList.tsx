@@ -5,21 +5,24 @@ type Props = { stories: Story[] }
 
 export function StoryList({ stories }: Props) {
   return (
-    <ol
+    <div
       style={{
-        listStyle: 'none',
-        padding: 0,
-        margin: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem',
+        width: '100%',
+        borderTop: '1px solid #2e2e2e',
       }}
     >
-      {stories.map((story) => (
-        <li key={story.id}>
-          <StoryCard story={story} />
-        </li>
-      ))}
-    </ol>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
+          gap: '1px',
+          background: '#2e2e2e',
+        }}
+      >
+        {stories.map((story, index) => (
+          <StoryCard key={story.id} story={story} position={index + 1} />
+        ))}
+      </div>
+    </div>
   )
 }

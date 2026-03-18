@@ -7,13 +7,25 @@ import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-
 function todaySAST(): string {
-  // Return today's date as YYYY-MM-DD in SAST (UTC+2)
   const now = new Date()
   now.setUTCHours(now.getUTCHours() + 2)
   return now.toISOString().slice(0, 10)
+}
+
+const JUNK_PATTERNS = [
+  /promo\s*code/i,
+  /coupon/i,
+  /discount\s*code/i,
+  /\d+%\s*off/i,
+  /deals?\s+of\s+the\s+(day|week)/i,
+  /best\s+deals/i,
+  /sale\s+ends/i,
+  /sponsored/i,
+]
+
+export function isJunk(title: string): boolean {
+  return JUNK_PATTERNS.some((p) => p.test(title))
 }
 
 export function normaliseTitle(title: string): string {
@@ -66,7 +78,6 @@ export function selectStories(
 
   if (selected.length <= TARGET_STORY_COUNT) return selected
 
-  // Trim to TARGET_STORY_COUNT by dropping shortest descriptions
   return [...selected]
     .sort((a, b) => b.description.length - a.description.length)
     .slice(0, TARGET_STORY_COUNT)
@@ -93,19 +104,15 @@ async function summarise(item: RssItem, env: Env): Promise<string> {
   return block?.type === 'text' ? block.text : ''
 }
 
-// ── main pipeline ─────────────────────────────────────────────────────────────
-
 export async function buildEdition(env: Env): Promise<void> {
   const db = createDb(env.DATABASE_URL)
   const date = todaySAST()
 
-  // Step 1 — Idempotency check
   const existing = await db.query.editions.findFirst({
     where: eq(schema.editions.date, date),
   })
   if (existing) return
 
-  // Step 2 — Fetch all feeds in parallel
   const allItems: Array<RssItem & { category: Category }> = []
 
   await Promise.allSettled(
@@ -123,13 +130,9 @@ export async function buildEdition(env: Env): Promise<void> {
     ),
   )
 
-  // Step 3 — Deduplicate
-  const unique = deduplicateByTitle(allItems)
-
-  // Step 4 — Select
+  const filtered = allItems.filter((item) => !isJunk(item.title))
+  const unique = deduplicateByTitle(filtered)
   const selected = selectStories(unique)
-
-  // Step 5 — Summarise
   const summarised = await Promise.all(
     selected.map(async (item) => ({
       ...item,
@@ -137,7 +140,6 @@ export async function buildEdition(env: Env): Promise<void> {
     })),
   )
 
-  // Step 6 — Persist
   await db.insert(schema.editions).values({ date, builtAt: new Date() })
   await db.insert(schema.stories).values(
     summarised.map((story, i) => ({

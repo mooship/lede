@@ -3,7 +3,16 @@ main               = "src/index.ts"
 compatibility_date = "2024-01-01"
 
 [triggers]
-crons = ["0 4 * * *"]   # 04:00 UTC = 06:00 SAST
+crons = ["0 4 * * *"]
 
 [vars]
+BUILD_CRON_ENABLED = "true"
+
+[env.production]
+name = "lede-api"
+
+[env.production.triggers]
+crons = ["0 4 * * *"]
+
+[env.production.vars]
 BUILD_CRON_ENABLED = "true"

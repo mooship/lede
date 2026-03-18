@@ -1,75 +1,101 @@
-# React + TypeScript + Vite
+# Lede
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A daily news digest. Each morning at 06:00 SAST, a Cloudflare Worker fetches RSS feeds across four categories, summarises each story with Claude Haiku, and publishes a fixed 12-story edition. The frontend presents the edition as a newspaper-style grid with full story detail pages.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Layer | Technology |
+|---|---|
+| Worker | Cloudflare Workers + Hono + tRPC |
+| Database | Neon (PostgreSQL, serverless HTTP) |
+| ORM | Drizzle |
+| Summarisation | Anthropic Claude Haiku |
+| Auth | Clerk |
+| Frontend | React + Vite + TanStack Router |
+| Monorepo | Turborepo + npm workspaces |
+| Linter | Biome |
 
-## React Compiler
+## Workspaces
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+apps/api      — Cloudflare Worker (RSS pipeline + tRPC API)
+apps/web      — React frontend
+packages/db   — Drizzle schema and db factory
+packages/api  — Shared types (Story, Category)
+packages/tsconfig — Shared TypeScript configs
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Local development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev   # wrangler dev on :8787 + vite on :5173
 ```
+
+`apps/api/.dev.vars` and `apps/web/.env.development` are already configured for local dev. The only thing you may need to add to `apps/api/.dev.vars` is `ANTHROPIC_API_KEY` if you want real AI summaries (without it, the raw RSS description is used as a fallback).
+
+## Database migrations
+
+Migrations live in `packages/db/migrations/` and are already applied to both the dev and production Neon branches. You only need to touch this if you change the schema in `packages/db/src/schema.ts`.
+
+When you change the schema:
+
+```bash
+cd packages/db
+
+# 1. Generate a new migration file from your schema changes
+npx drizzle-kit generate
+
+# 2. Apply it to the dev Neon branch (DATABASE_URL must be the dev connection string)
+DATABASE_URL="<dev connection string>" npx drizzle-kit migrate
+
+# 3. Before deploying, apply it to the production Neon branch too
+DATABASE_URL="<prod connection string>" npx drizzle-kit migrate
+```
+
+`generate` creates a SQL file in `migrations/` — commit this file alongside your schema change. `migrate` runs any unapplied SQL files against the target database. You run `migrate` twice (once per branch) but only `generate` once.
+
+## Deployment
+
+### Worker (Cloudflare Workers)
+
+Fill in `apps/api/.secrets.production.json` with production credentials, then:
+
+```bash
+cd apps/api && npm run deploy
+```
+
+This uploads the secrets to Cloudflare and deploys the worker in one step. The worker runs at `https://lede-api.<your-subdomain>.workers.dev` and is configured to rebuild the edition daily at 06:00 SAST via a cron trigger.
+
+### Frontend (Cloudflare Pages)
+
+Fill in `apps/web/.env.production`:
+
+```
+VITE_API_URL=https://lede-api.<your-subdomain>.workers.dev
+VITE_CLERK_PUBLISHABLE_KEY=<clerk production publishable key>
+```
+
+Then build and deploy:
+
+```bash
+cd apps/web && npm run build
+# upload dist/ to Cloudflare Pages
+```
+
+If you connect the Pages project to this git repository, set `VITE_API_URL` and `VITE_CLERK_PUBLISHABLE_KEY` as environment variables in the Cloudflare Pages dashboard instead — the local `.env.production` file is not accessible during CI builds.
+
+## Other commands
+
+```bash
+npm run build       # full monorepo build
+npm run test        # vitest across all packages
+npm run lint        # biome check --write
+npm run typecheck   # tsc --noEmit across all packages
+```
+
+## License
+
+GNU Affero General Public License v3.0 — see [LICENSE](LICENSE).
+
+AGPL-3.0 requires that any modified version served over a network must make its source code available to users of that service.

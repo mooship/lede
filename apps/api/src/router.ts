@@ -20,7 +20,6 @@ const editionRouter = router({
   today: publicProcedure.query(async ({ ctx }): Promise<Story[] | null> => {
     const db = createDb(ctx.env.DATABASE_URL)
 
-    // Get today's date in SAST (UTC+2)
     const now = new Date()
     now.setUTCHours(now.getUTCHours() + 2)
     const date = now.toISOString().slice(0, 10)

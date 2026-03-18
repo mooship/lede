@@ -31,7 +31,18 @@ function IndexPage() {
           justifyContent: 'center',
         }}
       >
-        <p style={{ color: '#888888', fontFamily: 'Syne, sans-serif' }}>Loading…</p>
+        <p
+          style={{
+            fontFamily: "'Syne Variable', 'Syne', sans-serif",
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            color: '#444444',
+          }}
+        >
+          Loading edition…
+        </p>
       </div>
     )
   }
@@ -47,7 +58,13 @@ function IndexPage() {
           justifyContent: 'center',
         }}
       >
-        <p style={{ color: '#e85a3c', fontFamily: 'Syne, sans-serif' }}>
+        <p
+          style={{
+            fontFamily: "'Instrument Serif', Georgia, serif",
+            fontSize: '1rem',
+            color: '#e85a3c',
+          }}
+        >
           Something went wrong. Please try again.
         </p>
       </div>
@@ -60,26 +77,27 @@ function IndexPage() {
     if (nextBuild <= new Date()) nextBuild.setUTCDate(nextBuild.getUTCDate() + 1)
 
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          backgroundColor: '#0f0f0f',
-          padding: '2rem',
-          maxWidth: '640px',
-          margin: '0 auto',
-        }}
-      >
+      <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f' }}>
         <Masthead />
-        <p
+        <div
           style={{
-            color: '#888888',
-            fontFamily: 'Instrument Serif, Georgia, serif',
-            marginTop: '2rem',
+            maxWidth: '1400px',
+            margin: '0 auto',
+            padding: '3rem 2rem',
           }}
         >
-          Today's edition isn't ready yet. Next build at{' '}
-          {nextBuild.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} SAST.
-        </p>
+          <p
+            style={{
+              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontSize: '1.1rem',
+              color: '#888888',
+              lineHeight: 1.75,
+            }}
+          >
+            Today's edition isn't ready yet. Next build at{' '}
+            {nextBuild.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} SAST.
+          </p>
+        </div>
       </div>
     )
   }
@@ -88,18 +106,12 @@ function IndexPage() {
     activeCategory === 'All' ? data : data.filter((s) => s.category === activeCategory)
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: '#0f0f0f',
-        padding: '2rem',
-        maxWidth: '640px',
-        margin: '0 auto',
-      }}
-    >
+    <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f' }}>
       <Masthead />
       <CategoryNav active={activeCategory} onChange={setActiveCategory} />
-      <StoryList stories={filtered} />
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0' }}>
+        <StoryList stories={filtered} />
+      </div>
     </div>
   )
 }
