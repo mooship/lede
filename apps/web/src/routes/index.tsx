@@ -8,12 +8,12 @@ import { Masthead } from '../components/Masthead.js'
 import { PageMessage } from '../components/PageMessage.js'
 import { StoryList } from '../components/StoryList.js'
 import { trpc } from '../trpc.js'
-import { msUntilNextEdition } from '../utils.js'
+import { editionStaleTime } from '../utils.js'
 
 function IndexPage() {
   const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All')
   const { data, isLoading, error } = trpc.edition.today.useQuery(undefined, {
-    staleTime: msUntilNextEdition(),
+    staleTime: editionStaleTime,
   })
 
   const nextBuildTime = useMemo(() => {

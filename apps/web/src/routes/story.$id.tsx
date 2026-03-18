@@ -3,7 +3,7 @@ import { CATEGORY_ACCENT, CATEGORY_LABEL } from '../categories.js'
 import { MUTED } from '../colors.js'
 import { PageMessage } from '../components/PageMessage.js'
 import { trpc } from '../trpc.js'
-import { msUntilNextEdition } from '../utils.js'
+import { editionStaleTime } from '../utils.js'
 
 async function shareStory(title: string, url: string) {
   if (navigator.share) {
@@ -20,7 +20,7 @@ async function shareStory(title: string, url: string) {
 function StoryPage() {
   const { id } = Route.useParams()
   const { data, isLoading, error } = trpc.edition.today.useQuery(undefined, {
-    staleTime: msUntilNextEdition(),
+    staleTime: editionStaleTime,
   })
 
   if (isLoading) {

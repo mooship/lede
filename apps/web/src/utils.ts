@@ -7,3 +7,6 @@ export function msUntilNextEdition(): number {
   }
   return next.getTime() - now.getTime()
 }
+
+export const editionStaleTime = (query: { state: { data: unknown } }): number =>
+  query.state.data == null ? 5 * 60 * 1000 : msUntilNextEdition()
