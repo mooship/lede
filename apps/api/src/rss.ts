@@ -1,5 +1,6 @@
 import { XMLParser } from 'fast-xml-parser'
 import { ofetch } from 'ofetch'
+import { parse } from 'node-html-parser'
 
 export type RssItem = {
   title: string
@@ -67,6 +68,23 @@ function resolveLink(value: unknown): string {
     return typeof text === 'string' ? text.trim() : ''
   }
   return ''
+}
+
+export async function fetchArticleText(url: string): Promise<string> {
+  const html = await ofetch<string>(url, { responseType: 'text', timeout: 5000 })
+  const root = parse(html)
+
+  for (const el of root.querySelectorAll('script, style, nav, header, footer, aside')) {
+    el.remove()
+  }
+
+  const container = root.querySelector('article') ?? root.querySelector('main') ?? root
+  const paragraphs = container
+    .querySelectorAll('p')
+    .map((p) => p.text.trim())
+    .filter((t) => t.length > 40)
+
+  return paragraphs.join('\n\n')
 }
 
 export async function fetchFeed(url: string): Promise<RssItem[]> {

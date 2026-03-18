@@ -1,12 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { GoogleGenAI } from '@google/genai'
 import type { Category } from '@lede/api'
 import { createDb, schema } from '@lede/db'
 import { eq } from 'drizzle-orm'
-import { FEEDS, GEMINI_MODEL, STORIES_PER_CATEGORY } from './config.js'
+import { FEEDS, STORIES_PER_CATEGORY } from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
-import { fetchFeed } from './rss.js'
+import { fetchArticleText, fetchFeed } from './rss.js'
 
 export function todaySAST(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date())
@@ -91,24 +90,9 @@ const SUMMARISE_PROMPT = (item: RssItem) =>
 function createSummariser(env: Env): (item: RssItem) => Promise<string> {
   const raw = async (item: RssItem) => item.description || item.title
 
-  const gemini = env.GEMINI_API_KEY
-    ? (() => {
-        const genai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY })
-        return async (item: RssItem) => {
-          const res = await genai.models.generateContent({
-            model: GEMINI_MODEL,
-            contents: SUMMARISE_PROMPT(item),
-          })
-          return res.text ?? ''
-        }
-      })()
-    : null
-
   if (env.ANTHROPIC_API_KEY) {
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
-    const fallback = gemini ?? raw
-    const fallbackName = gemini ? 'Gemini' : 'raw description'
-    console.log(`[summariser] Anthropic (fallback: ${fallbackName})`)
+    console.log('[summariser] Claude Haiku')
     return async (item) => {
       try {
         const msg = await client.messages.create({
@@ -119,21 +103,13 @@ function createSummariser(env: Env): (item: RssItem) => Promise<string> {
         const block = msg.content[0]
         return block?.type === 'text' ? block.text : ''
       } catch (err) {
-        console.error(
-          `[summariser] Anthropic failed for "${item.title}", falling back to ${fallbackName}:`,
-          err,
-        )
-        return fallback(item)
+        console.error(`[summariser] Claude failed for "${item.title}", falling back to raw:`, err)
+        return raw(item)
       }
     }
   }
 
-  if (gemini) {
-    console.log(`[summariser] Gemini ${GEMINI_MODEL}`)
-    return gemini
-  }
-
-  console.log('[summariser] no AI key — using raw description')
+  console.log('[summariser] no API key — using raw description')
   return raw
 }
 
@@ -169,9 +145,26 @@ export async function buildEdition(env: Env): Promise<void> {
   const unique = deduplicateByTitle(filtered)
   const selected = selectStories(unique)
 
+  const enriched = await Promise.all(
+    selected.map(async (item) => {
+      if (!item.link) {
+        return item
+      }
+      try {
+        const articleText = await fetchArticleText(item.link)
+        return articleText.length > item.description.length
+          ? { ...item, description: articleText }
+          : item
+      } catch (err) {
+        console.error(`[enrich] failed to fetch article for "${item.title}":`, err)
+        return item
+      }
+    }),
+  )
+
   const summariser = createSummariser(env)
   const summarised = await Promise.all(
-    selected.map(async (item) => ({
+    enriched.map(async (item) => ({
       ...item,
       summary: await summariser(item),
     })),
