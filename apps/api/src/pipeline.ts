@@ -3,15 +3,13 @@ import { GoogleGenAI } from '@google/genai'
 import type { Category } from '@lede/api'
 import { createDb, schema } from '@lede/db'
 import { eq } from 'drizzle-orm'
-import { FEEDS, STORIES_PER_CATEGORY } from './config.js'
+import { FEEDS, GEMINI_MODEL, STORIES_PER_CATEGORY } from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
 
 export function todaySAST(): string {
-  const now = new Date()
-  now.setUTCHours(now.getUTCHours() + 2)
-  return now.toISOString().slice(0, 10)
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date())
 }
 
 const JUNK_PATTERNS = [
@@ -95,10 +93,10 @@ function createSummariser(env: Env): (item: RssItem) => Promise<string> {
 
   const gemini = env.GEMINI_API_KEY
     ? (() => {
-        const genai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY! })
+        const genai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY })
         return async (item: RssItem) => {
           const res = await genai.models.generateContent({
-            model: 'gemini-3-flash-preview',
+            model: GEMINI_MODEL,
             contents: SUMMARISE_PROMPT(item),
           })
           return res.text ?? ''
@@ -121,14 +119,17 @@ function createSummariser(env: Env): (item: RssItem) => Promise<string> {
         const block = msg.content[0]
         return block?.type === 'text' ? block.text : ''
       } catch (err) {
-        console.error(`[summariser] Anthropic failed for "${item.title}", falling back to ${fallbackName}:`, err)
+        console.error(
+          `[summariser] Anthropic failed for "${item.title}", falling back to ${fallbackName}:`,
+          err,
+        )
         return fallback(item)
       }
     }
   }
 
   if (gemini) {
-    console.log('[summariser] Gemini gemini-3-flash-preview')
+    console.log(`[summariser] Gemini ${GEMINI_MODEL}`)
     return gemini
   }
 

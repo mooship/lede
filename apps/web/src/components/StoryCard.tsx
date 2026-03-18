@@ -2,6 +2,7 @@ import type { Story } from '@lede/api'
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { CATEGORY_ACCENT, CATEGORY_LABEL } from '../categories.js'
+import { MUTED } from '../colors.js'
 
 function hexToRgba(hex: string, alpha: number): string {
   const r = Number.parseInt(hex.slice(1, 3), 16)
@@ -69,7 +70,7 @@ export function StoryCard({ story, position }: Props) {
               fontFamily: "'Syne Variable', 'Syne', sans-serif",
               fontSize: '0.65rem',
               fontWeight: 700,
-              color: '#444444',
+              color: MUTED,
             }}
           >
             {String(position).padStart(2, '0')}
@@ -93,7 +94,7 @@ export function StoryCard({ story, position }: Props) {
           style={{
             fontFamily: "'Instrument Serif', Georgia, serif",
             fontSize: '0.8rem',
-            color: '#555555',
+            color: MUTED,
             fontStyle: 'italic',
             margin: 'auto 0 0 0',
           }}

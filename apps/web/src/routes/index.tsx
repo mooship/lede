@@ -1,6 +1,7 @@
 import type { Category } from '@lede/api'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { MUTED } from '../colors.js'
 import { CategoryNav } from '../components/CategoryNav.js'
 import { Masthead } from '../components/Masthead.js'
 import { PageMessage } from '../components/PageMessage.js'
@@ -14,6 +15,13 @@ function IndexPage() {
     staleTime: msUntilMidnightSAST(),
   })
 
+  const nextBuildTime = useMemo(() => {
+    const d = new Date()
+    d.setUTCHours(4, 0, 0, 0)
+    if (d <= new Date()) d.setUTCDate(d.getUTCDate() + 1)
+    return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+  }, [])
+
   if (isLoading) {
     return <PageMessage message="Loading edition…" variant="loading" />
   }
@@ -23,12 +31,6 @@ function IndexPage() {
   }
 
   if (data == null) {
-    const nextBuild = new Date()
-    nextBuild.setUTCHours(4, 0, 0, 0)
-    if (nextBuild <= new Date()) {
-      nextBuild.setUTCDate(nextBuild.getUTCDate() + 1)
-    }
-
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f' }}>
         <Masthead />
@@ -37,12 +39,11 @@ function IndexPage() {
             style={{
               fontFamily: "'Instrument Serif', Georgia, serif",
               fontSize: '1.1rem',
-              color: '#888888',
+              color: MUTED,
               lineHeight: 1.75,
             }}
           >
-            Today's edition isn't ready yet. Next build at{' '}
-            {nextBuild.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} SAST.
+            Today's edition isn't ready yet. Next build at {nextBuildTime}.
           </p>
         </div>
       </div>

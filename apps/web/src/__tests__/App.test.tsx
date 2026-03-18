@@ -2,6 +2,8 @@ import type { Story } from '@lede/api'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 
+vi.mock('@tanstack/react-router')
+
 vi.mock('../trpc.js', () => ({
   trpc: {
     edition: {
@@ -42,21 +44,21 @@ async function renderIndex(overrides: {
 describe('Index page (App)', () => {
   it('shows loading indicator when in-flight', async () => {
     await renderIndex({ isLoading: true })
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByText(/loading/i)).not.toBeNull()
   })
 
   it('shows not_ready state when data is null', async () => {
     await renderIndex({ data: null })
-    expect(screen.getByText(/edition isn't ready/i)).toBeInTheDocument()
+    expect(screen.getByText(/edition isn't ready/i)).not.toBeNull()
   })
 
   it('renders story cards when data is present', async () => {
     await renderIndex({ data: [mockStory] })
-    expect(screen.getByText(mockStory.title)).toBeInTheDocument()
+    expect(screen.getByText(mockStory.title)).not.toBeNull()
   })
 
   it('shows error state on failure', async () => {
     await renderIndex({ error: new Error('Network failure') })
-    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument()
+    expect(screen.getByText(/something went wrong/i)).not.toBeNull()
   })
 })

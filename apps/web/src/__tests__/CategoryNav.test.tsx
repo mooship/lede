@@ -19,21 +19,40 @@ function Wrapper() {
 describe('CategoryNav', () => {
   it('renders all category tabs', () => {
     render(<Wrapper />)
-    expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'World / Politics' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Technology' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Science' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Business / Economy' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'All' })).not.toBeNull()
+    expect(screen.getByRole('tab', { name: 'World' })).not.toBeNull()
+    expect(screen.getByRole('tab', { name: 'Technology' })).not.toBeNull()
+    expect(screen.getByRole('tab', { name: 'Science' })).not.toBeNull()
+    expect(screen.getByRole('tab', { name: 'Business' })).not.toBeNull()
   })
 
-  it('defaults to All', () => {
+  it('defaults to All selected', () => {
     render(<Wrapper />)
-    expect(screen.getByTestId('active')).toHaveTextContent('All')
+    expect(screen.getByRole('tab', { name: 'All' }).getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByTestId('active').textContent).toBe('All')
   })
 
   it('updates active filter on tab click', async () => {
     render(<Wrapper />)
-    await userEvent.click(screen.getByRole('button', { name: 'Technology' }))
-    expect(screen.getByTestId('active')).toHaveTextContent('Technology')
+    await userEvent.click(screen.getByRole('tab', { name: 'Technology' }))
+    expect(screen.getByTestId('active').textContent).toBe('Technology')
+    expect(screen.getByRole('tab', { name: 'Technology' }).getAttribute('aria-selected')).toBe(
+      'true',
+    )
+    expect(screen.getByRole('tab', { name: 'All' }).getAttribute('aria-selected')).toBe('false')
+  })
+
+  it('moves selection with ArrowRight key', async () => {
+    render(<Wrapper />)
+    screen.getByRole('tab', { name: 'All' }).focus()
+    await userEvent.keyboard('{ArrowRight}')
+    expect(screen.getByTestId('active').textContent).toBe('World / Politics')
+  })
+
+  it('moves selection with ArrowLeft key wrapping to last tab', async () => {
+    render(<Wrapper />)
+    screen.getByRole('tab', { name: 'All' }).focus()
+    await userEvent.keyboard('{ArrowLeft}')
+    expect(screen.getByTestId('active').textContent).toBe('Business / Economy')
   })
 })

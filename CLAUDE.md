@@ -54,7 +54,8 @@ cd packages/db && npx drizzle-kit migrate
 `apps/api/.dev.vars` — Wrangler reads this for local dev (gitignored):
 ```
 DATABASE_URL=<neon dev branch connection string>
-ANTHROPIC_API_KEY=<optional — falls back to raw RSS description>
+ANTHROPIC_API_KEY=<optional — primary summariser>
+GEMINI_API_KEY=<optional — fallback summariser if Anthropic key absent>
 CLERK_SECRET_KEY=<clerk dev instance secret key>
 CLERK_ADMIN_USER_ID=<clerk user id>
 WEB_ORIGIN=http://localhost:5173
@@ -127,6 +128,12 @@ Auth is Clerk JWT: `Authorization: Bearer <token>` header, verified in `context.
 | Technology | Ars Technica, Wired, The Verge |
 | Science | BBC Science, New Scientist, Science Daily |
 | Business / Economy | BBC Business, The Guardian Business, DW Business |
+
+## Testing
+
+Web tests (`apps/web`) use vitest + happy-dom with `@testing-library/react`. No `@testing-library/jest-dom` — use native vitest matchers (`not.toBeNull()`, `.textContent`, `.getAttribute()`) instead of jest-dom matchers.
+
+`@tanstack/react-router`'s `Link` and `createFileRoute` must be mocked in tests that render components containing them without a `RouterProvider`.
 
 ## Key gotchas
 

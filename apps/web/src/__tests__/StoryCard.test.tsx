@@ -1,10 +1,12 @@
 import type { Story } from '@lede/api'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { vi } from 'vitest'
 import { StoryCard } from '../components/StoryCard.js'
 
+vi.mock('@tanstack/react-router')
+
 const story: Story = {
-  id: '1',
+  id: '42',
   title: 'Test headline',
   summary: 'A concise summary of the article.',
   category: 'Technology',
@@ -15,28 +17,28 @@ const story: Story = {
 }
 
 describe('StoryCard', () => {
-  it('renders collapsed by default', () => {
+  it('renders the story title', () => {
     render(<StoryCard story={story} position={1} />)
-    expect(screen.queryByText(story.summary)).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: story.title })).not.toBeNull()
   })
 
-  it('expands on click to show summary', async () => {
+  it('renders the story source', () => {
     render(<StoryCard story={story} position={1} />)
-    await userEvent.click(screen.getByRole('article'))
-    expect(screen.getByText(story.summary)).toBeInTheDocument()
+    expect(screen.getByText(story.source)).not.toBeNull()
   })
 
-  it('shows share button when expanded', async () => {
+  it('renders the category label badge', () => {
     render(<StoryCard story={story} position={1} />)
-    await userEvent.click(screen.getByRole('article'))
-    expect(screen.getByRole('button', { name: /share/i })).toBeInTheDocument()
+    expect(screen.getByText('Tech')).not.toBeNull()
   })
 
-  it('collapses when clicked again', async () => {
+  it('does not render the summary on the card', () => {
     render(<StoryCard story={story} position={1} />)
-    const article = screen.getByRole('article')
-    await userEvent.click(article)
-    await userEvent.click(article)
-    expect(screen.queryByText(story.summary)).not.toBeInTheDocument()
+    expect(screen.queryByText(story.summary)).toBeNull()
+  })
+
+  it('links to the story detail page', () => {
+    render(<StoryCard story={story} position={1} />)
+    expect(screen.getByRole('link').getAttribute('href')).toBe('/story/42')
   })
 })

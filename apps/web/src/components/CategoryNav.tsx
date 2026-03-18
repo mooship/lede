@@ -1,6 +1,7 @@
 import type { Category } from '@lede/api'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { CATEGORY_ACCENT } from '../categories.js'
+import { MUTED } from '../colors.js'
 
 type Tab = Category | 'All'
 
@@ -23,6 +24,25 @@ type Props = {
 
 export function CategoryNav({ active, onChange }: Props) {
   const [hovered, setHovered] = useState<Tab | null>(null)
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'ArrowRight') {
+      const next = (index + 1) % TABS.length
+      const nextTab = TABS[next]
+      if (nextTab) {
+        tabRefs.current[next]?.focus()
+        onChange(nextTab)
+      }
+    } else if (e.key === 'ArrowLeft') {
+      const prev = (index - 1 + TABS.length) % TABS.length
+      const prevTab = TABS[prev]
+      if (prevTab) {
+        tabRefs.current[prev]?.focus()
+        onChange(prevTab)
+      }
+    }
+  }
 
   return (
     <nav
@@ -33,6 +53,7 @@ export function CategoryNav({ active, onChange }: Props) {
       }}
     >
       <div
+        role="tablist"
         style={{
           maxWidth: '1400px',
           margin: '0 auto',
@@ -42,7 +63,7 @@ export function CategoryNav({ active, onChange }: Props) {
           gap: 0,
         }}
       >
-        {TABS.map((tab) => {
+        {TABS.map((tab, index) => {
           const isActive = tab === active
           const isHovered = hovered === tab
           const accent = ACCENT[tab]
@@ -50,10 +71,16 @@ export function CategoryNav({ active, onChange }: Props) {
           return (
             <button
               key={tab}
+              ref={(el) => {
+                tabRefs.current[index] = el
+              }}
               type="button"
+              role="tab"
+              aria-selected={isActive}
               onClick={() => onChange(tab)}
               onMouseEnter={() => setHovered(tab)}
               onMouseLeave={() => setHovered(null)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
               style={{
                 fontFamily: "'Syne Variable', 'Syne', sans-serif",
                 fontSize: '0.7rem',
@@ -64,7 +91,7 @@ export function CategoryNav({ active, onChange }: Props) {
                 background: 'none',
                 border: 'none',
                 borderBottom: isActive ? `2px solid ${accent}` : '2px solid transparent',
-                color: isActive ? accent : isHovered ? '#888888' : '#555555',
+                color: isActive ? accent : isHovered ? '#c0c0c0' : MUTED,
                 cursor: 'pointer',
                 transition: 'all 0.15s',
                 marginBottom: '-1px',

@@ -25,6 +25,8 @@
     "react-dom": "latest"
   },
   "devDependencies": {
+    "@fontsource-variable/syne": "latest",
+    "@fontsource/instrument-serif": "latest",
     "@lede/tsconfig": "*",
     "@pandacss/dev": "latest",
     "@tanstack/router-plugin": "latest",
@@ -33,11 +35,9 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
+    "fontaine": "latest",
     "happy-dom": "latest",
     "vite": "latest",
-    "@fontsource-variable/syne": "latest",
-    "@fontsource/instrument-serif": "latest",
-    "fontaine": "latest",
     "vitest": "latest"
   }
 }

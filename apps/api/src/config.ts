@@ -26,3 +26,4 @@ export const FEEDS: Record<Category, string[]> = {
 
 export const STORIES_PER_CATEGORY = 3
 export const TARGET_STORY_COUNT = 12
+export const GEMINI_MODEL = 'gemini-3-flash-preview'

@@ -1,6 +1,6 @@
 import type { Story } from '@lede/api'
-import { createCallerFactory } from './router.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createCallerFactory } from './router.js'
 
 vi.mock('@lede/db', () => ({
   createDb: vi.fn(() => mockDb),
@@ -12,6 +12,7 @@ vi.mock('@lede/db', () => ({
 
 vi.mock('./pipeline.js', () => ({
   buildEdition: vi.fn(),
+  todaySAST: vi.fn(() => '2024-01-01'),
 }))
 
 vi.mock('drizzle-orm', () => ({
@@ -52,6 +53,7 @@ function makeEnv(adminId = 'admin-123') {
   return {
     DATABASE_URL: 'postgres://test',
     ANTHROPIC_API_KEY: 'key',
+    GEMINI_API_KEY: undefined,
     CLERK_SECRET_KEY: 'clerk',
     CLERK_ADMIN_USER_ID: adminId,
     WEB_ORIGIN: 'http://localhost:5173',

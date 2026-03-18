@@ -10,8 +10,36 @@ export type RssItem = {
 
 const parser = new XMLParser({ ignoreAttributes: false })
 
+const NAMED_ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&nbsp;': ' ',
+  '&ldquo;': '\u201c',
+  '&rdquo;': '\u201d',
+  '&lsquo;': '\u2018',
+  '&rsquo;': '\u2019',
+  '&mdash;': '\u2014',
+  '&ndash;': '\u2013',
+}
+
+function decodeHtmlEntities(text: string): string {
+  return text.replace(/&(?:#x[0-9a-fA-F]+|#\d+|[a-z]+);/gi, (match) => {
+    if (match.startsWith('&#x')) return String.fromCharCode(Number.parseInt(match.slice(3, -1), 16))
+    if (match.startsWith('&#')) return String.fromCharCode(Number(match.slice(2, -1)))
+    return NAMED_ENTITIES[match] ?? match
+  })
+}
+
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  return decodeHtmlEntities(
+    html
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim(),
+  )
 }
 
 function resolveText(value: unknown): string {
@@ -42,16 +70,18 @@ function resolveLink(value: unknown): string {
 }
 
 export async function fetchFeed(url: string): Promise<RssItem[]> {
-  const text = await ofetch<string>(url, { responseType: 'text' as const })
+  const text = await ofetch<string, 'text'>(url, { responseType: 'text' })
   const feed = parser.parse(text)
   const items: unknown[] = feed?.rss?.channel?.item ?? feed?.feed?.entry ?? []
   return (Array.isArray(items) ? items : [items]).map((item: unknown) => {
     const i = item as Record<string, unknown>
     return {
-      title:       resolveText(i['title']),
-      description: resolveText(i['content:encoded'] ?? i['description'] ?? i['summary'] ?? i['content']),
-      link:        resolveLink(i['link']),
-      pubDate:     resolveText(i['pubDate'] ?? i['updated'] ?? ''),
+      title: resolveText(i['title']),
+      description: resolveText(
+        i['content:encoded'] ?? i['description'] ?? i['summary'] ?? i['content'],
+      ),
+      link: resolveLink(i['link']),
+      pubDate: resolveText(i['pubDate'] ?? i['updated'] ?? ''),
     }
   })
 }
