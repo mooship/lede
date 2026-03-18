@@ -68,7 +68,10 @@ const rootEl = document.getElementById('root')
 if (!rootEl) throw new Error('Root element not found')
 createRoot(rootEl).render(
   <StrictMode>
-    <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ''}>
+    <ClerkProvider
+      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ''}
+      clerkJSUrl="https://js.clerk.com"
+    >
       <App />
     </ClerkProvider>
   </StrictMode>,
