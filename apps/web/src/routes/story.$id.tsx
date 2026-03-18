@@ -186,7 +186,7 @@ function StoryPage() {
 
           <button
             type="button"
-            onClick={() => void shareStory(story.title, story.link)}
+            onClick={() => void shareStory(story.title, window.location.href)}
             style={{
               fontFamily: "'Syne Variable', 'Syne', sans-serif",
               fontSize: '0.7rem',
