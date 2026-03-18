@@ -8,6 +8,7 @@ vi.mock('@tanstack/react-router')
 const story: Story = {
   id: '42',
   title: 'Test headline',
+  description: null,
   summary: 'A concise summary of the article.',
   category: 'Technology',
   link: 'https://example.com/article',

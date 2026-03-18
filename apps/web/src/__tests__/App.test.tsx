@@ -17,6 +17,7 @@ vi.mock('../trpc.js', () => ({
 const mockStory: Story = {
   id: '1',
   title: 'Test Story',
+  description: null,
   summary: 'Summary text.',
   category: 'Technology',
   link: 'https://example.com',
