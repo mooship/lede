@@ -5,6 +5,7 @@ import { parse } from 'node-html-parser'
 export type RssItem = {
   title: string
   description: string
+  articleText?: string
   link: string
   pubDate: string
 }

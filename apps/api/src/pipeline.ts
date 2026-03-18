@@ -85,7 +85,7 @@ export function selectStories(
 const MAX_DESCRIPTION_CHARS = 3000
 
 const SUMMARISE_PROMPT = (item: RssItem) =>
-  `You are a news summariser. Write an approximately 150-word summary of the following article.\nBe factual and concise. Use British English spelling and grammar. Output only the summary, no preamble.\n\nTitle: ${item.title}\nDescription: ${item.description.slice(0, MAX_DESCRIPTION_CHARS)}`
+  `You are a news summariser. Write an approximately 150-word summary of the following article.\nBe factual and concise. Use British English spelling and grammar. Output only the summary, no preamble.\n\nTitle: ${item.title}\nDescription: ${(item.articleText ?? item.description).slice(0, MAX_DESCRIPTION_CHARS)}`
 
 function createSummariser(env: Env): (item: RssItem) => Promise<string> {
   const raw = async (item: RssItem) => item.description || item.title
@@ -153,7 +153,7 @@ export async function buildEdition(env: Env): Promise<void> {
       try {
         const articleText = await fetchArticleText(item.link)
         return articleText.length > item.description.length
-          ? { ...item, description: articleText }
+          ? { ...item, articleText }
           : item
       } catch (err) {
         console.error(`[enrich] failed to fetch article for "${item.title}":`, err)
