@@ -40,6 +40,8 @@ function stripHtml(html: string): string {
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+    .replace(/\s*Continue reading[…\.]*$/i, '')
+    .trimEnd()
 }
 
 function resolveText(value: unknown): string {

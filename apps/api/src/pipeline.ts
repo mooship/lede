@@ -165,7 +165,7 @@ ${categoryBlocks.join('\n\n')}`
 
   try {
     const msg = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 150,
       messages: [{ role: 'user', content: prompt }],
     })
@@ -239,11 +239,11 @@ function createSummariser(env: Env): (item: RssItem) => Promise<string> {
 
   if (env.ANTHROPIC_API_KEY) {
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
-    console.log('[summariser] Claude Sonnet')
+    console.log('[summariser] Claude Haiku')
     return async (item) => {
       try {
         const msg = await client.messages.create({
-          model: 'claude-sonnet-4-6',
+          model: 'claude-haiku-4-5-20251001',
           max_tokens: 400,
           messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
         })
