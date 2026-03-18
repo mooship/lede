@@ -157,7 +157,7 @@ export async function curateWithClaude(
 Select exactly ${TARGET_STORY_COUNT} stories total. Rules:
 - At least ${MIN_STORIES_PER_CATEGORY} and at most ${MAX_STORIES_PER_CATEGORY} stories from each category
 - Prefer stories with higher source counts (covered by more outlets)
-- Only include genuinely newsworthy stories — you may pick fewer if the news warrants it
+- Only include genuinely newsworthy stories
 
 Return ONLY a JSON array of story numbers, e.g. [1, 3, 5, 7]. No other text.
 
@@ -232,13 +232,10 @@ export function selectStories(
 const MAX_DESCRIPTION_CHARS = 3000
 
 const SUMMARISE_PROMPT = (item: RssItem) =>
-  `You are a news summariser. For the following article, write:
-1. BYLINE: A single punchy sentence (max 25 words) capturing the core news.
-2. SUMMARY: An approximately 150-word summary. Be factual and concise. Use British English spelling and grammar.
+  `You are a news summariser. Write the following for the article below. Use British English. No other text.
 
-Output exactly in this format with no other text:
-BYLINE: <one sentence>
-SUMMARY: <summary>
+BYLINE: A single factual sentence, max 25 words.
+SUMMARY: A factual, concise summary of approximately 150 words.
 
 Title: ${item.title}
 Article: ${(item.articleText ?? item.description).slice(0, MAX_DESCRIPTION_CHARS)}`
