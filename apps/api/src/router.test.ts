@@ -23,6 +23,7 @@ const mockStories: Story[] = [
   {
     id: '1',
     title: 'Test Story',
+    description: null,
     summary: 'A summary.',
     category: 'Technology',
     link: 'https://example.com',
