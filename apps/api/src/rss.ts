@@ -1,6 +1,6 @@
 import { XMLParser } from 'fast-xml-parser'
-import { ofetch } from 'ofetch'
 import { parse } from 'node-html-parser'
+import { ofetch } from 'ofetch'
 
 export type RssItem = {
   title: string

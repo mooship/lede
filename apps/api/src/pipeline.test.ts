@@ -1,5 +1,6 @@
 import type { Category } from '@lede/api'
 import { describe, expect, it, vi } from 'vitest'
+import { STORIES_PER_CATEGORY } from './config.js'
 import {
   curateWithClaude,
   deduplicateByTitle,
@@ -59,37 +60,97 @@ describe('deduplicateByTitle', () => {
 
 describe('scoreBySourceOverlap', () => {
   it('gives score 1 for a single-source story', () => {
-    const item = makeItem('AI safety breakthrough', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'https://ars.technica.com/article')
+    const item = makeItem(
+      'AI safety breakthrough',
+      'Technology',
+      '2024-01-01T00:00:00Z',
+      'desc',
+      'https://ars.technica.com/article',
+    )
     const scored = scoreBySourceOverlap([item], [item])
     expect(scored[0]?.sourceScore).toBe(1)
   })
 
   it('gives score 3 for story matched by 3 distinct hostnames', () => {
-    const unique = makeItem('AI safety breakthrough', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'https://ars.technica.com/article')
+    const unique = makeItem(
+      'AI safety breakthrough',
+      'Technology',
+      '2024-01-01T00:00:00Z',
+      'desc',
+      'https://ars.technica.com/article',
+    )
     const pool: CategorisedItem[] = [
-      makeItem('AI safety breakthrough', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'https://ars.technica.com/article'),
-      makeItem('AI safety breakthrough news', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'https://wired.com/article'),
-      makeItem('AI safety breakthrough report', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'https://theverge.com/article'),
+      makeItem(
+        'AI safety breakthrough',
+        'Technology',
+        '2024-01-01T00:00:00Z',
+        'desc',
+        'https://ars.technica.com/article',
+      ),
+      makeItem(
+        'AI safety breakthrough news',
+        'Technology',
+        '2024-01-01T00:00:00Z',
+        'desc',
+        'https://wired.com/article',
+      ),
+      makeItem(
+        'AI safety breakthrough report',
+        'Technology',
+        '2024-01-01T00:00:00Z',
+        'desc',
+        'https://theverge.com/article',
+      ),
     ]
     const scored = scoreBySourceOverlap(pool, [unique])
     expect(scored[0]?.sourceScore).toBe(3)
   })
 
   it('gives score 1 when 2 pool items share the same hostname', () => {
-    const unique = makeItem('Major data breach', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'https://wired.com/a')
+    const unique = makeItem(
+      'Major data breach',
+      'Technology',
+      '2024-01-01T00:00:00Z',
+      'desc',
+      'https://wired.com/a',
+    )
     const pool: CategorisedItem[] = [
-      makeItem('Major data breach', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'https://wired.com/a'),
-      makeItem('Major data breach details', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'https://wired.com/b'),
+      makeItem(
+        'Major data breach',
+        'Technology',
+        '2024-01-01T00:00:00Z',
+        'desc',
+        'https://wired.com/a',
+      ),
+      makeItem(
+        'Major data breach details',
+        'Technology',
+        '2024-01-01T00:00:00Z',
+        'desc',
+        'https://wired.com/b',
+      ),
     ]
     const scored = scoreBySourceOverlap(pool, [unique])
     expect(scored[0]?.sourceScore).toBe(1)
   })
 
   it('skips pool items with unparseable links gracefully', () => {
-    const unique = makeItem('Story title', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'https://example.com/a')
+    const unique = makeItem(
+      'Story title',
+      'Technology',
+      '2024-01-01T00:00:00Z',
+      'desc',
+      'https://example.com/a',
+    )
     const pool: CategorisedItem[] = [
       makeItem('Story title', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'not-a-valid-url'),
-      makeItem('Story title', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'https://example.com/a'),
+      makeItem(
+        'Story title',
+        'Technology',
+        '2024-01-01T00:00:00Z',
+        'desc',
+        'https://example.com/a',
+      ),
     ]
     const scored = scoreBySourceOverlap(pool, [unique])
     expect(scored[0]?.sourceScore).toBe(1)
@@ -99,7 +160,13 @@ describe('scoreBySourceOverlap', () => {
 describe('curateWithClaude', () => {
   function makeScoredItems(count: number, category: Category = 'Technology') {
     return Array.from({ length: count }, (_, i) => ({
-      ...makeItem(`Story ${i + 1}`, category, `2024-01-0${i + 1}T00:00:00Z`, 'desc', `https://source${i}.com`),
+      ...makeItem(
+        `Story ${i + 1}`,
+        category,
+        `2024-01-0${i + 1}T00:00:00Z`,
+        'desc',
+        `https://source${i}.com`,
+      ),
       sourceScore: 1,
     }))
   }
@@ -116,7 +183,9 @@ describe('curateWithClaude', () => {
   })
 
   it('parses array when Claude response has prose before it', async () => {
-    mockCreate.mockResolvedValueOnce({ content: [{ type: 'text', text: 'I recommend [1, 3, 5, 7]' }] })
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: 'text', text: 'I recommend [1, 3, 5, 7]' }],
+    })
     const scored = makeScoredItems(8)
     const env = { ANTHROPIC_API_KEY: 'test-key' } as Parameters<typeof curateWithClaude>[1]
     const result = await curateWithClaude(scored, env)
@@ -129,7 +198,7 @@ describe('curateWithClaude', () => {
     const env = { ANTHROPIC_API_KEY: 'test-key' } as Parameters<typeof curateWithClaude>[1]
     const result = await curateWithClaude(scored, env)
     const techResults = result.filter((s) => s.category === 'Technology')
-    expect(techResults).toHaveLength(4)
+    expect(techResults).toHaveLength(STORIES_PER_CATEGORY['Technology'])
     expect(techResults[0]?.title).toBe('Story 1')
   })
 
@@ -161,7 +230,7 @@ describe('curateWithClaude', () => {
     const result = await curateWithClaude(scored, env)
     expect(mockCreate).not.toHaveBeenCalled()
     const techResults = result.filter((s) => s.category === 'Technology')
-    expect(techResults).toHaveLength(4)
+    expect(techResults).toHaveLength(STORIES_PER_CATEGORY['Technology'])
     expect(techResults[0]?.title).toBe('Story 1')
   })
 })

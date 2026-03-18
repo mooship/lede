@@ -84,7 +84,10 @@ export function scoreBySourceOverlap(
   pool: Array<RssItem & { category: Category }>,
   unique: Array<RssItem & { category: Category }>,
 ): ScoredItem[] {
-  const poolNorm = pool.map((p) => ({ norm: normaliseTitle(p.title), hostname: hostnameFromUrl(p.link) }))
+  const poolNorm = pool.map((p) => ({
+    norm: normaliseTitle(p.title),
+    hostname: hostnameFromUrl(p.link),
+  }))
 
   return unique.map((u) => {
     const normU = normaliseTitle(u.title)
@@ -93,8 +96,8 @@ export function scoreBySourceOverlap(
     for (const p of poolNorm) {
       if (p.norm.includes(normU) || normU.includes(p.norm)) {
         if (p.hostname) {
-        hostnames.add(p.hostname)
-      }
+          hostnames.add(p.hostname)
+        }
       }
     }
 
@@ -277,9 +280,7 @@ export async function buildEdition(env: Env): Promise<void> {
       }
       try {
         const articleText = await fetchArticleText(item.link)
-        return articleText.length > item.description.length
-          ? { ...item, articleText }
-          : item
+        return articleText.length > item.description.length ? { ...item, articleText } : item
       } catch (err) {
         console.error(`[enrich] failed to fetch article for "${item.title}":`, err)
         return item
