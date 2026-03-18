@@ -37,6 +37,7 @@ const editionRouter = router({
     return rows.map((r) => ({
       id: r.id,
       title: r.title,
+      description: r.description ?? null,
       summary: r.summary,
       category: r.category as Story['category'],
       link: r.link,

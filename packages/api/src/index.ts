@@ -3,6 +3,7 @@ export type Category = 'World / Politics' | 'Technology' | 'Science' | 'Business
 export type Story = {
   id: string
   title: string
+  description: string | null
   summary: string
   category: Category
   link: string

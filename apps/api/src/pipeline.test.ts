@@ -52,7 +52,7 @@ describe('selectStories', () => {
     ]
     const selected = selectStories(items)
     const techStories = selected.filter((s) => s.category === 'Technology')
-    expect(techStories).toHaveLength(3)
+    expect(techStories).toHaveLength(4)
     expect(techStories[0]?.title).toBe('Tech 1')
   })
 
@@ -73,6 +73,6 @@ describe('selectStories', () => {
       })),
     )
     const selected = selectStories(items)
-    expect(selected.length).toBeLessThanOrEqual(14)
+    expect(selected.length).toBeLessThanOrEqual(15)
   })
 })

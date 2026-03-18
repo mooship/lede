@@ -88,7 +88,7 @@ const SUMMARISE_PROMPT = (item: RssItem) =>
   `You are a news summariser. Write an approximately 150-word summary of the following article.\nBe factual and concise. Use British English spelling and grammar. Output only the summary, no preamble.\n\nTitle: ${item.title}\nDescription: ${(item.articleText ?? item.description).slice(0, MAX_DESCRIPTION_CHARS)}`
 
 function createSummariser(env: Env): (item: RssItem) => Promise<string> {
-  const raw = async (item: RssItem) => item.description || item.title
+  const raw = async (item: RssItem) => item.articleText || item.description || item.title
 
   if (env.ANTHROPIC_API_KEY) {
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
@@ -175,6 +175,7 @@ export async function buildEdition(env: Env): Promise<void> {
     summarised.map((story, i) => ({
       editionDate: date,
       title: story.title,
+      description: story.description || null,
       summary: story.summary,
       category: story.category,
       link: story.link,

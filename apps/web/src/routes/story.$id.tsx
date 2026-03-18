@@ -130,6 +130,20 @@ function StoryPage() {
           {story.title}
         </h1>
 
+        {story.description && (
+          <p
+            style={{
+              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontSize: '1.1rem',
+              fontStyle: 'italic',
+              color: MUTED,
+              lineHeight: 1.7,
+              margin: '0 0 1.5rem 0',
+            }}
+          >
+            {story.description}
+          </p>
+        )}
         <p
           style={{
             fontFamily: "'Syne Variable', 'Syne', sans-serif",

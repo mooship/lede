@@ -11,6 +11,7 @@ export const stories = pgTable('stories', {
     .notNull()
     .references(() => editions.date),
   title: text('title').notNull(),
+  description: text('description'),
   summary: text('summary').notNull(),
   category: text('category').notNull(),
   link: text('link').notNull(),
