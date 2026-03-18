@@ -61,6 +61,9 @@ export function CategoryNav({ active, onChange }: Props) {
           display: 'flex',
           flexDirection: 'row',
           gap: 0,
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
       >
         {TABS.map((tab, index) => {
@@ -96,6 +99,8 @@ export function CategoryNav({ active, onChange }: Props) {
                 transition: 'all 0.15s',
                 marginBottom: '-1px',
                 borderRadius: 0,
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
               }}
             >
               {LABELS[tab]}
