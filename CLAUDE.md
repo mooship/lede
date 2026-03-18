@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What is Lede
 
-A daily news digest that fetches RSS feeds across four categories, summarises each story with Claude Haiku, and publishes a fixed 12-story edition per day. One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
+A daily news digest that fetches RSS feeds across four categories, summarises each story with Claude Haiku, and publishes a 15-story edition per day (5 World / Politics, 4 Technology, 3 Science, 3 Business / Economy). One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
 
 ## Monorepo structure
 
@@ -54,16 +54,9 @@ cd packages/db && npx drizzle-kit migrate
 `apps/api/.dev.vars` — Wrangler reads this for local dev (gitignored):
 ```
 DATABASE_URL=<neon dev branch connection string>
-ANTHROPIC_API_KEY=<optional — primary summariser>
-GEMINI_API_KEY=<optional — fallback summariser if Anthropic key absent>
-CLERK_SECRET_KEY=<clerk dev instance secret key>
-CLERK_ADMIN_USER_ID=<clerk user id>
+ANTHROPIC_API_KEY=<optional — used for summarisation>
+ADMIN_SECRET=<any strong random string>
 WEB_ORIGIN=http://localhost:5173
-```
-
-`apps/web/.env.local` — gitignored, add your dev Clerk key (or put it directly in `.env.development` since that file is committed without secrets):
-```
-VITE_CLERK_PUBLISHABLE_KEY=<clerk dev instance publishable key>
 ```
 
 `apps/web/.env.development` is committed and sets `VITE_API_URL=http://localhost:8787`.
@@ -80,7 +73,6 @@ cd apps/api && npm run deploy
 Fill in `apps/web/.env.production` (gitignored) with production web vars:
 ```
 VITE_API_URL=https://lede-api.<your-subdomain>.workers.dev
-VITE_CLERK_PUBLISHABLE_KEY=<clerk production publishable key>
 ```
 
 If deploying the web app via Cloudflare Pages (builds in CI), those same vars must also be set in the Pages dashboard — local `.env.production` only applies to local builds.
@@ -94,16 +86,17 @@ If deploying the web app via Cloudflare Pages (builds in CI), those same vars mu
 2. Fetch all feeds via `Promise.allSettled` (failures are logged and skipped)
 3. Filter junk — regex patterns for promo codes, coupons, sponsored content
 4. Deduplicate — normalise titles (lowercase, strip punctuation), drop substring matches
-5. Select — top 3 per category by `pubDate` desc (3×4 = 12, no trimming needed)
-6. Summarise — `Promise.all` → Anthropic `claude-haiku-4-5-20251001` if `ANTHROPIC_API_KEY` set, else Gemini `gemini-2.0-flash-lite` if `GEMINI_API_KEY` set, else raw description. ~150 words, British English
-7. Persist — sequential `db.insert` for `editions` then `stories` (neon-http has no transaction support)
+5. Select — per-category limits by `pubDate` desc (World/Politics: 5, Technology: 4, Science: 3, Business/Economy: 3 = 15 total)
+6. Enrich — fetch full article HTML for each story via `node-html-parser`; store original RSS description as byline, article text used as Claude input
+7. Summarise — `Promise.all` → Anthropic `claude-haiku-4-5-20251001` if `ANTHROPIC_API_KEY` set, else article text, else raw RSS description. ~150 words, British English
+8. Persist — sequential `db.insert` for `editions` then `stories` (neon-http has no transaction support)
 
 ### tRPC router (`apps/api/src/router.ts`)
 
 - `edition.today` — public query, returns `Story[] | null` for today's SAST date
-- `edition.build` — protected mutation, checks `userId === env.CLERK_ADMIN_USER_ID`
+- `edition.build` — protected mutation, checks Bearer token against `ADMIN_SECRET`
 
-Auth is Clerk JWT: `Authorization: Bearer <token>` header, verified in `context.ts`.
+Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified in `context.ts` using `crypto.subtle.timingSafeEqual`.
 
 ### Web client (`apps/web`)
 
@@ -116,7 +109,7 @@ Auth is Clerk JWT: `Authorization: Bearer <token>` header, verified in `context.
 ### DB schema (`packages/db/src/schema.ts`)
 
 - `editions(date PK, built_at)`
-- `stories(id uuid PK, edition_date FK, title, summary, category, link, pub_date, source, position)`
+- `stories(id uuid PK, edition_date FK, title, description, summary, category, link, pub_date, source, position)`
 
 `createDb(connectionString)` uses `drizzle-orm/neon-http` — no transactions, no connection pooling.
 

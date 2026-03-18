@@ -1,6 +1,6 @@
 # Lede
 
-A daily news digest. Each morning at 06:00 SAST, a Cloudflare Worker fetches RSS feeds across four categories, summarises each story with Claude Haiku, and publishes a fixed 12-story edition. The frontend presents the edition as a newspaper-style grid with full story detail pages.
+A daily news digest. Each morning at 06:00 SAST, a Cloudflare Worker fetches RSS feeds across four categories, enriches each story with full article text, summarises with Claude Haiku, and publishes a 15-story edition. The frontend presents the edition as a newspaper-style grid with full story detail pages.
 
 ## Stack
 
@@ -9,8 +9,8 @@ A daily news digest. Each morning at 06:00 SAST, a Cloudflare Worker fetches RSS
 | Worker | Cloudflare Workers + Hono + tRPC |
 | Database | Neon (PostgreSQL, serverless HTTP) |
 | ORM | Drizzle |
-| Summarisation | Anthropic Claude Haiku (prod) / Google Gemini Flash Lite (local dev and fallback) |
-| Auth | Clerk |
+| Summarisation | Anthropic Claude Haiku (fallback: full article text, then RSS description) |
+| Auth | Static `ADMIN_SECRET` bearer token |
 | Frontend | React + Vite + TanStack Router |
 | Monorepo | Turborepo + npm workspaces |
 | Linter | Biome |
@@ -32,7 +32,7 @@ npm install
 npm run dev   # wrangler dev on :8787 + vite on :5173
 ```
 
-`apps/api/.dev.vars` and `apps/web/.env.development` are already configured for local dev. For AI summaries in local dev, add a `GEMINI_API_KEY` to `apps/api/.dev.vars` (free tier, uses `gemini-2.0-flash-lite`). Set `ANTHROPIC_API_KEY` instead to use Claude Haiku. Without either key, the raw RSS description is used.
+`apps/api/.dev.vars` and `apps/web/.env.development` are already configured for local dev. Add an `ANTHROPIC_API_KEY` to `apps/api/.dev.vars` to enable Claude Haiku summaries. Without it, the full article text (or raw RSS description) is used as the summary.
 
 ## Database migrations
 
@@ -73,7 +73,6 @@ Fill in `apps/web/.env.production`:
 
 ```
 VITE_API_URL=https://lede-api.<your-subdomain>.workers.dev
-VITE_CLERK_PUBLISHABLE_KEY=<clerk production publishable key>
 ```
 
 Then build and deploy:
@@ -83,7 +82,7 @@ cd apps/web && npm run build
 # upload dist/ to Cloudflare Pages
 ```
 
-If you connect the Pages project to this git repository, set `VITE_API_URL` and `VITE_CLERK_PUBLISHABLE_KEY` as environment variables in the Cloudflare Pages dashboard instead — the local `.env.production` file is not accessible during CI builds.
+If you connect the Pages project to this git repository, set `VITE_API_URL` as an environment variable in the Cloudflare Pages dashboard instead — the local `.env.production` file is not accessible during CI builds.
 
 ## Other commands
 
