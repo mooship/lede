@@ -19,13 +19,11 @@ export const FEEDS: Record<Category, string[]> = {
   Science: [
     'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',
     'https://www.newscientist.com/feed/home/',
-    'https://www.scientificamerican.com/feed/',
-    'https://www.nature.com/nature.rss',
+    'https://www.theguardian.com/science/rss',
   ],
   'Business / Economy': [
     'https://feeds.bbci.co.uk/news/business/rss.xml',
     'https://www.theguardian.com/business/rss',
-    'https://rss.dw.com/rdf/rss-en-business',
     'https://feeds.npr.org/1006/rss.xml',
     'https://www.cnbc.com/id/10001147/device/rss/rss.html',
   ],
