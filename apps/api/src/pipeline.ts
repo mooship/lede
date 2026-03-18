@@ -232,10 +232,32 @@ export function selectStories(
 const MAX_DESCRIPTION_CHARS = 3000
 
 const SUMMARISE_PROMPT = (item: RssItem) =>
-  `You are a news summariser. Write an approximately 150-word summary of the following article.\nBe factual and concise. Use British English spelling and grammar. Output only the summary, no preamble.\n\nTitle: ${item.title}\nDescription: ${(item.articleText ?? item.description).slice(0, MAX_DESCRIPTION_CHARS)}`
+  `You are a news summariser. For the following article, write:
+1. BYLINE: A single punchy sentence (max 25 words) capturing the core news.
+2. SUMMARY: An approximately 150-word summary. Be factual and concise. Use British English spelling and grammar.
 
-function createSummariser(env: Env): (item: RssItem) => Promise<string> {
-  const raw = async (item: RssItem) => item.articleText || item.description || item.title
+Output exactly in this format with no other text:
+BYLINE: <one sentence>
+SUMMARY: <summary>
+
+Title: ${item.title}
+Article: ${(item.articleText ?? item.description).slice(0, MAX_DESCRIPTION_CHARS)}`
+
+type SummariseResult = { byline: string; summary: string }
+
+function parseSummariseResponse(text: string, fallbackByline: string): SummariseResult {
+  const bylineMatch = text.match(/^BYLINE:\s*(.+)/m)
+  const summaryMatch = text.match(/^SUMMARY:\s*([\s\S]+)/m)
+  const byline = bylineMatch?.[1]?.trim() ?? fallbackByline
+  const summary = (summaryMatch?.[1]?.trim() ?? text).replace(/^#+\s+\S[^\n]*\n+/, '')
+  return { byline, summary }
+}
+
+function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult> {
+  const raw = async (item: RssItem): Promise<SummariseResult> => ({
+    byline: item.description || item.title,
+    summary: item.articleText || item.description || item.title,
+  })
 
   if (env.ANTHROPIC_API_KEY) {
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
@@ -244,12 +266,12 @@ function createSummariser(env: Env): (item: RssItem) => Promise<string> {
       try {
         const msg = await client.messages.create({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 400,
+          max_tokens: 500,
           messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
         })
         const block = msg.content[0]
         const text = block?.type === 'text' ? block.text : ''
-        return text.replace(/^#+\s+\S[^\n]*\n+/, '')
+        return parseSummariseResponse(text, item.description || item.title)
       } catch (err) {
         console.error(`[summariser] Claude failed for "${item.title}", falling back to raw:`, err)
         return raw(item)
@@ -311,10 +333,10 @@ export async function buildEdition(env: Env): Promise<void> {
 
   const summariser = createSummariser(env)
   const summarised = await Promise.all(
-    enriched.map(async (item) => ({
-      ...item,
-      summary: await summariser(item),
-    })),
+    enriched.map(async (item) => {
+      const { byline, summary } = await summariser(item)
+      return { ...item, byline, summary }
+    }),
   )
 
   await db.insert(schema.editions).values({ date, builtAt: new Date() })
@@ -322,7 +344,7 @@ export async function buildEdition(env: Env): Promise<void> {
     summarised.map((story, i) => ({
       editionDate: date,
       title: story.title,
-      description: story.description || null,
+      description: story.byline || null,
       summary: story.summary,
       category: story.category,
       link: story.link,
