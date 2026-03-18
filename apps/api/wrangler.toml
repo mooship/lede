@@ -8,6 +8,10 @@ crons = ["0 4 * * *"]
 [vars]
 BUILD_CRON_ENABLED = "true"
 
+[observability.logs]
+enabled = true
+invocation_logs = true
+
 [env.production]
 name = "lede"
 
