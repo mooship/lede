@@ -5,9 +5,6 @@ compatibility_date = "2024-01-01"
 [triggers]
 crons = ["0 4 * * *"]
 
-[vars]
-BUILD_CRON_ENABLED = "true"
-
 [observability.logs]
 enabled = true
 invocation_logs = true
@@ -18,5 +15,3 @@ name = "lede"
 [env.production.triggers]
 crons = ["0 4 * * *"]
 
-[env.production.vars]
-BUILD_CRON_ENABLED = "true"

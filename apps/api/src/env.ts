@@ -3,5 +3,4 @@ export interface Env {
   ANTHROPIC_API_KEY: string | undefined
   ADMIN_SECRET: string
   WEB_ORIGIN: string
-  BUILD_CRON_ENABLED: string
 }

@@ -54,10 +54,8 @@ function makeEnv() {
   return {
     DATABASE_URL: 'postgres://test',
     ANTHROPIC_API_KEY: 'key',
-    GEMINI_API_KEY: undefined,
     ADMIN_SECRET: 'test-secret',
     WEB_ORIGIN: 'http://localhost:5173',
-    BUILD_CRON_ENABLED: 'true',
   }
 }
 

@@ -19,9 +19,6 @@ app.use(
 )
 
 async function handleCron(_event: ScheduledEvent, env: Env): Promise<void> {
-  if (env.BUILD_CRON_ENABLED !== 'true') {
-    return
-  }
   await buildEdition(env)
 }
 
