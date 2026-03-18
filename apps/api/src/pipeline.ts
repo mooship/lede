@@ -2,7 +2,12 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { Category } from '@lede/api'
 import { createDb, schema } from '@lede/db'
 import { eq } from 'drizzle-orm'
-import { FEEDS, MAX_STORIES_PER_CATEGORY, MIN_STORIES_PER_CATEGORY, TARGET_STORY_COUNT } from './config.js'
+import {
+  FEEDS,
+  MAX_STORIES_PER_CATEGORY,
+  MIN_STORIES_PER_CATEGORY,
+  TARGET_STORY_COUNT,
+} from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchArticleText, fetchFeed } from './rss.js'
@@ -192,7 +197,9 @@ ${categoryBlocks.join('\n\n')}`
       }
     }
 
-    console.log(`[curate] Claude selected ${result.length} stories across ${numCategories} categories`)
+    console.log(
+      `[curate] Claude selected ${result.length} stories across ${numCategories} categories`,
+    )
     return result
   } catch (err) {
     console.warn('[curate] Claude failed, falling back:', err)

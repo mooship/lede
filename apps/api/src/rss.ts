@@ -89,7 +89,8 @@ export async function fetchArticleText(url: string): Promise<string> {
 export async function fetchFeed(url: string): Promise<RssItem[]> {
   const text = await ofetch<string, 'text'>(url, { responseType: 'text' })
   const feed = parser.parse(text)
-  const items: unknown[] = feed?.rss?.channel?.item ?? feed?.feed?.entry ?? feed?.['rdf:RDF']?.item ?? []
+  const items: unknown[] =
+    feed?.rss?.channel?.item ?? feed?.feed?.entry ?? feed?.['rdf:RDF']?.item ?? []
   return (Array.isArray(items) ? items : [items]).map((item: unknown) => {
     const i = item as Record<string, unknown>
     return {
