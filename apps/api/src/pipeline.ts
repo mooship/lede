@@ -1,8 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenAI } from '@google/genai'
 import type { Category } from '@lede/api'
 import { createDb, schema } from '@lede/db'
 import { eq } from 'drizzle-orm'
-import { FEEDS, STORIES_PER_CATEGORY, TARGET_STORY_COUNT } from './config.js'
+import { FEEDS, STORIES_PER_CATEGORY } from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
@@ -81,33 +82,43 @@ export function selectStories(
     selected.push(...sorted.slice(0, STORIES_PER_CATEGORY))
   }
 
-  if (selected.length <= TARGET_STORY_COUNT) {
-    return selected
-  }
-
-  return [...selected]
-    .sort((a, b) => b.description.length - a.description.length)
-    .slice(0, TARGET_STORY_COUNT)
+  return selected
 }
 
-async function summarise(item: RssItem, client: Anthropic | null): Promise<string> {
-  if (!client) {
-    return item.description || item.title
+const MAX_DESCRIPTION_CHARS = 3000
+
+const SUMMARISE_PROMPT = (item: RssItem) =>
+  `You are a news summariser. Write an approximately 150-word summary of the following article.\nBe factual and concise. Use British English spelling and grammar. Output only the summary, no preamble.\n\nTitle: ${item.title}\nDescription: ${item.description.slice(0, MAX_DESCRIPTION_CHARS)}`
+
+function createSummariser(env: Env): (item: RssItem) => Promise<string> {
+  if (env.ANTHROPIC_API_KEY) {
+    console.log('[summariser] using Anthropic claude-haiku-4-5-20251001')
+    const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
+    return async (item) => {
+      const msg = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
+      })
+      const block = msg.content[0]
+      return block?.type === 'text' ? block.text : ''
+    }
   }
 
-  const msg = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 400,
-    messages: [
-      {
-        role: 'user',
-        content: `You are a news summariser. Write an approximately 150-word summary of the following article.\nBe factual and concise. Use British English spelling and grammar. Output only the summary, no preamble.\n\nTitle: ${item.title}\nDescription: ${item.description.slice(0, 3000)}`,
-      },
-    ],
-  })
+  if (env.GEMINI_API_KEY) {
+    console.log('[summariser] using Gemini gemini-2.0-flash-lite')
+    const genai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY })
+    return async (item) => {
+      const res = await genai.models.generateContent({
+        model: 'gemini-2.0-flash-lite',
+        contents: SUMMARISE_PROMPT(item),
+      })
+      return res.text ?? ''
+    }
+  }
 
-  const block = msg.content[0]
-  return block?.type === 'text' ? block.text : ''
+  console.log('[summariser] no AI key set — using raw description')
+  return async (item) => item.description || item.title
 }
 
 export async function buildEdition(env: Env): Promise<void> {
@@ -142,11 +153,11 @@ export async function buildEdition(env: Env): Promise<void> {
   const unique = deduplicateByTitle(filtered)
   const selected = selectStories(unique)
 
-  const client = env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null
+  const summariser = createSummariser(env)
   const summarised = await Promise.all(
     selected.map(async (item) => ({
       ...item,
-      summary: await summarise(item, client),
+      summary: await summariser(item),
     })),
   )
 

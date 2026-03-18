@@ -60,7 +60,7 @@ CLERK_ADMIN_USER_ID=<clerk user id>
 WEB_ORIGIN=http://localhost:5173
 ```
 
-`apps/web/.env.local` — gitignored, add your dev Clerk key:
+`apps/web/.env.local` — gitignored, add your dev Clerk key (or put it directly in `.env.development` since that file is committed without secrets):
 ```
 VITE_CLERK_PUBLISHABLE_KEY=<clerk dev instance publishable key>
 ```
@@ -93,8 +93,8 @@ If deploying the web app via Cloudflare Pages (builds in CI), those same vars mu
 2. Fetch all feeds via `Promise.allSettled` (failures are logged and skipped)
 3. Filter junk — regex patterns for promo codes, coupons, sponsored content
 4. Deduplicate — normalise titles (lowercase, strip punctuation), drop substring matches
-5. Select — top 4 per category by `pubDate` desc, trim to 12 by dropping shortest descriptions
-6. Summarise — `Promise.all` → `claude-haiku-4-5-20251001`, ~150 words, British English
+5. Select — top 3 per category by `pubDate` desc (3×4 = 12, no trimming needed)
+6. Summarise — `Promise.all` → Anthropic `claude-haiku-4-5-20251001` if `ANTHROPIC_API_KEY` set, else Gemini `gemini-2.0-flash-lite` if `GEMINI_API_KEY` set, else raw description. ~150 words, British English
 7. Persist — sequential `db.insert` for `editions` then `stories` (neon-http has no transaction support)
 
 ### tRPC router (`apps/api/src/router.ts`)
@@ -123,12 +123,10 @@ Auth is Clerk JWT: `Authorization: Bearer <token>` header, verified in `context.
 
 | Category | Feeds |
 |---|---|
-| World / Politics | BBC World, Reuters worldNews (dead) |
-| Technology | Ars Technica, Wired |
-| Science | BBC Science, New Scientist |
-| Business / Economy | BBC Business, Reuters businessNews (dead) |
-
-The two Reuters feeds (`rss.reuters.com`) are currently dead — they fail silently via `Promise.allSettled`.
+| World / Politics | BBC World, The Guardian World, DW English, Al Jazeera |
+| Technology | Ars Technica, Wired, The Verge |
+| Science | BBC Science, New Scientist, Science Daily |
+| Business / Economy | BBC Business, The Guardian Business, DW Business |
 
 ## Key gotchas
 

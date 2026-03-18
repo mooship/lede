@@ -9,7 +9,7 @@ A daily news digest. Each morning at 06:00 SAST, a Cloudflare Worker fetches RSS
 | Worker | Cloudflare Workers + Hono + tRPC |
 | Database | Neon (PostgreSQL, serverless HTTP) |
 | ORM | Drizzle |
-| Summarisation | Anthropic Claude Haiku |
+| Summarisation | Anthropic Claude Haiku (prod) / Google Gemini Flash Lite (local dev) |
 | Auth | Clerk |
 | Frontend | React + Vite + TanStack Router |
 | Monorepo | Turborepo + npm workspaces |
@@ -32,7 +32,7 @@ npm install
 npm run dev   # wrangler dev on :8787 + vite on :5173
 ```
 
-`apps/api/.dev.vars` and `apps/web/.env.development` are already configured for local dev. The only thing you may need to add to `apps/api/.dev.vars` is `ANTHROPIC_API_KEY` if you want real AI summaries (without it, the raw RSS description is used as a fallback).
+`apps/api/.dev.vars` and `apps/web/.env.development` are already configured for local dev. For AI summaries in local dev, add a `GEMINI_API_KEY` to `apps/api/.dev.vars` (free tier, uses `gemini-2.0-flash-lite`). Set `ANTHROPIC_API_KEY` instead to use Claude Haiku. Without either key, the raw RSS description is used.
 
 ## Database migrations
 
