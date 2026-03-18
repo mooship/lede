@@ -132,8 +132,8 @@ function StoryPage() {
 
         <p
           style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
-            fontSize: '1.15rem',
+            fontFamily: "'Syne Variable', 'Syne', sans-serif",
+            fontSize: '1rem',
             color: '#d0d0d0',
             lineHeight: 1.85,
             margin: '0 0 2.5rem 0',
