@@ -65,6 +65,12 @@ Fill in `apps/api/.secrets.production.json` with production credentials, then:
 cd apps/api && npm run deploy
 ```
 
+`WEB_ORIGIN` can be a single URL or a comma-separated allowlist, for example:
+
+```text
+WEB_ORIGIN=https://lede.example.com,https://www.lede.example.com
+```
+
 This uploads the secrets to Cloudflare and deploys the worker in one step. The worker runs at `https://lede-api.<your-subdomain>.workers.dev` and is configured to rebuild the edition daily at 06:00 SAST via a cron trigger.
 
 ### Frontend (Cloudflare Pages)

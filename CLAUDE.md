@@ -135,7 +135,7 @@ Web tests (`apps/web`) use vitest + happy-dom with `@testing-library/react`. No 
 - **Wrangler local dev** does not have `DOMParser` — XML parsing uses `fast-xml-parser`
 - **Fontaine** is the `fontaine` npm package (unjs), not `vite-plugin-fontaine` (doesn't exist)
 - **PandaCSS** (`@park-ui/panda-preset` postinstall requires bun) — install with `--ignore-scripts`
-- **CORS** origin callback in Hono is `(_origin, c) => c.env.WEB_ORIGIN`, not `(c) => c.env.WEB_ORIGIN`
+- **CORS** origin callback in Hono uses `resolveCorsOrigin(origin, c.env.WEB_ORIGIN)` from `src/cors.ts`; `WEB_ORIGIN` supports comma-separated URLs
 - **routeTree.gen.ts** is regenerated on every `vite dev` start — commit it after adding new routes
 - Styling is React inline style objects only — no CSS framework active in web app
 

@@ -2,13 +2,14 @@ import { trpcServer } from '@hono/trpc-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { createContext } from './context.js'
+import { resolveCorsOrigin } from './cors.js'
 import type { Env } from './env.js'
 import { buildEdition } from './pipeline.js'
 import { appRouter } from './router.js'
 
 const app = new Hono<{ Bindings: Env }>()
 
-app.use('*', cors({ origin: (_origin, c) => c.env.WEB_ORIGIN }))
+app.use('*', cors({ origin: (origin, c) => resolveCorsOrigin(origin, c.env.WEB_ORIGIN) }))
 
 app.use(
   '/trpc/*',
