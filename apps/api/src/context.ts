@@ -20,7 +20,7 @@ export async function createContext(req: Request, env: Env): Promise<Context> {
     a.length === b.length &&
     (
       crypto.subtle as typeof crypto.subtle & {
-        timingSafeEqual(a: ArrayBuffer, b: ArrayBuffer): boolean
+        timingSafeEqual(a: ArrayBufferView, b: ArrayBufferView): boolean
       }
     ).timingSafeEqual(a, b)
   return { isAdmin, env }
