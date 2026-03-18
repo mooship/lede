@@ -3,16 +3,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { CategoryNav } from '../components/CategoryNav.js'
 import { Masthead } from '../components/Masthead.js'
+import { PageMessage } from '../components/PageMessage.js'
 import { StoryList } from '../components/StoryList.js'
 import { trpc } from '../trpc.js'
-
-function msUntilMidnightSAST() {
-  const now = new Date()
-  const midnight = new Date()
-  midnight.setUTCHours(22, 0, 0, 0)
-  if (midnight <= now) midnight.setUTCDate(midnight.getUTCDate() + 1)
-  return midnight.getTime() - now.getTime()
-}
+import { msUntilMidnightSAST } from '../utils.js'
 
 function IndexPage() {
   const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All')
@@ -21,71 +15,24 @@ function IndexPage() {
   })
 
   if (isLoading) {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          backgroundColor: '#0f0f0f',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <p
-          style={{
-            fontFamily: "'Syne Variable', 'Syne', sans-serif",
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            letterSpacing: '0.15em',
-            textTransform: 'uppercase',
-            color: '#444444',
-          }}
-        >
-          Loading edition…
-        </p>
-      </div>
-    )
+    return <PageMessage message="Loading edition…" variant="loading" />
   }
 
   if (error) {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          backgroundColor: '#0f0f0f',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <p
-          style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
-            fontSize: '1rem',
-            color: '#e85a3c',
-          }}
-        >
-          Something went wrong. Please try again.
-        </p>
-      </div>
-    )
+    return <PageMessage message="Something went wrong. Please try again." color="#e85a3c" />
   }
 
   if (data === null) {
     const nextBuild = new Date()
     nextBuild.setUTCHours(4, 0, 0, 0)
-    if (nextBuild <= new Date()) nextBuild.setUTCDate(nextBuild.getUTCDate() + 1)
+    if (nextBuild <= new Date()) {
+      nextBuild.setUTCDate(nextBuild.getUTCDate() + 1)
+    }
 
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f' }}>
         <Masthead />
-        <div
-          style={{
-            maxWidth: '1400px',
-            margin: '0 auto',
-            padding: '3rem 2rem',
-          }}
-        >
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '3rem 2rem' }}>
           <p
             style={{
               fontFamily: "'Instrument Serif', Georgia, serif",

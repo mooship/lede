@@ -1,19 +1,8 @@
-import { createFileRoute, Link, notFound } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { CATEGORY_ACCENT, CATEGORY_LABEL } from '../categories.js'
+import { PageMessage } from '../components/PageMessage.js'
 import { trpc } from '../trpc.js'
-
-const ACCENT: Record<string, string> = {
-  'World / Politics': '#e85a3c',
-  Technology: '#4a9eff',
-  Science: '#3ecf8e',
-  'Business / Economy': '#f5c542',
-}
-
-const LABEL: Record<string, string> = {
-  'World / Politics': 'World',
-  Technology: 'Technology',
-  Science: 'Science',
-  'Business / Economy': 'Business',
-}
+import { msUntilMidnightSAST } from '../utils.js'
 
 async function shareStory(title: string, url: string) {
   if (navigator.share) {
@@ -26,33 +15,23 @@ async function shareStory(title: string, url: string) {
 function StoryPage() {
   const { id } = Route.useParams()
   const { data, isLoading, error } = trpc.edition.today.useQuery(undefined, {
-    staleTime: 1000 * 60 * 60,
+    staleTime: msUntilMidnightSAST(),
   })
 
   if (isLoading) {
-    return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ fontFamily: "'Syne Variable', 'Syne', sans-serif", fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#444444' }}>
-          Loading…
-        </p>
-      </div>
-    )
+    return <PageMessage message="Loading…" variant="loading" />
   }
 
   if (error || !data) {
-    return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: '1rem', color: '#e85a3c' }}>
-          Something went wrong.
-        </p>
-      </div>
-    )
+    return <PageMessage message="Something went wrong." color="#e85a3c" />
   }
 
   const story = data.find((s) => s.id === id)
-  if (!story) throw notFound()
+  if (!story) {
+    return <PageMessage message="Story not found." />
+  }
 
-  const accent = ACCENT[story.category] ?? '#f0f0f0'
+  const accent = CATEGORY_ACCENT[story.category] ?? '#f0f0f0'
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f' }}>
@@ -87,7 +66,7 @@ function StoryPage() {
             padding: '3px 10px',
             lineHeight: 1.6,
           }}>
-            {LABEL[story.category] ?? story.category}
+            {CATEGORY_LABEL[story.category] ?? story.category}
           </span>
           <span style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: '0.8rem', color: '#555555', fontStyle: 'italic' }}>
             {story.source}

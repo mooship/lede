@@ -1,5 +1,6 @@
 import type { Category } from '@lede/api'
 import { useState } from 'react'
+import { CATEGORY_ACCENT } from '../categories.js'
 
 type Tab = Category | 'All'
 
@@ -13,13 +14,7 @@ const LABELS: Record<Tab, string> = {
   'Business / Economy': 'Business',
 }
 
-const ACCENT: Record<Tab, string> = {
-  All: '#f0f0f0',
-  'World / Politics': '#e85a3c',
-  Technology: '#4a9eff',
-  Science: '#3ecf8e',
-  'Business / Economy': '#f5c542',
-}
+const ACCENT: Record<Tab, string> = { All: '#f0f0f0', ...CATEGORY_ACCENT }
 
 type Props = {
   active: Tab

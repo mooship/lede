@@ -73,6 +73,6 @@ describe('selectStories', () => {
       })),
     )
     const selected = selectStories(items)
-    expect(selected.length).toBeLessThanOrEqual(10)
+    expect(selected.length).toBeLessThanOrEqual(12)
   })
 })

@@ -7,7 +7,7 @@ import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
 
-function todaySAST(): string {
+export function todaySAST(): string {
   const now = new Date()
   now.setUTCHours(now.getUTCHours() + 2)
   return now.toISOString().slice(0, 10)
@@ -39,14 +39,19 @@ export function normaliseTitle(title: string): string {
 export function deduplicateByTitle(
   items: Array<RssItem & { category: Category }>,
 ): Array<RssItem & { category: Category }> {
-  const seen: string[] = []
+  const seen = new Set<string>()
+  const seenList: string[] = []
   const result: Array<RssItem & { category: Category }> = []
 
   for (const item of items) {
     const norm = normaliseTitle(item.title)
-    const isDuplicate = seen.some((s) => s === norm || s.includes(norm) || norm.includes(s))
+    if (seen.has(norm)) {
+      continue
+    }
+    const isDuplicate = seenList.some((s) => s.includes(norm) || norm.includes(s))
     if (!isDuplicate) {
-      seen.push(norm)
+      seen.add(norm)
+      seenList.push(norm)
       result.push(item)
     }
   }
@@ -76,26 +81,27 @@ export function selectStories(
     selected.push(...sorted.slice(0, STORIES_PER_CATEGORY))
   }
 
-  if (selected.length <= TARGET_STORY_COUNT) return selected
+  if (selected.length <= TARGET_STORY_COUNT) {
+    return selected
+  }
 
   return [...selected]
     .sort((a, b) => b.description.length - a.description.length)
     .slice(0, TARGET_STORY_COUNT)
 }
 
-async function summarise(item: RssItem, env: Env): Promise<string> {
-  if (!env.ANTHROPIC_API_KEY) {
+async function summarise(item: RssItem, client: Anthropic | null): Promise<string> {
+  if (!client) {
     return item.description || item.title
   }
 
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
   const msg = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 400,
     messages: [
       {
         role: 'user',
-        content: `You are a news summariser. Write an approximately 150-word summary of the following article.\nBe factual and concise. Use British English spelling and grammar. Output only the summary, no preamble.\n\nTitle: ${item.title}\nDescription: ${item.description}`,
+        content: `You are a news summariser. Write an approximately 150-word summary of the following article.\nBe factual and concise. Use British English spelling and grammar. Output only the summary, no preamble.\n\nTitle: ${item.title}\nDescription: ${item.description.slice(0, 3000)}`,
       },
     ],
   })
@@ -111,7 +117,9 @@ export async function buildEdition(env: Env): Promise<void> {
   const existing = await db.query.editions.findFirst({
     where: eq(schema.editions.date, date),
   })
-  if (existing) return
+  if (existing) {
+    return
+  }
 
   const allItems: Array<RssItem & { category: Category }> = []
 
@@ -133,10 +141,12 @@ export async function buildEdition(env: Env): Promise<void> {
   const filtered = allItems.filter((item) => !isJunk(item.title))
   const unique = deduplicateByTitle(filtered)
   const selected = selectStories(unique)
+
+  const client = env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null
   const summarised = await Promise.all(
     selected.map(async (item) => ({
       ...item,
-      summary: await summarise(item, env),
+      summary: await summarise(item, client),
     })),
   )
 
@@ -149,7 +159,13 @@ export async function buildEdition(env: Env): Promise<void> {
       category: story.category,
       link: story.link,
       pubDate: story.pubDate || null,
-      source: new URL(story.link).hostname.replace(/^www\./, ''),
+      source: (() => {
+        try {
+          return story.link ? new URL(story.link).hostname.replace(/^www\./, '') : ''
+        } catch {
+          return ''
+        }
+      })(),
       position: i,
     })),
   )

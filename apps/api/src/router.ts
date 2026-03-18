@@ -3,7 +3,7 @@ import { createDb, schema } from '@lede/db'
 import { initTRPC, TRPCError } from '@trpc/server'
 import { eq } from 'drizzle-orm'
 import type { Context } from './context.js'
-import { buildEdition } from './pipeline.js'
+import { buildEdition, todaySAST } from './pipeline.js'
 
 const t = initTRPC.context<Context>().create()
 
@@ -19,15 +19,14 @@ const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 const editionRouter = router({
   today: publicProcedure.query(async ({ ctx }): Promise<Story[] | null> => {
     const db = createDb(ctx.env.DATABASE_URL)
-
-    const now = new Date()
-    now.setUTCHours(now.getUTCHours() + 2)
-    const date = now.toISOString().slice(0, 10)
+    const date = todaySAST()
 
     const edition = await db.query.editions.findFirst({
       where: eq(schema.editions.date, date),
     })
-    if (!edition) return null
+    if (!edition) {
+      return null
+    }
 
     const rows = await db
       .select()

@@ -1,20 +1,7 @@
 import type { Story } from '@lede/api'
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
-
-const ACCENT: Record<Story['category'], string> = {
-  'World / Politics': '#e85a3c',
-  Technology: '#4a9eff',
-  Science: '#3ecf8e',
-  'Business / Economy': '#f5c542',
-}
-
-const LABEL: Record<Story['category'], string> = {
-  'World / Politics': 'World',
-  Technology: 'Tech',
-  Science: 'Science',
-  'Business / Economy': 'Business',
-}
+import { CATEGORY_ACCENT, CATEGORY_LABEL } from '../categories.js'
 
 function hexToRgba(hex: string, alpha: number): string {
   const r = Number.parseInt(hex.slice(1, 3), 16)
@@ -27,7 +14,7 @@ type Props = { story: Story; position: number }
 
 export function StoryCard({ story, position }: Props) {
   const [hovered, setHovered] = useState(false)
-  const accent = ACCENT[story.category]
+  const accent = CATEGORY_ACCENT[story.category]
 
   return (
     <Link
@@ -74,7 +61,7 @@ export function StoryCard({ story, position }: Props) {
               lineHeight: 1.6,
             }}
           >
-            {LABEL[story.category]}
+            {CATEGORY_LABEL[story.category]}
           </span>
 
           <span

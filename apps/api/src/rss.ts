@@ -10,6 +10,37 @@ export type RssItem = {
 
 const parser = new XMLParser({ ignoreAttributes: false })
 
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function resolveText(value: unknown): string {
+  if (typeof value === 'string') {
+    return stripHtml(value)
+  }
+  if (typeof value === 'object' && value !== null) {
+    const text = (value as Record<string, unknown>)['#text']
+    return typeof text === 'string' ? stripHtml(text) : ''
+  }
+  return ''
+}
+
+function resolveLink(value: unknown): string {
+  if (typeof value === 'string') {
+    return value.trim()
+  }
+  if (typeof value === 'object' && value !== null) {
+    const obj = value as Record<string, unknown>
+    const href = obj['@_href']
+    if (typeof href === 'string') {
+      return href.trim()
+    }
+    const text = obj['#text']
+    return typeof text === 'string' ? text.trim() : ''
+  }
+  return ''
+}
+
 export async function fetchFeed(url: string): Promise<RssItem[]> {
   const text = await ofetch<string>(url, { responseType: 'text' })
   const feed = parser.parse(text)
@@ -17,10 +48,10 @@ export async function fetchFeed(url: string): Promise<RssItem[]> {
   return (Array.isArray(items) ? items : [items]).map((item: unknown) => {
     const i = item as Record<string, unknown>
     return {
-      title:       String(i['title'] ?? '').trim(),
-      description: String(i['description'] ?? i['summary'] ?? i['content'] ?? '').trim(),
-      link:        String(i['link'] ?? '').trim(),
-      pubDate:     String(i['pubDate'] ?? i['updated'] ?? '').trim(),
+      title:       resolveText(i['title']),
+      description: resolveText(i['content:encoded'] ?? i['description'] ?? i['summary'] ?? i['content']),
+      link:        resolveLink(i['link']),
+      pubDate:     resolveText(i['pubDate'] ?? i['updated'] ?? ''),
     }
   })
 }
