@@ -42,7 +42,7 @@ function resolveLink(value: unknown): string {
 }
 
 export async function fetchFeed(url: string): Promise<RssItem[]> {
-  const text = await ofetch<string>(url, { responseType: 'text' })
+  const text = await ofetch<string>(url, { responseType: 'text' as const })
   const feed = parser.parse(text)
   const items: unknown[] = feed?.rss?.channel?.item ?? feed?.feed?.entry ?? []
   return (Array.isArray(items) ? items : [items]).map((item: unknown) => {

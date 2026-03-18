@@ -54,3 +54,4 @@ const editionRouter = router({
 
 export const appRouter = router({ edition: editionRouter })
 export type AppRouter = typeof appRouter
+export const createCallerFactory = t.createCallerFactory

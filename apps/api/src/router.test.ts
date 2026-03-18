@@ -1,5 +1,5 @@
 import type { Story } from '@lede/api'
-import { createCallerFactory } from '@trpc/server'
+import { createCallerFactory } from './router.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@lede/db', () => ({
