@@ -1,0 +1,9 @@
+{
+  "extends": "@lede/tsconfig/worker.json",
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types"],
+    "rootDir": "src",
+    "noEmit": true
+  },
+  "include": ["src"]
+}

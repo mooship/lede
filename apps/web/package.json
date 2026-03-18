@@ -1,0 +1,43 @@
+{
+  "name": "@lede/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "lint": "biome check --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ark-ui/react": "latest",
+    "@clerk/react": "latest",
+    "@lede/api": "*",
+    "@park-ui/panda-preset": "latest",
+    "@tanstack/react-query": "latest",
+    "@tanstack/react-router": "latest",
+    "@trpc/client": "latest",
+    "@trpc/react-query": "latest",
+    "ofetch": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@lede/tsconfig": "*",
+    "@pandacss/dev": "latest",
+    "@tanstack/router-plugin": "latest",
+    "@testing-library/react": "latest",
+    "@testing-library/user-event": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "happy-dom": "latest",
+    "vite": "latest",
+    "@fontsource-variable/syne": "latest",
+    "@fontsource/instrument-serif": "latest",
+    "fontaine": "latest",
+    "vitest": "latest"
+  }
+}

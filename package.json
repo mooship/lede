@@ -1,0 +1,21 @@
+{
+  "name": "lede",
+  "private": true,
+  "packageManager": "npm@11.11.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "latest",
+    "turbo": "latest",
+    "typescript": "latest"
+  }
+}

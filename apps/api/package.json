@@ -1,0 +1,33 @@
+{
+  "name": "@lede/api-worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "tsc --noEmit",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "lint": "biome check --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "@clerk/backend": "latest",
+    "@hono/trpc-server": "latest",
+    "@lede/api": "*",
+    "@lede/db": "*",
+    "@neondatabase/serverless": "latest",
+    "@trpc/server": "latest",
+    "drizzle-orm": "latest",
+    "fast-xml-parser": "^5.5.6",
+    "hono": "latest",
+    "ofetch": "latest"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "latest",
+    "@lede/tsconfig": "*",
+    "vitest": "latest",
+    "wrangler": "latest"
+  }
+}

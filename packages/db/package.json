@@ -1,0 +1,20 @@
+{
+  "name": "@lede/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "latest",
+    "drizzle-orm": "latest"
+  },
+  "scripts": {
+    "lint": "biome check --write ."
+  },
+  "devDependencies": {
+    "@lede/tsconfig": "*",
+    "drizzle-kit": "latest"
+  }
+}
