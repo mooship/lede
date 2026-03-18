@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { Category } from '@lede/api'
 import { createDb, schema } from '@lede/db'
 import { eq } from 'drizzle-orm'
-import { FEEDS, STORIES_PER_CATEGORY } from './config.js'
+import { FEEDS, MAX_STORIES_PER_CATEGORY, MIN_STORIES_PER_CATEGORY, TARGET_STORY_COUNT } from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchArticleText, fetchFeed } from './rss.js'
@@ -110,100 +110,113 @@ export async function curateWithClaude(
   env: Env,
 ): Promise<Array<RssItem & { category: Category }>> {
   const byCategory = groupByCategory(scored)
+  const numCategories = byCategory.size
+  const fallbackPerCategory = Math.min(
+    MAX_STORIES_PER_CATEGORY,
+    Math.floor(TARGET_STORY_COUNT / numCategories),
+  )
 
   const fallbackSort = (items: ScoredItem[]): ScoredItem[] =>
     [...items].sort((a, b) => {
-      if (b.sourceScore !== a.sourceScore) {
-        return b.sourceScore - a.sourceScore
-      }
+      if (b.sourceScore !== a.sourceScore) return b.sourceScore - a.sourceScore
       const da = a.pubDate ? new Date(a.pubDate).getTime() : 0
       const db = b.pubDate ? new Date(b.pubDate).getTime() : 0
       return db - da
     })
 
-  if (!env.ANTHROPIC_API_KEY) {
+  const fallbackResult = (): Array<RssItem & { category: Category }> => {
     const result: Array<RssItem & { category: Category }> = []
-    for (const [category, bucket] of byCategory) {
-      result.push(...fallbackSort(bucket).slice(0, STORIES_PER_CATEGORY[category]))
+    for (const [, bucket] of byCategory) {
+      result.push(...fallbackSort(bucket).slice(0, fallbackPerCategory))
     }
     return result
   }
 
+  if (!env.ANTHROPIC_API_KEY) return fallbackResult()
+
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
 
-  const categoryResults = await Promise.allSettled(
-    Array.from(byCategory.entries()).map(async ([category, bucket]) => {
-      const limit = STORIES_PER_CATEGORY[category]
-      const storyList = bucket
-        .map((item, i) => `${i + 1}. [sources: ${item.sourceScore}] ${item.title}`)
-        .join('\n')
-
-      const prompt = `You are a news editor selecting the most significant stories for a daily digest.
-
-Category: ${category}
-Select up to ${limit} stories. Only include stories that are genuinely newsworthy — prefer stories covered by multiple sources and broadly significant over niche ones. Include fewer if the remaining stories are not worth publishing.
-Return ONLY a JSON array of the 1-based numbers you selected, e.g. [1, 3, 5, 7]. No other text.
-
-Stories:
-${storyList}`
-
-      try {
-        const msg = await client.messages.create({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 100,
-          messages: [{ role: 'user', content: prompt }],
-        })
-        const block = msg.content[0]
-        const text = block?.type === 'text' ? block.text : ''
-        const match = text.match(/\[[\d,\s]+\]/)
-
-        if (!match) {
-          console.warn(`[curate] no JSON array in Claude response for ${category}, falling back`)
-          return fallbackSort(bucket).slice(0, limit)
-        }
-
-        const indices: number[] = JSON.parse(match[0])
-        const seen = new Set<number>()
-        const validIndices = indices.filter((idx) => {
-          if (!Number.isInteger(idx) || idx < 1 || idx > bucket.length || seen.has(idx)) {
-            return false
-          }
-          seen.add(idx)
-          return true
-        })
-
-        const selected = validIndices.slice(0, limit).map((idx) => bucket[idx - 1] as ScoredItem)
-        console.log(`[curate] Claude selected ${selected.length}/${bucket.length} for ${category}`)
-        return selected
-      } catch (err) {
-        console.warn(`[curate] Claude failed for ${category}, falling back:`, err)
-        return fallbackSort(bucket).slice(0, limit)
-      }
-    }),
-  )
-
-  const result: Array<RssItem & { category: Category }> = []
-  for (const outcome of categoryResults) {
-    if (outcome.status === 'fulfilled') {
-      result.push(...outcome.value)
-    }
+  const allStories: ScoredItem[] = []
+  const categoryBlocks: string[] = []
+  for (const [category, bucket] of byCategory) {
+    const startIdx = allStories.length + 1
+    allStories.push(...bucket)
+    const lines = bucket.map(
+      (item, i) => `${startIdx + i}. [sources: ${item.sourceScore}] ${item.title}`,
+    )
+    categoryBlocks.push(`${category}:\n${lines.join('\n')}`)
   }
-  return result
+
+  const prompt = `You are a news editor selecting stories for a daily digest.
+
+Select exactly ${TARGET_STORY_COUNT} stories total. Rules:
+- At least ${MIN_STORIES_PER_CATEGORY} and at most ${MAX_STORIES_PER_CATEGORY} stories from each category
+- Prefer stories with higher source counts (covered by more outlets)
+- Only include genuinely newsworthy stories — you may pick fewer if the news warrants it
+
+Return ONLY a JSON array of story numbers, e.g. [1, 3, 5, 7]. No other text.
+
+${categoryBlocks.join('\n\n')}`
+
+  try {
+    const msg = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 150,
+      messages: [{ role: 'user', content: prompt }],
+    })
+    const block = msg.content[0]
+    const text = block?.type === 'text' ? block.text : ''
+    const match = text.match(/\[[\d,\s]+\]/)
+
+    if (!match) {
+      console.warn('[curate] no JSON array in Claude response, falling back')
+      return fallbackResult()
+    }
+
+    const indices: number[] = JSON.parse(match[0])
+    const seen = new Set<number>()
+    const validIndices = indices.filter((n) => {
+      if (!Number.isInteger(n) || n < 1 || n > allStories.length || seen.has(n)) return false
+      seen.add(n)
+      return true
+    })
+
+    const countByCategory = new Map<Category, number>()
+    const result: Array<RssItem & { category: Category }> = []
+    for (const n of validIndices) {
+      const story = allStories[n - 1] as ScoredItem
+      const count = countByCategory.get(story.category) ?? 0
+      if (count < MAX_STORIES_PER_CATEGORY) {
+        result.push(story)
+        countByCategory.set(story.category, count + 1)
+      }
+    }
+
+    console.log(`[curate] Claude selected ${result.length} stories across ${numCategories} categories`)
+    return result
+  } catch (err) {
+    console.warn('[curate] Claude failed, falling back:', err)
+    return fallbackResult()
+  }
 }
 
 export function selectStories(
   items: Array<RssItem & { category: Category }>,
 ): Array<RssItem & { category: Category }> {
   const byCategory = groupByCategory(items)
+  const perCategory = Math.min(
+    MAX_STORIES_PER_CATEGORY,
+    Math.floor(TARGET_STORY_COUNT / byCategory.size),
+  )
   const selected: Array<RssItem & { category: Category }> = []
 
-  for (const [category, bucket] of byCategory) {
+  for (const [, bucket] of byCategory) {
     const sorted = [...bucket].sort((a, b) => {
       const da = a.pubDate ? new Date(a.pubDate).getTime() : 0
       const db = b.pubDate ? new Date(b.pubDate).getTime() : 0
       return db - da
     })
-    selected.push(...sorted.slice(0, STORIES_PER_CATEGORY[category]))
+    selected.push(...sorted.slice(0, perCategory))
   }
 
   return selected

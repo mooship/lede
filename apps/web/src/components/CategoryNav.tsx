@@ -65,6 +65,7 @@ export function CategoryNav({ active, onChange }: Props) {
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           overscrollBehaviorX: 'contain',
+          overscrollBehaviorY: 'none',
           touchAction: 'pan-x',
         }}
       >

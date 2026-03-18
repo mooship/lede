@@ -1,6 +1,6 @@
 import type { Category } from '@lede/api'
 import { describe, expect, it, vi } from 'vitest'
-import { STORIES_PER_CATEGORY } from './config.js'
+import { MAX_STORIES_PER_CATEGORY } from './config.js'
 import {
   curateWithClaude,
   deduplicateByTitle,
@@ -198,7 +198,7 @@ describe('curateWithClaude', () => {
     const env = { ANTHROPIC_API_KEY: 'test-key' } as Parameters<typeof curateWithClaude>[1]
     const result = await curateWithClaude(scored, env)
     const techResults = result.filter((s) => s.category === 'Technology')
-    expect(techResults).toHaveLength(STORIES_PER_CATEGORY['Technology'])
+    expect(techResults.length).toBeLessThanOrEqual(MAX_STORIES_PER_CATEGORY)
     expect(techResults[0]?.title).toBe('Story 1')
   })
 
@@ -230,13 +230,13 @@ describe('curateWithClaude', () => {
     const result = await curateWithClaude(scored, env)
     expect(mockCreate).not.toHaveBeenCalled()
     const techResults = result.filter((s) => s.category === 'Technology')
-    expect(techResults).toHaveLength(STORIES_PER_CATEGORY['Technology'])
+    expect(techResults.length).toBeLessThanOrEqual(MAX_STORIES_PER_CATEGORY)
     expect(techResults[0]?.title).toBe('Story 1')
   })
 })
 
 describe('selectStories', () => {
-  it('picks top STORIES_PER_CATEGORY per category by pubDate desc', () => {
+  it('picks up to MAX_STORIES_PER_CATEGORY per category by pubDate desc', () => {
     const items: CategorisedItem[] = [
       makeItem('Tech 1', 'Technology', '2024-01-03T00:00:00Z'),
       makeItem('Tech 2', 'Technology', '2024-01-02T00:00:00Z'),

@@ -29,10 +29,6 @@ export const FEEDS: Record<Category, string[]> = {
   ],
 }
 
-export const STORIES_PER_CATEGORY: Record<Category, number> = {
-  'World / Politics': 6,
-  Technology: 5,
-  Science: 4,
-  'Business / Economy': 3,
-}
-export const TARGET_STORY_COUNT = Object.values(STORIES_PER_CATEGORY).reduce((a, b) => a + b, 0)
+export const MIN_STORIES_PER_CATEGORY = 2
+export const MAX_STORIES_PER_CATEGORY = 5
+export const TARGET_STORY_COUNT = 10
