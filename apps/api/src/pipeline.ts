@@ -27,6 +27,26 @@ const JUNK_PATTERNS = [
   /sponsored/i,
 ]
 
+export function isRecentEnough(pubDate: string | undefined | null, todayStr: string): boolean {
+  if (!pubDate) {
+    return true
+  }
+  const d = new Date(pubDate)
+  if (Number.isNaN(d.getTime())) {
+    return true
+  }
+  const articleDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(
+    d,
+  )
+  if (articleDate === todayStr) {
+    return true
+  }
+  const yesterday = new Date(todayStr)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayStr = yesterday.toISOString().slice(0, 10)
+  return articleDate === yesterdayStr
+}
+
 export function isJunk(title: string, description = ''): boolean {
   if (JUNK_PATTERNS.some((p) => p.test(title))) {
     return true
@@ -313,7 +333,10 @@ export async function buildEdition(env: Env): Promise<void> {
     ),
   )
 
-  const filtered = allItems.filter((item) => !isJunk(item.title, item.description))
+  const today = todaySAST()
+  const filtered = allItems.filter(
+    (item) => !isJunk(item.title, item.description) && isRecentEnough(item.pubDate, today),
+  )
   const unique = deduplicateByTitle(filtered)
   const scored = scoreBySourceOverlap(filtered, unique)
   const selected = await curateWithClaude(scored, env)
