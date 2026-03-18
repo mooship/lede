@@ -28,13 +28,19 @@ const JUNK_PATTERNS = [
 ]
 
 export function isRecentEnough(pubDate: string | undefined | null, todayStr: string): boolean {
-  if (!pubDate) return true
+  if (!pubDate) {
+    return true
+  }
   const d = new Date(pubDate)
-  if (Number.isNaN(d.getTime())) return true
+  if (Number.isNaN(d.getTime())) {
+    return true
+  }
   const articleDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(
     d,
   )
-  if (articleDate === todayStr) return true
+  if (articleDate === todayStr) {
+    return true
+  }
   const yesterday = new Date(todayStr)
   yesterday.setDate(yesterday.getDate() - 1)
   const yesterdayStr = yesterday.toISOString().slice(0, 10)
