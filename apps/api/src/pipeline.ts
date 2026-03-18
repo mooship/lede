@@ -162,6 +162,7 @@ Select exactly ${TARGET_STORY_COUNT} stories total. Rules:
 - At least ${MIN_STORIES_PER_CATEGORY} and at most ${MAX_STORIES_PER_CATEGORY} stories from each category
 - Prefer stories with higher source counts (covered by more outlets)
 - Only include genuinely newsworthy stories
+- Do NOT select two stories covering the same specific news event, even if their titles differ; pick the one with the higher source count
 
 Return ONLY a JSON array of story numbers, e.g. [1, 3, 5, 7]. No other text.
 
