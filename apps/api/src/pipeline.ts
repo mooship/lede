@@ -2,7 +2,12 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { Category } from '@lede/api'
 import { createDb, schema } from '@lede/db'
 import { eq } from 'drizzle-orm'
-import { FEEDS, MAX_STORIES_PER_CATEGORY, TARGET_STORY_COUNT } from './config.js'
+import {
+  FEEDS,
+  MAX_STORIES_PER_CATEGORY,
+  MIN_STORIES_PER_CATEGORY,
+  TARGET_STORY_COUNT,
+} from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
