@@ -1,5 +1,5 @@
-import type { Story } from '@tidel/api'
 import { render, screen } from '@testing-library/react'
+import type { Story } from '@tidel/api'
 import { vi } from 'vitest'
 
 vi.mock('@tanstack/react-router')

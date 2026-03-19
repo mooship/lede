@@ -1,6 +1,6 @@
-import type { Category } from '@tidel/api'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { Category } from '@tidel/api'
 import { useState } from 'react'
 import { CategoryNav } from '../components/CategoryNav.js'
 

@@ -57,8 +57,8 @@ function AboutPage() {
         <div className={sectionClass}>
           <h2 className={headingClass}>What is Tidel?</h2>
           <p className={bodyClass}>
-            Tidel is a free, ad-free daily news digest. Every morning at 06:00 South African time, it
-            automatically gathers the most significant stories from trusted sources around the
+            Tidel is a free, ad-free daily news digest. Every morning at 06:00 South African time,
+            it automatically gathers the most significant stories from trusted sources around the
             world, writes a concise summary of each one, and publishes a clean, readable edition —
             no notifications, no algorithms trying to keep you scrolling, no sponsored content.
           </p>

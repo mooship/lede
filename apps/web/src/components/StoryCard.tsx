@@ -1,5 +1,5 @@
-import type { Story } from '@tidel/api'
 import { Link } from '@tanstack/react-router'
+import type { Story } from '@tidel/api'
 import { css } from '../../styled-system/css'
 import { storyCard } from '../../styled-system/recipes'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'

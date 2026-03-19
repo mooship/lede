@@ -1,5 +1,5 @@
-import type { Category } from '@tidel/api'
 import { createFileRoute } from '@tanstack/react-router'
+import type { Category } from '@tidel/api'
 import { useState } from 'react'
 import { css } from '../../styled-system/css'
 import { CategoryNav } from '../components/CategoryNav.js'
