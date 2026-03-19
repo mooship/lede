@@ -24,5 +24,6 @@ export const FEEDS: Record<Category, string[]> = {
   Sport: ['https://feeds.bbci.co.uk/sport/rss.xml', 'https://www.espn.com/espn/rss/news'],
 }
 
+export const MIN_STORIES_PER_CATEGORY = 2
 export const MAX_STORIES_PER_CATEGORY = 5
 export const TARGET_STORY_COUNT = 12
