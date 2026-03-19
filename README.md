@@ -68,17 +68,17 @@ cd apps/api && npm run deploy
 `WEB_ORIGIN` can be a single URL or a comma-separated allowlist, for example:
 
 ```text
-WEB_ORIGIN=https://tidel.app,https://tidel.timothybrits.co.za,https://lede.timothybrits.co.za
+WEB_ORIGIN=https://tidel.app,https://tidel.timothybrits.co.za,https://tidel.timothybrits.workers.dev
 ```
 
-This uploads the secrets to Cloudflare and deploys the worker in one step. The worker runs at `https://lede.timothybrits.workers.dev` (also available at `https://api.tidel.app`) and is configured to rebuild the edition daily at 06:00 SAST via a cron trigger.
+This uploads the secrets to Cloudflare and deploys the worker in one step. The worker runs at `https://tidel.timothybrits.workers.dev` (also available at `https://api.tidel.app`) and is configured to rebuild the edition daily at 06:00 SAST via a cron trigger.
 
 ### Frontend (Cloudflare Pages)
 
 Fill in `apps/web/.env.production`:
 
 ```
-VITE_API_URL=https://lede.timothybrits.workers.dev
+VITE_API_URL=https://tidel.timothybrits.workers.dev
 VITE_APP_URL=https://your-domain.com
 ```
 

@@ -79,7 +79,7 @@ cd apps/api && npm run deploy
 
 Fill in `apps/web/.env.production` (gitignored) with production web vars:
 ```
-VITE_API_URL=https://lede.timothybrits.workers.dev
+VITE_API_URL=https://tidel.timothybrits.workers.dev
 VITE_APP_URL=https://your-domain.com
 ```
 
