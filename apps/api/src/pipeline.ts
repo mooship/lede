@@ -10,7 +10,7 @@ import {
 } from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
-import { fetchArticleText, fetchFeed } from './rss.js'
+import { fetchFeed } from './rss.js'
 
 export function todaySAST(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date())
@@ -341,24 +341,9 @@ export async function buildEdition(env: Env): Promise<void> {
   const scored = scoreBySourceOverlap(filtered, unique)
   const selected = await curateWithClaude(scored, env)
 
-  const enriched = await Promise.all(
-    selected.map(async (item) => {
-      if (!item.link) {
-        return item
-      }
-      try {
-        const articleText = await fetchArticleText(item.link)
-        return articleText.length > item.description.length ? { ...item, articleText } : item
-      } catch (err) {
-        console.error(`[enrich] failed to fetch article for "${item.title}":`, err)
-        return item
-      }
-    }),
-  )
-
   const summariser = createSummariser(env)
   const summarised = await Promise.all(
-    enriched.map(async (item) => {
+    selected.map(async (item) => {
       const { byline, summary } = await summariser(item)
       return { ...item, byline, summary }
     }),
