@@ -12,6 +12,10 @@ invocation_logs = true
 [env.production]
 name = "tidel"
 
+[[env.production.routes]]
+pattern = "api.tidel.app"
+custom_domain = true
+
 [env.production.triggers]
 crons = ["0 4 * * *"]
 
