@@ -255,7 +255,7 @@ const MAX_DESCRIPTION_CHARS = 3000
 const SUMMARISE_PROMPT = (item: RssItem) =>
   `You are a news summariser. Write the following for the article below. Use British English. No other text.
 
-TITLE: A clean, concise headline with no source attribution (remove any trailing " | Source", " - Source", " | News24", etc.).
+TITLE: A clean, publication-quality headline. Strip any source attribution from the start or end (e.g. "| News24", "- BBC Sport", "Reuters: ").
 BYLINE: A single factual sentence, max 25 words.
 SUMMARY: A factual, concise summary of approximately 150 words.
 
