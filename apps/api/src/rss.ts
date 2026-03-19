@@ -1,11 +1,9 @@
 import { XMLParser } from 'fast-xml-parser'
-import { parse } from 'node-html-parser'
 import { ofetch } from 'ofetch'
 
 export type RssItem = {
   title: string
   description: string
-  articleText?: string
   link: string
   pubDate: string
 }
@@ -71,34 +69,8 @@ function resolveLink(value: unknown): string {
   return ''
 }
 
-const FETCH_HEADERS = {
-  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-}
-
-export async function fetchArticleText(url: string): Promise<string> {
-  const html = await ofetch<string, 'text'>(url, {
-    responseType: 'text',
-    timeout: 5000,
-    headers: FETCH_HEADERS,
-  })
-  const root = parse(html)
-
-  for (const el of root.querySelectorAll('script, style, nav, header, footer, aside')) {
-    el.remove()
-  }
-
-  const container = root.querySelector('article') ?? root.querySelector('main') ?? root
-  const paragraphs = container
-    .querySelectorAll('p')
-    .map((p) => p.text.trim())
-    .filter((t) => t.length > 40)
-
-  return paragraphs.join('\n\n')
-}
-
 export async function fetchFeed(url: string): Promise<RssItem[]> {
-  const text = await ofetch<string, 'text'>(url, { responseType: 'text' })
+  const text = await ofetch<string, 'text'>(url, { responseType: 'text', timeout: 8000 })
   const feed = parser.parse(text)
   const items: unknown[] =
     feed?.rss?.channel?.item ?? feed?.feed?.entry ?? feed?.['rdf:RDF']?.item ?? []

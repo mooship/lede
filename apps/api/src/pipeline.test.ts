@@ -7,7 +7,6 @@ import {
   isRecentEnough,
   normaliseTitle,
   scoreBySourceOverlap,
-  selectStories,
 } from './pipeline.js'
 import type { RssItem } from './rss.js'
 
@@ -269,36 +268,5 @@ describe('curateWithClaude', () => {
     const techResults = result.filter((s) => s.category === 'Technology')
     expect(techResults.length).toBeLessThanOrEqual(MAX_STORIES_PER_CATEGORY)
     expect(techResults[0]?.title).toBe('Story 1')
-  })
-})
-
-describe('selectStories', () => {
-  it('picks up to MAX_STORIES_PER_CATEGORY per category by pubDate desc', () => {
-    const items: CategorisedItem[] = [
-      makeItem('Tech 1', 'Technology', '2024-01-03T00:00:00Z'),
-      makeItem('Tech 2', 'Technology', '2024-01-02T00:00:00Z'),
-      makeItem('Tech 3', 'Technology', '2024-01-01T00:00:00Z'),
-      makeItem('Tech 4', 'Technology', '2023-12-31T00:00:00Z'),
-      makeItem('World 1', 'World', '2024-01-03T00:00:00Z'),
-    ]
-    const selected = selectStories(items)
-    const techStories = selected.filter((s) => s.category === 'Technology')
-    expect(techStories).toHaveLength(4)
-    expect(techStories[0]?.title).toBe('Tech 1')
-  })
-
-  it('trims to TARGET_STORY_COUNT by dropping shortest descriptions when over limit', () => {
-    const categories: Category[] = ['World', 'Technology', 'Science', 'Business / Economy']
-    const items: CategorisedItem[] = categories.flatMap((cat) =>
-      Array.from({ length: 4 }, (_, i) => ({
-        title: `${cat} story ${i + 1}`,
-        category: cat,
-        pubDate: `2024-01-0${i + 1}T00:00:00Z`,
-        description: 'x'.repeat((i + 1) * 10),
-        link: 'https://example.com',
-      })),
-    )
-    const selected = selectStories(items)
-    expect(selected.length).toBeLessThanOrEqual(15)
   })
 })

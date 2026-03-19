@@ -12,8 +12,10 @@ import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
 
+const SAST_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' })
+
 export function todaySAST(): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date())
+  return SAST_DATE_FORMAT.format(new Date())
 }
 
 const JUNK_PATTERNS = [
@@ -35,9 +37,7 @@ export function isRecentEnough(pubDate: string | undefined | null, todayStr: str
   if (Number.isNaN(d.getTime())) {
     return true
   }
-  const articleDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(
-    d,
-  )
+  const articleDate = SAST_DATE_FORMAT.format(d)
   if (articleDate === todayStr) {
     return true
   }
@@ -233,28 +233,6 @@ ${categoryBlocks.join('\n\n')}`
   }
 }
 
-export function selectStories(
-  items: Array<RssItem & { category: Category }>,
-): Array<RssItem & { category: Category }> {
-  const byCategory = groupByCategory(items)
-  const perCategory = Math.min(
-    MAX_STORIES_PER_CATEGORY,
-    Math.floor(TARGET_STORY_COUNT / byCategory.size),
-  )
-  const selected: Array<RssItem & { category: Category }> = []
-
-  for (const [, bucket] of byCategory) {
-    const sorted = [...bucket].sort((a, b) => {
-      const da = a.pubDate ? new Date(a.pubDate).getTime() : 0
-      const db = b.pubDate ? new Date(b.pubDate).getTime() : 0
-      return db - da
-    })
-    selected.push(...sorted.slice(0, perCategory))
-  }
-
-  return selected
-}
-
 const MAX_DESCRIPTION_CHARS = 3000
 
 const SUMMARISE_PROMPT = (item: RssItem) =>
@@ -264,7 +242,7 @@ BYLINE: A single factual sentence, max 25 words.
 SUMMARY: A factual, concise summary of approximately 150 words.
 
 Title: ${item.title}
-Article: ${(item.articleText ?? item.description).slice(0, MAX_DESCRIPTION_CHARS)}`
+Article: ${item.description.slice(0, MAX_DESCRIPTION_CHARS)}`
 
 type SummariseResult = { byline: string; summary: string }
 
@@ -279,7 +257,7 @@ function parseSummariseResponse(text: string, fallbackByline: string): Summarise
 function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult> {
   const raw = async (item: RssItem): Promise<SummariseResult> => ({
     byline: item.description || item.title,
-    summary: item.articleText || item.description || item.title,
+    summary: item.description || item.title,
   })
 
   if (env.ANTHROPIC_API_KEY) {
@@ -317,26 +295,25 @@ export async function buildEdition(env: Env): Promise<void> {
     return
   }
 
-  const allItems: Array<RssItem & { category: Category }> = []
-
-  await Promise.allSettled(
-    Object.entries(FEEDS).flatMap(([category, urls]) =>
-      urls.map(async (url) => {
-        try {
-          const items = await fetchFeed(url)
-          for (const item of items) {
-            allItems.push({ ...item, category: category as Category })
-          }
-        } catch (err) {
-          console.error(`Failed to fetch ${url}:`, err)
-        }
-      }),
-    ),
+  const feedEntries = Object.entries(FEEDS).flatMap(([category, urls]) =>
+    urls.map((url) => ({ url, category: category as Category })),
   )
 
-  const today = todaySAST()
+  const feedResults = await Promise.allSettled(feedEntries.map(({ url }) => fetchFeed(url)))
+
+  const allItems: Array<RssItem & { category: Category }> = []
+  for (const [i, result] of feedResults.entries()) {
+    if (result.status === 'fulfilled') {
+      for (const item of result.value) {
+        allItems.push({ ...item, category: feedEntries[i]!.category })
+      }
+    } else {
+      console.error(`Failed to fetch ${feedEntries[i]!.url}:`, result.reason)
+    }
+  }
+
   const filtered = allItems.filter(
-    (item) => !isJunk(item.title, item.description) && isRecentEnough(item.pubDate, today),
+    (item) => !isJunk(item.title, item.description) && isRecentEnough(item.pubDate, date),
   )
   const unique = deduplicateByTitle(filtered)
   const scored = scoreBySourceOverlap(filtered, unique)
