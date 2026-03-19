@@ -4,7 +4,7 @@
 
 Please do not open a public issue for security vulnerabilities.
 
-Instead, email [contact@timothybrits.co.za](mailto:contact@timothybrits.co.za) with:
+Instead, email [contact@tidel.app](mailto:contact@tidel.app) with:
 
 - A description of the vulnerability and its potential impact
 - Steps to reproduce or a proof of concept

@@ -20,7 +20,7 @@ We are committed to making participation in this project a welcoming experience 
 
 ## Enforcement
 
-Instances of unacceptable behaviour may be reported to [contact@timothybrits.co.za](mailto:contact@timothybrits.co.za). All reports will be reviewed promptly and handled with discretion.
+Instances of unacceptable behaviour may be reported to [contact@tidel.app](mailto:contact@tidel.app). All reports will be reviewed promptly and handled with discretion.
 
 Contributors who violate this code of conduct may be banned from the project at the maintainer's discretion.
 

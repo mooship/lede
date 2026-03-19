@@ -29,7 +29,7 @@ const linkClass = css({ color: 'textMuted', textDecoration: 'none' })
 const EXTERNAL_LINKS = [
   { label: 'Source', href: 'https://github.com/mooship/tidel' },
   { label: 'AGPL-3.0', href: 'https://opensource.org/license/agpl-3-0-only' },
-  { label: 'Feedback', href: 'mailto:contact@timothybrits.co.za' },
+  { label: 'Feedback', href: 'mailto:contact@tidel.app' },
   { label: 'Report a bug', href: 'https://github.com/mooship/tidel/issues/new' },
 ]
 
