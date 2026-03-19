@@ -57,11 +57,16 @@ cd packages/db && npx drizzle-kit migrate
 ```
 DATABASE_URL=<neon dev branch connection string>
 ANTHROPIC_API_KEY=<optional — used for summarisation>
-ADMIN_SECRET=<any strong random string>
+ADMIN_SECRET=<strong random string, min 32 chars — enforced by Zod at runtime>
 WEB_ORIGIN=http://localhost:5173
 ```
 
-`apps/web/.env.development` is committed and sets `VITE_API_URL=http://localhost:8787`.
+`apps/web/.env.development` is committed and sets:
+```
+VITE_API_URL=http://localhost:8787
+VITE_APP_URL=http://localhost:5173
+```
+Use `apps/api/.dev.vars.example` as a reference if you need to recreate `.dev.vars`.
 
 ### Production
 
@@ -75,6 +80,7 @@ cd apps/api && npm run deploy
 Fill in `apps/web/.env.production` (gitignored) with production web vars:
 ```
 VITE_API_URL=https://lede.timothybrits.workers.dev
+VITE_APP_URL=https://your-domain.com
 ```
 
 If deploying the web app via Cloudflare Pages (builds in CI), those same vars must also be set in the Pages dashboard — local `.env.production` only applies to local builds.
@@ -94,7 +100,7 @@ If deploying the web app via Cloudflare Pages (builds in CI), those same vars mu
 
 ### tRPC router (`apps/api/src/router.ts`)
 
-- `edition.today` — public query, returns `Story[] | null` for today's SAST date
+- `edition.today` — public query, returns `Story[] | null` for today's SAST date; has a 5 s timeout guard
 - `edition.build` — protected mutation, checks Bearer token against `ADMIN_SECRET`
 
 Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified in `context.ts` using `crypto.subtle.timingSafeEqual`.
@@ -114,7 +120,7 @@ Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified
 ### DB schema (`packages/db/src/schema.ts`)
 
 - `editions(date PK, built_at)`
-- `stories(id uuid PK, edition_date FK, title, description, summary, category, link, pub_date, source, position)`
+- `stories(id uuid PK, edition_date FK, title, description, summary, category, link, pub_date, source, position)` — indexes on `edition_date` and `category`; unique constraint on `link`
 
 `createDb(connectionString)` uses `drizzle-orm/neon-http` — no transactions, no connection pooling.
 
@@ -145,6 +151,7 @@ Web tests (`apps/web`) use vitest + happy-dom with `@testing-library/react`. No 
 - **PandaCSS token names** use camelCase in config but become kebab-case CSS vars (e.g. `textMuted` → `--colors-text-muted`). Use the token name in `css()` calls and the CSS var string in `style={}` props via `CATEGORY_CSS_VAR`.
 - **PandaCSS `styled-system/`** is gitignored and generated at build time — `panda codegen --silent` runs before `tsc` and `vite` in every script. The `prepare` hook also runs it on `npm install`.
 - **CORS** origin callback in Hono uses `resolveCorsOrigin(origin, c.env.WEB_ORIGIN)` from `src/cors.ts`; `WEB_ORIGIN` supports comma-separated URLs
+- **`ADMIN_SECRET`** must be at least 32 characters — enforced by Zod (`validateEnv`) on every request
 - **routeTree.gen.ts** is regenerated on every `vite dev` start — commit it after adding new routes
 
 ## Library docs

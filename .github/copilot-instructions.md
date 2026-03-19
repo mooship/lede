@@ -58,7 +58,7 @@ Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`
 
 ### tRPC Router (`apps/api/src/router.ts`)
 
-- `edition.today` — public query; returns today's stories or the latest edition if today hasn't been built
+- `edition.today` — public query; returns today's stories or the latest edition if today hasn't been built; has a 5 s timeout guard
 - `edition.build` — protected mutation; requires `Authorization: Bearer <ADMIN_SECRET>`
 
 Auth uses `crypto.subtle.timingSafeEqual` in `context.ts`.
@@ -72,11 +72,11 @@ Auth uses `crypto.subtle.timingSafeEqual` in `context.ts`.
 
 ## Environment Variables
 
-**`apps/api/.dev.vars`** (gitignored, for local wrangler dev):
+**`apps/api/.dev.vars`** (gitignored, for local wrangler dev — copy from `.dev.vars.example`):
 ```
 DATABASE_URL=<neon dev branch connection string>
 ANTHROPIC_API_KEY=<optional>
-ADMIN_SECRET=<any strong random string>
+ADMIN_SECRET=<strong random string, min 32 chars — enforced by Zod at runtime>
 WEB_ORIGIN=http://localhost:5173
 ```
 `ANTHROPIC_API_KEY` is optional — the pipeline falls back to raw RSS descriptions without it.
@@ -84,13 +84,14 @@ WEB_ORIGIN=http://localhost:5173
 **`apps/web/.env.development`** (committed):
 ```
 VITE_API_URL=http://localhost:8787
+VITE_APP_URL=http://localhost:5173
 ```
 
 ## DB Schema
 
 Two tables (`packages/db/src/schema.ts`):
 - `editions(date PK, built_at)` — one row per daily edition
-- `stories(id uuid PK, edition_date FK → editions.date, title, description, summary, category, link, pub_date, source, position)` — cascade-deletes with edition
+- `stories(id uuid PK, edition_date FK → editions.date, title, description, summary, category, link, pub_date, source, position)` — cascade-deletes with edition; indexes on `edition_date` and `category`; unique constraint on `link`
 
 `createDb(connectionString)` uses `drizzle-orm/neon-http`. No transactions, no connection pooling.
 
@@ -117,6 +118,7 @@ Two tables (`packages/db/src/schema.ts`):
 - **Neon HTTP** does not support transactions — always use sequential inserts
 - **Wrangler local dev** lacks `DOMParser` — XML parsing uses `fast-xml-parser`, not browser APIs
 - **CORS** origin in Hono uses `resolveCorsOrigin(origin, c.env.WEB_ORIGIN)`; `WEB_ORIGIN` supports comma-separated URLs
+- **`ADMIN_SECRET`** must be at least 32 characters — enforced by Zod (`validateEnv`) on every request
 - **Cloudflare subrequest budget** (free plan: 50/invocation): 14 RSS feeds + 12 Claude summarise calls + 1 curation call + 3 Neon calls ≈ 30 total — don't add feeds without checking this
 
 ## Library Docs

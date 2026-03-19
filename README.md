@@ -32,7 +32,7 @@ npm install
 npm run dev   # wrangler dev on :8787 + vite on :5173
 ```
 
-`apps/api/.dev.vars` and `apps/web/.env.development` are already configured for local dev. Add an `ANTHROPIC_API_KEY` to `apps/api/.dev.vars` to enable Claude Sonnet summaries. Without it, the raw RSS description is used as the summary.
+`apps/api/.dev.vars` and `apps/web/.env.development` are already configured for local dev. Use `apps/api/.dev.vars.example` as a reference if you need to recreate `.dev.vars`. Add an `ANTHROPIC_API_KEY` to `apps/api/.dev.vars` to enable Claude Sonnet summaries. Without it, the raw RSS description is used as the summary.
 
 ## Database migrations
 
@@ -79,6 +79,7 @@ Fill in `apps/web/.env.production`:
 
 ```
 VITE_API_URL=https://lede.timothybrits.workers.dev
+VITE_APP_URL=https://your-domain.com
 ```
 
 Then build and deploy:
