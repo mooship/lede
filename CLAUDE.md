@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What is Lede
 
-A daily news digest that fetches RSS feeds across four categories, summarises each story with Claude Haiku, and publishes a ~10-story edition per day (2–5 per category, Claude decides the split). One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
+A daily news digest that fetches RSS feeds across four categories, summarises each story with Claude Haiku, and publishes a ~12-story edition per day (2–5 per category, Claude decides the split). One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
 
 ## Monorepo structure
 

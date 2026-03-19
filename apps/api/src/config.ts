@@ -31,4 +31,4 @@ export const FEEDS: Record<Category, string[]> = {
 
 export const MIN_STORIES_PER_CATEGORY = 2
 export const MAX_STORIES_PER_CATEGORY = 5
-export const TARGET_STORY_COUNT = 10
+export const TARGET_STORY_COUNT = 12
