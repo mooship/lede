@@ -4,12 +4,11 @@ import { StoryCard } from './StoryCard.js'
 
 type Props = { stories: Story[] }
 
-const wrapClass = css({ width: '100%', borderTop: '1px solid', borderColor: 'border' })
+const wrapClass = css({ width: '100%' })
 
 const gridClass = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-  gap: '6',
 })
 
 export function StoryList({ stories }: Props) {

@@ -35,8 +35,6 @@ export default defineConfig({
           className: 'storyCard',
           base: {
             bg: 'surface',
-            borderLeftWidth: '3px',
-            borderLeftStyle: 'solid',
             cursor: 'pointer',
             padding: '6',
             minHeight: '120px',
@@ -51,11 +49,11 @@ export default defineConfig({
           },
           variants: {
             category: {
-              World: { borderLeftColor: 'world' },
-              Technology: { borderLeftColor: 'tech' },
-              Science: { borderLeftColor: 'science' },
-              'Business / Economy': { borderLeftColor: 'business' },
-              Sport: { borderLeftColor: 'sport' },
+              World: {},
+              Technology: {},
+              Science: {},
+              'Business / Economy': {},
+              Sport: {},
             },
           },
         },
