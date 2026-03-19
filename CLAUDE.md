@@ -106,6 +106,10 @@ Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified
 - tRPC client batches requests via `httpBatchLink` to `VITE_API_URL/trpc`
 - `trpc.edition.today.useQuery()` with `staleTime: 1 hour` — all story routes share this cached fetch
 - Story detail page at `/story/$id` finds the story by ID from the same cached query result
+- **Styling**: PandaCSS with a custom token set. Use `css()` from `../../styled-system/css` for all styles. `styled-system/` is generated — run `panda codegen --silent` (or just `npm run dev`/`npm run build`, which do it automatically). Do not edit anything inside `styled-system/`.
+- **Tokens**: defined in `apps/web/panda.config.ts` — colors (`bg`, `surface`, `border`, `textPrimary`, `textMuted`, etc.) and fonts (`display` = Syne, `body` = Instrument Serif). Category accent colours are `world`, `tech`, `science`, `business`, `sport`.
+- **`CATEGORY_CSS_VAR`** in `src/categories.ts` maps each category to its CSS variable string (e.g. `var(--colors-world)`) for use in `style={}` props where a dynamic runtime value is needed alongside a static `className`.
+- **`storyCard` recipe** in `panda.config.ts` handles hover state and category border colour — no hover `useState` needed in cards.
 
 ### DB schema (`packages/db/src/schema.ts`)
 
@@ -138,10 +142,10 @@ Web tests (`apps/web`) use vitest + happy-dom with `@testing-library/react`. No 
 - **Neon HTTP driver** does not support transactions — use sequential inserts
 - **Wrangler local dev** does not have `DOMParser` — XML parsing uses `fast-xml-parser`
 - **Fontaine** is the `fontaine` npm package (unjs), not `vite-plugin-fontaine` (doesn't exist)
-- **PandaCSS** (`@park-ui/panda-preset` postinstall requires bun) — install with `--ignore-scripts`
+- **PandaCSS token names** use camelCase in config but become kebab-case CSS vars (e.g. `textMuted` → `--colors-text-muted`). Use the token name in `css()` calls and the CSS var string in `style={}` props via `CATEGORY_CSS_VAR`.
+- **PandaCSS `styled-system/`** is gitignored and generated at build time — `panda codegen --silent` runs before `tsc` and `vite` in every script. The `prepare` hook also runs it on `npm install`.
 - **CORS** origin callback in Hono uses `resolveCorsOrigin(origin, c.env.WEB_ORIGIN)` from `src/cors.ts`; `WEB_ORIGIN` supports comma-separated URLs
 - **routeTree.gen.ts** is regenerated on every `vite dev` start — commit it after adding new routes
-- Styling is React inline style objects only — no CSS framework active in web app
 
 ## Linter / formatter
 

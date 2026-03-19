@@ -9,8 +9,7 @@ const wrapClass = css({ width: '100%', borderTop: '1px solid', borderColor: 'bor
 const gridClass = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-  rowGap: 'px',
-  bg: 'border',
+  gap: '6',
 })
 
 export function StoryList({ stories }: Props) {
