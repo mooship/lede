@@ -263,7 +263,7 @@ function AdminStatus({ secret }: { secret: string }) {
             className={metaValueClass}
             style={{ color: failCount > 0 ? 'var(--colors-business)' : undefined }}
           >
-            {okCount} / {feedEntries.length}
+            {data.feedStats ? `${okCount} / ${feedEntries.length}` : '—'}
           </div>
         </div>
       </div>
