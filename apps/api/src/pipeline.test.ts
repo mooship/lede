@@ -1,5 +1,5 @@
-import type { Category } from '@lede/api'
-import { createDb } from '@lede/db'
+import type { Category } from '@elar/api'
+import { createDb } from '@elar/db'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MAX_STORIES_PER_CATEGORY } from './config.js'
 import type { Env } from './env.js'
@@ -37,7 +37,7 @@ const mockDb = {
   delete: vi.fn(() => ({ where: mockDeleteWhere })),
 }
 
-vi.mock('@lede/db', () => ({
+vi.mock('@elar/db', () => ({
   createDb: vi.fn(),
   schema: { editions: {}, stories: {} },
 }))

@@ -1,5 +1,5 @@
 {
-  "name": "@lede/api",
+  "name": "@elar/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,6 +13,6 @@
     "lint": "biome check --write ."
   },
   "devDependencies": {
-    "@lede/tsconfig": "*"
+    "@elar/tsconfig": "*"
   }
 }

@@ -1,5 +1,5 @@
-import type { Story } from '@lede/api'
-import { createDb, schema } from '@lede/db'
+import type { Story } from '@elar/api'
+import { createDb, schema } from '@elar/db'
 import { initTRPC, TRPCError } from '@trpc/server'
 import { desc, eq } from 'drizzle-orm'
 import type { Context } from './context.js'

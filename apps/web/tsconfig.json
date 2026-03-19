@@ -1,5 +1,5 @@
 {
-  "extends": "@lede/tsconfig/react.json",
+  "extends": "@elar/tsconfig/react.json",
   "compilerOptions": {
     "noEmit": true,
     "types": ["vite/client", "vitest/globals"]

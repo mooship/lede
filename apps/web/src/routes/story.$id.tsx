@@ -128,9 +128,18 @@ function StoryPage() {
   }
 
   const accentVar = CATEGORY_CSS_VAR[story.category] ?? 'var(--colors-text-primary)'
+  const pageTitle = `${story.title} — Elar`
+  const pageDescription = story.description ?? story.summary
 
   return (
     <div className={pageClass}>
+      <title>{pageTitle}</title>
+      <meta name="description" content={pageDescription} />
+      <meta property="og:title" content={pageTitle} />
+      <meta property="og:description" content={pageDescription} />
+      <meta name="twitter:title" content={pageTitle} />
+      <meta name="twitter:description" content={pageDescription} />
+
       <PageHeader />
 
       <main className={mainClass}>

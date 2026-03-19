@@ -36,7 +36,7 @@ body:
     id: url
     attributes:
       label: URL (if applicable)
-      placeholder: https://lede.timothybrits.co.za/...
+      placeholder: https://elar.app/...
 
   - type: textarea
     id: context

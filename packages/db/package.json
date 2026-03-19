@@ -1,5 +1,5 @@
 {
-  "name": "@lede/db",
+  "name": "@elar/db",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,7 @@
     "lint": "biome check --write ."
   },
   "devDependencies": {
-    "@lede/tsconfig": "*",
+    "@elar/tsconfig": "*",
     "drizzle-kit": "latest"
   }
 }

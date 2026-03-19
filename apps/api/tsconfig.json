@@ -1,5 +1,5 @@
 {
-  "extends": "@lede/tsconfig/worker.json",
+  "extends": "@elar/tsconfig/worker.json",
   "compilerOptions": {
     "types": ["@cloudflare/workers-types"],
     "rootDir": "src",

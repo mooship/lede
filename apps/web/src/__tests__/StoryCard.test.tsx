@@ -1,4 +1,4 @@
-import type { Story } from '@lede/api'
+import type { Story } from '@elar/api'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 import { StoryCard } from '../components/StoryCard.js'

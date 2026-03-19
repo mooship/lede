@@ -1,8 +1,8 @@
-import type { Story } from '@lede/api'
+import type { Story } from '@elar/api'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createCallerFactory } from './router.js'
 
-vi.mock('@lede/db', () => ({
+vi.mock('@elar/db', () => ({
   createDb: vi.fn(() => mockDb),
   schema: {
     editions: { date: 'date' },

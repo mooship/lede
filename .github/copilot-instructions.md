@@ -1,6 +1,6 @@
-# Copilot Instructions — Lede
+# Copilot Instructions — Elar
 
-Lede is a daily news digest monorepo. A Cloudflare Worker fetches RSS feeds, curates ~12 stories with Claude Sonnet, and persists them to Neon PostgreSQL. A React/Vite frontend reads from the same API via tRPC.
+Elar is a daily news digest monorepo. A Cloudflare Worker fetches RSS feeds, curates ~12 stories with Claude Sonnet, and persists them to Neon PostgreSQL. A React/Vite frontend reads from the same API via tRPC.
 
 ## Commands
 
@@ -43,7 +43,7 @@ apps/web            — React + Vite + TanStack Router frontend
 
 Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`.
 
-`apps/web` depends on `@lede/api` for shared types but never imports from `@lede/db`.
+`apps/web` depends on `@elar/api` for shared types but never imports from `@elar/db`.
 
 ### Pipeline (`apps/api/src/pipeline.ts`)
 

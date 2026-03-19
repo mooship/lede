@@ -27,10 +27,10 @@ const linksClass = css({
 const linkClass = css({ color: 'textMuted', textDecoration: 'none' })
 
 const EXTERNAL_LINKS = [
-  { label: 'Source', href: 'https://github.com/mooship/lede' },
+  { label: 'Source', href: 'https://github.com/mooship/elar' },
   { label: 'AGPL-3.0', href: 'https://opensource.org/license/agpl-3-0-only' },
   { label: 'Feedback', href: 'mailto:contact@timothybrits.co.za' },
-  { label: 'Report a bug', href: 'https://github.com/mooship/lede/issues/new' },
+  { label: 'Report a bug', href: 'https://github.com/mooship/elar/issues/new' },
 ]
 
 export function Footer() {

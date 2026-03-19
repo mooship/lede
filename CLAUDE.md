@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What is Lede
+## What is Elar
 
 A daily news digest that fetches RSS feeds across five categories, summarises each story with Claude Sonnet, and publishes a ~12-story edition per day (2–5 per category, Claude decides the split). One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
 
@@ -74,7 +74,7 @@ cd apps/api && npm run deploy
 
 Fill in `apps/web/.env.production` (gitignored) with production web vars:
 ```
-VITE_API_URL=https://lede-api.<your-subdomain>.workers.dev
+VITE_API_URL=https://lede.timothybrits.workers.dev
 ```
 
 If deploying the web app via Cloudflare Pages (builds in CI), those same vars must also be set in the Pages dashboard — local `.env.production` only applies to local builds.

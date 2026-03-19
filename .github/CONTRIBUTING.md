@@ -1,4 +1,4 @@
-# Contributing to Lede
+# Contributing to Elar
 
 Thanks for your interest in contributing. Here's what you need to know.
 

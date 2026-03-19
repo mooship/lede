@@ -1,4 +1,4 @@
-import type { Category } from '@lede/api'
+import type { Category } from '@elar/api'
 
 export const CATEGORY_CSS_VAR: Record<Category, string> = {
   World: 'var(--colors-world)',

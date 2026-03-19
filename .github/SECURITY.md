@@ -16,7 +16,7 @@ You can expect an acknowledgement within 48 hours and a resolution or update wit
 
 | In scope | Out of scope |
 |---|---|
-| The Lede web app (`lede.timothybrits.co.za`) | Third-party news sources linked from the site |
+| The Elar web app (`elar.app`, `elar.timothybrits.co.za`, `lede.timothybrits.co.za`) | Third-party news sources linked from the site |
 | The API worker | The Neon or Cloudflare infrastructure itself |
 | Authentication and authorisation logic | Issues requiring physical access |
 

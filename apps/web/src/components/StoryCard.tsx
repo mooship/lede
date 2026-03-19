@@ -1,4 +1,4 @@
-import type { Story } from '@lede/api'
+import type { Story } from '@elar/api'
 import { Link } from '@tanstack/react-router'
 import { css } from '../../styled-system/css'
 import { storyCard } from '../../styled-system/recipes'

@@ -1,4 +1,4 @@
-import type { Category } from '@lede/api'
+import type { Category } from '@elar/api'
 import { useRef, useState } from 'react'
 import { css } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR } from '../categories.js'

@@ -1,5 +1,5 @@
 {
-  "name": "@lede/api-worker",
+  "name": "@elar/api-worker",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,8 +14,8 @@
   "dependencies": {
     "@anthropic-ai/sdk": "latest",
     "@hono/trpc-server": "latest",
-    "@lede/api": "*",
-    "@lede/db": "*",
+    "@elar/api": "*",
+    "@elar/db": "*",
     "@neondatabase/serverless": "latest",
     "@trpc/server": "latest",
     "drizzle-orm": "latest",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
-    "@lede/tsconfig": "*",
+    "@elar/tsconfig": "*",
     "vitest": "latest",
     "wrangler": "latest"
   }

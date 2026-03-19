@@ -1,5 +1,5 @@
 {
-  "name": "lede",
+  "name": "elar",
   "private": true,
   "packageManager": "npm@11.12.0",
   "workspaces": [

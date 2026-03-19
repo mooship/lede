@@ -65,7 +65,7 @@ export function Masthead() {
     <header className={headerClass}>
       <div className={innerClass}>
         <div>
-          <h1 className={titleClass}>Lede</h1>
+          <h1 className={titleClass}>Elar</h1>
           <p className={subtitleClass}>Daily Edition</p>
         </div>
         <div className={dateClass}>
