@@ -178,12 +178,10 @@ export async function curateWithClaude(
 
   const prompt = `You are a news editor selecting stories for a daily digest.
 
-Select up to ${TARGET_STORY_COUNT} stories total. Rules:
-- At least ${MIN_STORIES_PER_CATEGORY} and at most ${MAX_STORIES_PER_CATEGORY} stories from each category
+Aim for around ${TARGET_STORY_COUNT} stories total, with at most ${MAX_STORIES_PER_CATEGORY} from any single category. Rules:
 - Prefer stories with higher source counts (covered by more outlets)
-- Only include hard news: politics, conflict, policy, economics, science discoveries, and major sports results. Exclude food, lifestyle, travel, entertainment, opinion columns, and human-interest fluff
+- Only include hard news: politics, conflict, policy, economics, science discoveries, and significant international or national sports results. Exclude food, lifestyle, travel, entertainment, opinion columns, and human-interest fluff
 - Do NOT select two stories covering the same specific news event, even if their titles differ; pick the one with the higher source count
-- Quality over quantity — select fewer stories rather than including anything that isn't genuinely newsworthy
 
 Return ONLY a JSON array of story numbers, e.g. [1, 3, 5, 7]. No other text.
 
@@ -192,7 +190,7 @@ ${categoryBlocks.join('\n\n')}`
   try {
     const msg = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 150,
+      max_tokens: 200,
       messages: [{ role: 'user', content: prompt }],
     })
     const block = msg.content[0]
