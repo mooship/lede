@@ -1,12 +1,13 @@
+import { Link } from '@tanstack/react-router'
 import { MUTED } from '../colors.js'
 
 const LINK_STYLE: React.CSSProperties = { color: MUTED, textDecoration: 'none' }
 
-const LINKS = [
-  { label: 'Source', href: 'https://github.com/mooship/lede', external: true },
-  { label: 'AGPL-3.0', href: 'https://opensource.org/license/agpl-3-0-only', external: true },
-  { label: 'Feedback', href: 'mailto:contact@timothybrits.co.za', external: false },
-  { label: 'Report a bug', href: 'https://github.com/mooship/lede/issues/new', external: true },
+const EXTERNAL_LINKS = [
+  { label: 'Source', href: 'https://github.com/mooship/lede' },
+  { label: 'AGPL-3.0', href: 'https://opensource.org/license/agpl-3-0-only' },
+  { label: 'Feedback', href: 'mailto:contact@timothybrits.co.za' },
+  { label: 'Report a bug', href: 'https://github.com/mooship/lede/issues/new' },
 ]
 
 export function Footer() {
@@ -35,13 +36,11 @@ export function Footer() {
           gap: '0.5rem 1.25rem',
         }}
       >
-        {LINKS.map(({ label, href, external }) => (
-          <a
-            key={label}
-            href={href}
-            style={LINK_STYLE}
-            {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-          >
+        <Link to="/about" style={LINK_STYLE}>
+          About
+        </Link>
+        {EXTERNAL_LINKS.map(({ label, href }) => (
+          <a key={label} href={href} style={LINK_STYLE} target="_blank" rel="noopener noreferrer">
             {label}
           </a>
         ))}
