@@ -1,11 +1,14 @@
-export function Masthead() {
-  const now = new Date()
+import { getEditionDate } from '../utils.js'
 
-  const dayName = now.toLocaleDateString('en-GB', { weekday: 'long' })
-  const dateLine = now.toLocaleDateString('en-GB', {
+export function Masthead() {
+  const date = getEditionDate()
+
+  const dayName = date.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'Africa/Johannesburg' })
+  const dateLine = date.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
+    timeZone: 'Africa/Johannesburg',
   })
 
   return (

@@ -5,7 +5,6 @@ import { MUTED } from '../colors.js'
 import { CategoryNav } from '../components/CategoryNav.js'
 import { Footer } from '../components/Footer.js'
 import { Masthead } from '../components/Masthead.js'
-import { NextEditionBanner } from '../components/NextEditionBanner.js'
 import { PageMessage } from '../components/PageMessage.js'
 import { StoryList } from '../components/StoryList.js'
 import { trpc } from '../trpc.js'
@@ -29,7 +28,6 @@ function IndexPage() {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f' }}>
         <Masthead />
-        <NextEditionBanner />
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '3rem 2rem' }}>
           <p
             style={{
