@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What is Lede
 
-A daily news digest that fetches RSS feeds across four categories, summarises each story with Claude Haiku, and publishes a ~12-story edition per day (2–5 per category, Claude decides the split). One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
+A daily news digest that fetches RSS feeds across four categories, summarises each story with Claude Sonnet, and publishes a ~12-story edition per day (2–5 per category, Claude decides the split). One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
 
 ## Monorepo structure
 
@@ -90,7 +90,7 @@ If deploying the web app via Cloudflare Pages (builds in CI), those same vars mu
 4. Deduplicate — normalise titles (lowercase, strip punctuation), drop substring matches
 5. Select — single cross-category Claude prompt picks ~10 stories total (min 2, max 5 per category); Claude decides the split based on newsworthiness. Fallback (no API key): top 3 per category by source score then `pubDate`
 6. Enrich — fetch full article HTML for each story via `node-html-parser`; store original RSS description as byline, article text used as Claude input
-7. Summarise — `Promise.all` → Anthropic `claude-haiku-4-5-20251001` if `ANTHROPIC_API_KEY` set, else article text, else raw RSS description. ~150 words, British English
+7. Summarise — `Promise.all` → Anthropic `claude-sonnet-4-6` if `ANTHROPIC_API_KEY` set, else article text, else raw RSS description. ~150 words, British English
 8. Persist — sequential `db.insert` for `editions` then `stories` (neon-http has no transaction support)
 
 ### tRPC router (`apps/api/src/router.ts`)
