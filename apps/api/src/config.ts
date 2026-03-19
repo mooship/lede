@@ -21,12 +21,9 @@ export const FEEDS: Record<Category, string[]> = {
     'https://feeds.bbci.co.uk/news/business/rss.xml',
     'https://www.cnbc.com/id/10001147/device/rss/rss.html',
   ],
-  Sport: [
-    'https://feeds.bbci.co.uk/sport/rss.xml',
-    'https://www.espn.com/espn/rss/news',
-  ],
+  Sport: ['https://feeds.bbci.co.uk/sport/rss.xml', 'https://www.espn.com/espn/rss/news'],
 }
 
 export const MIN_STORIES_PER_CATEGORY = 2
 export const MAX_STORIES_PER_CATEGORY = 5
-export const TARGET_STORY_COUNT = 15
+export const TARGET_STORY_COUNT = 12

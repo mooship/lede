@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What is Lede
 
-A daily news digest that fetches RSS feeds across four categories, summarises each story with Claude Sonnet, and publishes a ~12-story edition per day (2–5 per category, Claude decides the split). One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
+A daily news digest that fetches RSS feeds across five categories, summarises each story with Claude Sonnet, and publishes a ~12-story edition per day (2–5 per category, Claude decides the split). One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
 
 ## Monorepo structure
 
@@ -88,10 +88,9 @@ If deploying the web app via Cloudflare Pages (builds in CI), those same vars mu
 2. Fetch all feeds via `Promise.allSettled` (failures are logged and skipped)
 3. Filter junk — regex patterns for promo codes, coupons, sponsored content
 4. Deduplicate — normalise titles (lowercase, strip punctuation), drop substring matches
-5. Select — single cross-category Claude prompt picks ~10 stories total (min 2, max 5 per category); Claude decides the split based on newsworthiness. Fallback (no API key): top 3 per category by source score then `pubDate`
-6. Enrich — fetch full article HTML for each story via `node-html-parser`; store original RSS description as byline, article text used as Claude input
-7. Summarise — `Promise.all` → Anthropic `claude-sonnet-4-6` if `ANTHROPIC_API_KEY` set, else article text, else raw RSS description. ~150 words, British English
-8. Persist — sequential `db.insert` for `editions` then `stories` (neon-http has no transaction support)
+5. Select — single cross-category Claude prompt picks ~12 stories total (min 2, max 5 per category); Claude decides the split based on newsworthiness. Fallback (no API key): top stories per category by source score then `pubDate`
+6. Summarise — `Promise.all` → Anthropic `claude-sonnet-4-6` if `ANTHROPIC_API_KEY` set, else raw RSS description. ~150 words, British English
+7. Persist — sequential `db.insert` for `editions` then `stories` (neon-http has no transaction support)
 
 ### tRPC router (`apps/api/src/router.ts`)
 
@@ -119,10 +118,13 @@ Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified
 
 | Category | Feeds |
 |---|---|
-| World / Politics | BBC World, The Guardian World, DW English, Al Jazeera |
+| World | BBC World, DW English, Al Jazeera, Daily Maverick, News24 |
 | Technology | Ars Technica, Wired, The Verge |
-| Science | BBC Science, New Scientist, Science Daily |
-| Business / Economy | BBC Business, The Guardian Business, DW Business |
+| Science | BBC Science, New Scientist |
+| Business / Economy | BBC Business, CNBC |
+| Sport | BBC Sport, ESPN |
+
+Feed count is deliberately capped to stay within Cloudflare Workers' free-plan subrequest limit (50 per invocation). The budget is roughly: 14 feeds + 12 Claude summarisation calls + 1 curation call + 3 Neon HTTP calls = ~30 subrequests.
 
 ## Testing
 
