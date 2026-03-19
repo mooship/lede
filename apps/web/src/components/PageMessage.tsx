@@ -1,37 +1,41 @@
+import { css } from '../../styled-system/css'
+
 type Props = {
   message: string
   variant?: 'loading' | 'serif'
   color?: string
 }
 
-export function PageMessage({ message, variant = 'serif', color }: Props) {
-  const textStyle =
-    variant === 'loading'
-      ? {
-          fontFamily: "'Syne Variable', 'Syne', sans-serif",
-          fontSize: '0.75rem',
-          fontWeight: 700,
-          letterSpacing: '0.15em',
-          textTransform: 'uppercase' as const,
-          color: color ?? '#444444',
-        }
-      : {
-          fontFamily: "'Instrument Serif', Georgia, serif",
-          fontSize: '1rem',
-          color: color ?? '#888888',
-        }
+const wrapClass = css({
+  minHeight: '100vh',
+  bg: 'bg',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+})
 
+const loadingClass = css({
+  fontFamily: 'display',
+  fontSize: '0.75rem',
+  fontWeight: '700',
+  letterSpacing: '0.15em',
+  textTransform: 'uppercase',
+  color: 'textDim',
+})
+
+const serifClass = css({
+  fontFamily: 'body',
+  fontSize: '1rem',
+  color: 'textMuted',
+})
+
+export function PageMessage({ message, variant = 'serif', color }: Props) {
+  const textClass = variant === 'loading' ? loadingClass : serifClass
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: '#0f0f0f',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <p style={textStyle}>{message}</p>
+    <div className={wrapClass}>
+      <p className={textClass} style={color ? { color } : undefined}>
+        {message}
+      </p>
     </div>
   )
 }

@@ -1,4 +1,51 @@
+import { css } from '../../styled-system/css'
 import { getEditionDate } from '../utils.js'
+
+const headerClass = css({
+  width: '100%',
+  borderBottom: '1px solid',
+  borderColor: 'border',
+  bg: 'bg',
+})
+
+const innerClass = css({
+  maxWidth: '1400px',
+  mx: 'auto',
+  px: '8',
+  py: '10',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-end',
+})
+
+const titleClass = css({
+  fontFamily: 'display',
+  fontWeight: '800',
+  fontSize: 'clamp(3rem, 6vw, 5rem)',
+  color: 'textPrimary',
+  margin: '0',
+  lineHeight: '1',
+  letterSpacing: '-0.03em',
+  textTransform: 'uppercase',
+})
+
+const subtitleClass = css({
+  fontFamily: 'display',
+  fontSize: '0.6rem',
+  fontWeight: '700',
+  letterSpacing: '0.2em',
+  color: 'textDim',
+  textTransform: 'uppercase',
+  margin: '0.4rem 0 0 0.1rem',
+})
+
+const dateClass = css({
+  textAlign: 'right',
+  fontFamily: 'body',
+  fontSize: '0.85rem',
+  color: 'textMuted',
+  lineHeight: '1.5',
+})
 
 export function Masthead() {
   const date = getEditionDate()
@@ -15,62 +62,13 @@ export function Masthead() {
   })
 
   return (
-    <header
-      style={{
-        width: '100%',
-        borderBottom: '1px solid #2e2e2e',
-        backgroundColor: '#0f0f0f',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-          padding: '2.5rem 2rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-        }}
-      >
+    <header className={headerClass}>
+      <div className={innerClass}>
         <div>
-          <h1
-            style={{
-              fontFamily: "'Syne Variable', 'Syne', sans-serif",
-              fontWeight: 800,
-              fontSize: 'clamp(3rem, 6vw, 5rem)',
-              color: '#f0f0f0',
-              margin: 0,
-              lineHeight: 1,
-              letterSpacing: '-0.03em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Lede
-          </h1>
-          <p
-            style={{
-              fontFamily: "'Syne Variable', 'Syne', sans-serif",
-              fontSize: '0.6rem',
-              fontWeight: 700,
-              letterSpacing: '0.2em',
-              color: '#444444',
-              textTransform: 'uppercase',
-              margin: '0.4rem 0 0 0.1rem',
-            }}
-          >
-            Daily Edition
-          </p>
+          <h1 className={titleClass}>Lede</h1>
+          <p className={subtitleClass}>Daily Edition</p>
         </div>
-
-        <div
-          style={{
-            textAlign: 'right',
-            fontFamily: "'Instrument Serif', Georgia, serif",
-            fontSize: '0.85rem',
-            color: '#888888',
-            lineHeight: 1.5,
-          }}
-        >
+        <div className={dateClass}>
           <div>{dayName}</div>
           <div>{dateLine}</div>
         </div>

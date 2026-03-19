@@ -1,7 +1,7 @@
 import type { Category } from '@lede/api'
 import { useRef, useState } from 'react'
-import { CATEGORY_ACCENT } from '../categories.js'
-import { MUTED } from '../colors.js'
+import { css } from '../../styled-system/css'
+import { CATEGORY_CSS_VAR } from '../categories.js'
 
 type Tab = Category | 'All'
 
@@ -16,12 +16,55 @@ const LABELS: Record<Tab, string> = {
   Sport: 'Sport',
 }
 
-const ACCENT: Record<Tab, string> = { All: '#f0f0f0', ...CATEGORY_ACCENT }
+const ACCENT_VAR: Record<Tab, string> = {
+  All: 'var(--colors-text-primary)',
+  ...CATEGORY_CSS_VAR,
+}
 
 type Props = {
   active: Tab
   onChange: (tab: Tab) => void
 }
+
+const navClass = css({
+  width: '100%',
+  borderBottom: '1px solid',
+  borderColor: 'border',
+  bg: 'bg',
+})
+
+const tabListClass = css({
+  maxWidth: '1400px',
+  mx: 'auto',
+  px: '8',
+  display: 'flex',
+  flexDir: 'row',
+  overflowX: 'auto',
+  scrollbarWidth: 'none',
+  overscrollBehaviorX: 'contain',
+  touchAction: 'pan-x',
+  '&::-webkit-scrollbar': { display: 'none' },
+})
+
+const tabBaseClass = css({
+  fontFamily: 'display',
+  fontSize: '0.7rem',
+  fontWeight: '700',
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  px: '5',
+  py: '3',
+  background: 'none',
+  border: 'none',
+  borderBottom: '2px solid transparent',
+  cursor: 'pointer',
+  transition: 'all 0.15s',
+  marginBottom: '-1px',
+  borderRadius: '0',
+  flexShrink: '0',
+  whiteSpace: 'nowrap',
+  color: 'textMuted',
+})
 
 export function CategoryNav({ active, onChange }: Props) {
   const [hovered, setHovered] = useState<Tab | null>(null)
@@ -46,34 +89,12 @@ export function CategoryNav({ active, onChange }: Props) {
   }
 
   return (
-    <nav
-      style={{
-        width: '100%',
-        borderBottom: '1px solid #2e2e2e',
-        backgroundColor: '#0f0f0f',
-      }}
-    >
-      <div
-        role="tablist"
-        style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-          padding: '0 2rem',
-          display: 'flex',
-          flexDirection: 'row',
-          gap: 0,
-          overflowX: 'auto',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          overscrollBehaviorX: 'contain',
-          overscrollBehaviorY: 'none',
-          touchAction: 'pan-x',
-        }}
-      >
+    <nav className={navClass}>
+      <div role="tablist" className={tabListClass}>
         {TABS.map((tab, index) => {
           const isActive = tab === active
           const isHovered = hovered === tab
-          const accent = ACCENT[tab]
+          const accentVar = ACCENT_VAR[tab]
 
           return (
             <button
@@ -88,23 +109,10 @@ export function CategoryNav({ active, onChange }: Props) {
               onMouseEnter={() => setHovered(tab)}
               onMouseLeave={() => setHovered(null)}
               onKeyDown={(e) => handleKeyDown(e, index)}
+              className={tabBaseClass}
               style={{
-                fontFamily: "'Syne Variable', 'Syne', sans-serif",
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                padding: '0.75rem 1.25rem',
-                background: 'none',
-                border: 'none',
-                borderBottom: isActive ? `2px solid ${accent}` : '2px solid transparent',
-                color: isActive ? accent : isHovered ? '#c0c0c0' : MUTED,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                marginBottom: '-1px',
-                borderRadius: 0,
-                flexShrink: 0,
-                whiteSpace: 'nowrap',
+                color: isActive ? accentVar : isHovered ? 'var(--colors-text-light)' : undefined,
+                borderBottomColor: isActive ? accentVar : undefined,
               }}
             >
               {LABELS[tab]}

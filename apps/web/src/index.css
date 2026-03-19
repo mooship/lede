@@ -1,0 +1,6 @@
+@layer reset, base, tokens, recipes, utilities;
+
+body {
+  background-color: #0f0f0f;
+  margin: 0;
+}

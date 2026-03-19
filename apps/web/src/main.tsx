@@ -1,12 +1,27 @@
 import '@fontsource-variable/syne'
 import '@fontsource/instrument-serif'
+import './index.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { Component, StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { css } from '../styled-system/css'
 import { routeTree } from './routeTree.gen.js'
 import { createTrpcClient, trpc } from './trpc.js'
+
+const errorWrapClass = css({
+  minHeight: '100vh',
+  bg: 'bg',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+})
+
+const errorTextClass = css({
+  color: 'world',
+  fontFamily: 'display',
+})
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode }) {
@@ -21,18 +36,8 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   render() {
     if (this.state.hasError) {
       return (
-        <div
-          style={{
-            minHeight: '100vh',
-            backgroundColor: '#0f0f0f',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <p style={{ color: '#e85a3c', fontFamily: "'Syne Variable', 'Syne', sans-serif" }}>
-            Something went wrong. Please refresh the page.
-          </p>
+        <div className={errorWrapClass}>
+          <p className={errorTextClass}>Something went wrong. Please refresh the page.</p>
         </div>
       )
     }

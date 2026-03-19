@@ -4,17 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "prepare": "panda codegen --silent",
+    "dev": "panda codegen --silent && vite",
+    "build": "panda codegen --silent && tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "biome check --write .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ark-ui/react": "latest",
     "@lede/api": "*",
-    "@park-ui/panda-preset": "latest",
     "@tanstack/react-query": "latest",
     "@tanstack/react-router": "latest",
     "@trpc/client": "latest",

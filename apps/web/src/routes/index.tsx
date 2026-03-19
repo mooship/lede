@@ -1,7 +1,7 @@
 import type { Category } from '@lede/api'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { MUTED } from '../colors.js'
+import { css } from '../../styled-system/css'
 import { CategoryNav } from '../components/CategoryNav.js'
 import { Footer } from '../components/Footer.js'
 import { Masthead } from '../components/Masthead.js'
@@ -9,6 +9,17 @@ import { PageMessage } from '../components/PageMessage.js'
 import { StoryList } from '../components/StoryList.js'
 import { trpc } from '../trpc.js'
 import { editionStaleTime } from '../utils.js'
+
+const pageClass = css({ minHeight: '100vh', bg: 'bg' })
+const contentClass = css({ maxWidth: '1400px', mx: 'auto', px: '8', py: '12' })
+const storyWrapClass = css({ maxWidth: '1400px', mx: 'auto' })
+
+const emptyTextClass = css({
+  fontFamily: 'body',
+  fontSize: '1.1rem',
+  color: 'textMuted',
+  lineHeight: '1.75',
+})
 
 function IndexPage() {
   const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All')
@@ -21,24 +32,17 @@ function IndexPage() {
   }
 
   if (error) {
-    return <PageMessage message="Something went wrong. Please try again." color="#e85a3c" />
+    return (
+      <PageMessage message="Something went wrong. Please try again." color="var(--colors-world)" />
+    )
   }
 
   if (data == null) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f' }}>
+      <div className={pageClass}>
         <Masthead />
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '3rem 2rem' }}>
-          <p
-            style={{
-              fontFamily: "'Instrument Serif', Georgia, serif",
-              fontSize: '1.1rem',
-              color: MUTED,
-              lineHeight: 1.75,
-            }}
-          >
-            No editions yet — check back soon.
-          </p>
+        <div className={contentClass}>
+          <p className={emptyTextClass}>No editions yet — check back soon.</p>
         </div>
         <Footer />
       </div>
@@ -49,10 +53,10 @@ function IndexPage() {
     activeCategory === 'All' ? data : data.filter((s) => s.category === activeCategory)
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f' }}>
+    <div className={pageClass}>
       <Masthead />
       <CategoryNav active={activeCategory} onChange={setActiveCategory} />
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0' }}>
+      <div className={storyWrapClass}>
         <StoryList stories={filtered} />
       </div>
       <Footer />
