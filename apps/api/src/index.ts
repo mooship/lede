@@ -31,6 +31,18 @@ app.use('/trpc/edition.today', async (c, next) => {
   }
 })
 
+app.use('/trpc/*', async (c, next) => {
+  const ip = c.req.header('CF-Connecting-IP') ?? 'unknown'
+  const { success } = await c.env.RATE_LIMITER.limit({ key: ip })
+  if (!success) {
+    return c.json(
+      { error: { message: 'Too many requests', data: { code: 'TOO_MANY_REQUESTS' } } },
+      429,
+    )
+  }
+  return next()
+})
+
 app.use(
   '/trpc/*',
   trpcServer({

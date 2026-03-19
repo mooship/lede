@@ -7,7 +7,11 @@ const envSchema = z.object({
   WEB_ORIGIN: z.string().min(1, 'WEB_ORIGIN is required'),
 })
 
-export type Env = z.infer<typeof envSchema>
+type RateLimiter = {
+  limit(options: { key: string }): Promise<{ success: boolean }>
+}
+
+export type Env = z.infer<typeof envSchema> & { RATE_LIMITER: RateLimiter }
 
 export function validateEnv(raw: unknown): Env {
   return envSchema.parse(raw)
