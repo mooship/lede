@@ -413,4 +413,30 @@ describe('buildEdition', () => {
     await expect(buildEdition(mockEnv)).rejects.toThrow('DB write error')
     expect(mockDb.delete).toHaveBeenCalled()
   })
+
+  it('uses the Claude-rewritten title when persisting stories', async () => {
+    const envWithKey: Env = { ...mockEnv, ANTHROPIC_API_KEY: 'test-key' }
+    vi.mocked(fetchFeed).mockResolvedValue([
+      {
+        title: 'Climate summit ends in agreement | News24',
+        description: 'World leaders reached a deal.',
+        link: 'https://news24.com/climate',
+        pubDate: new Date().toISOString(),
+      },
+    ])
+    mockCreate
+      .mockResolvedValueOnce({ content: [{ type: 'text', text: '[1]' }] }) // curate
+      .mockResolvedValueOnce({
+        content: [
+          {
+            type: 'text',
+            text: 'TITLE: Climate summit ends in agreement\nBYLINE: World leaders reached a historic climate deal.\nSUMMARY: Leaders agreed on targets.',
+          },
+        ],
+      }) // summarise
+    await buildEdition(envWithKey)
+    const storiesInsertCall = mockInsertValues.mock.calls[1]
+    const insertedStories = storiesInsertCall?.[0] as Array<{ title: string }>
+    expect(insertedStories[0]?.title).toBe('Climate summit ends in agreement')
+  })
 })
