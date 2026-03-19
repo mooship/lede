@@ -50,7 +50,7 @@ describe('Index page (App)', () => {
 
   it('shows not_ready state when data is null', async () => {
     await renderIndex({ data: null })
-    expect(screen.getByText(/edition isn't ready/i)).not.toBeNull()
+    expect(screen.getByText(/no editions yet/i)).not.toBeNull()
   })
 
   it('renders story cards when data is present', async () => {

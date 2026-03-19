@@ -1,6 +1,6 @@
 import type { Category } from '@lede/api'
 import { createFileRoute } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { MUTED } from '../colors.js'
 import { CategoryNav } from '../components/CategoryNav.js'
 import { Footer } from '../components/Footer.js'
@@ -15,13 +15,6 @@ function IndexPage() {
   const { data, isLoading, error } = trpc.edition.today.useQuery(undefined, {
     staleTime: editionStaleTime,
   })
-
-  const nextBuildTime = useMemo(() => {
-    const d = new Date()
-    d.setUTCHours(4, 0, 0, 0)
-    if (d <= new Date()) d.setUTCDate(d.getUTCDate() + 1)
-    return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-  }, [])
 
   if (isLoading) {
     return <PageMessage message="Loading edition…" variant="loading" />
@@ -44,7 +37,7 @@ function IndexPage() {
               lineHeight: 1.75,
             }}
           >
-            Today's edition isn't ready yet. Next build at {nextBuildTime}.
+            No editions yet — check back soon.
           </p>
         </div>
         <Footer />

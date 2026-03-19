@@ -17,6 +17,7 @@ vi.mock('./pipeline.js', () => ({
 
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn((a, b) => `${String(a)}=${b}`),
+  desc: vi.fn((a) => `${String(a)} desc`),
 }))
 
 const mockStories: Story[] = [

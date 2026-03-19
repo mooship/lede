@@ -4,6 +4,7 @@ import { MAX_STORIES_PER_CATEGORY } from './config.js'
 import {
   curateWithClaude,
   deduplicateByTitle,
+  isRecentEnough,
   normaliseTitle,
   scoreBySourceOverlap,
   selectStories,
@@ -30,6 +31,42 @@ function makeItem(
 ): CategorisedItem {
   return { title, category, pubDate, description, link }
 }
+
+describe('isRecentEnough', () => {
+  const today = '2026-03-06'
+
+  it('keeps an article published today', () => {
+    expect(isRecentEnough('2026-03-06T08:00:00Z', today)).toBe(true)
+  })
+
+  it('keeps an article published yesterday', () => {
+    expect(isRecentEnough('2026-03-05T23:00:00Z', today)).toBe(true)
+  })
+
+  it('drops an article published 2 days ago', () => {
+    expect(isRecentEnough('2026-03-04T12:00:00Z', today)).toBe(false)
+  })
+
+  it('drops an article published months ago', () => {
+    expect(isRecentEnough('2026-01-01T00:00:00Z', today)).toBe(false)
+  })
+
+  it('keeps an article with no pubDate', () => {
+    expect(isRecentEnough(undefined, today)).toBe(true)
+    expect(isRecentEnough(null, today)).toBe(true)
+    expect(isRecentEnough('', today)).toBe(true)
+  })
+
+  it('keeps an article with an unparseable pubDate', () => {
+    expect(isRecentEnough('not-a-date', today)).toBe(true)
+  })
+
+  it('handles yesterday correctly at month boundary', () => {
+    // today is 2026-03-01, yesterday should be 2026-02-28
+    expect(isRecentEnough('2026-02-28T12:00:00Z', '2026-03-01')).toBe(true)
+    expect(isRecentEnough('2026-02-27T12:00:00Z', '2026-03-01')).toBe(false)
+  })
+})
 
 describe('normaliseTitle', () => {
   it('lowercases and strips punctuation', () => {
