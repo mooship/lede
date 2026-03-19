@@ -64,6 +64,11 @@ const tabBaseClass = css({
   flexShrink: '0',
   whiteSpace: 'nowrap',
   color: 'textMuted',
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'textPrimary',
+    outlineOffset: '2px',
+  },
 })
 
 export function CategoryNav({ active, onChange }: Props) {
@@ -89,7 +94,7 @@ export function CategoryNav({ active, onChange }: Props) {
   }
 
   return (
-    <nav className={navClass}>
+    <nav className={navClass} aria-label="News categories">
       <div role="tablist" className={tabListClass}>
         {TABS.map((tab, index) => {
           const isActive = tab === active

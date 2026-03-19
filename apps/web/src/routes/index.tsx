@@ -81,7 +81,9 @@ export const Route = createFileRoute('/')({
         content:
           "Today's most significant stories across world news, technology, science, business, and sport — curated and summarised every morning.",
       },
+      { property: 'og:url', content: import.meta.env.VITE_APP_URL ?? '' },
     ],
+    links: [{ rel: 'canonical', href: import.meta.env.VITE_APP_URL ?? '' }],
   }),
   component: IndexPage,
 })

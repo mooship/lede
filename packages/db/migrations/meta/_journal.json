@@ -22,6 +22,13 @@
       "when": 1773899089356,
       "tag": "0002_majestic_wild_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773920072450,
+      "tag": "0003_flimsy_wrecker",
+      "breakpoints": true
     }
   ]
 }

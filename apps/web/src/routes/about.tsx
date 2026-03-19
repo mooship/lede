@@ -139,7 +139,9 @@ export const Route = createFileRoute('/about')({
         content:
           "How Elar works: a free, ad-free daily news digest built in South Africa that curates and summarises the day's most significant stories.",
       },
+      { property: 'og:url', content: `${import.meta.env.VITE_APP_URL ?? ''}/about` },
     ],
+    links: [{ rel: 'canonical', href: `${import.meta.env.VITE_APP_URL ?? ''}/about` }],
   }),
   component: AboutPage,
 })

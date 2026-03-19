@@ -4,10 +4,16 @@ import { cors } from 'hono/cors'
 import { createContext } from './context.js'
 import { resolveCorsOrigin } from './cors.js'
 import type { Env } from './env.js'
+import { validateEnv } from './env.js'
 import { buildEdition } from './pipeline.js'
 import { appRouter } from './router.js'
 
 const app = new Hono<{ Bindings: Env }>()
+
+app.use('*', (c, next) => {
+  validateEnv(c.env)
+  return next()
+})
 
 app.use('*', cors({ origin: (origin, c) => resolveCorsOrigin(origin, c.env.WEB_ORIGIN) }))
 

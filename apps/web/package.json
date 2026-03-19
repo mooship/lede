@@ -20,12 +20,13 @@
     "@trpc/react-query": "latest",
     "ofetch": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@elar/tsconfig": "*",
     "@fontsource-variable/syne": "latest",
     "@fontsource/instrument-serif": "latest",
-    "@elar/tsconfig": "*",
     "@pandacss/dev": "latest",
     "@tanstack/router-plugin": "latest",
     "@testing-library/react": "latest",

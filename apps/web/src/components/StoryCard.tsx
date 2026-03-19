@@ -54,6 +54,8 @@ export function StoryCard({ story, position }: Props) {
         <div className={headerClass}>
           <span
             className={badgeClass}
+            role="img"
+            aria-label={`Category: ${CATEGORY_LABEL[story.category]}`}
             style={{
               color: accentVar,
               backgroundColor: `color-mix(in srgb, ${accentVar} 10%, transparent)`,

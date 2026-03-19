@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
 import { css } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 import { PageHeader } from '../components/PageHeader.js'
@@ -137,6 +138,10 @@ function StoryPage() {
       <meta name="description" content={pageDescription} />
       <meta property="og:title" content={pageTitle} />
       <meta property="og:description" content={pageDescription} />
+      <meta property="og:type" content="article" />
+      <meta property="og:url" content={window.location.href} />
+      {story.pubDate && <meta property="article:published_time" content={story.pubDate} />}
+      <link rel="canonical" href={window.location.href} />
       <meta name="twitter:title" content={pageTitle} />
       <meta name="twitter:description" content={pageDescription} />
 
@@ -170,6 +175,7 @@ function StoryPage() {
           </a>
           <button
             type="button"
+            aria-label="Share this story"
             onClick={() => void shareStory(story.title, window.location.href)}
             className={shareButtonClass}
           >
@@ -181,6 +187,12 @@ function StoryPage() {
   )
 }
 
+const storyParamsSchema = z.object({ id: z.string().uuid() })
+
 export const Route = createFileRoute('/story/$id')({
+  params: {
+    parse: (raw) => storyParamsSchema.parse(raw),
+    stringify: (p) => ({ id: p.id }),
+  },
   component: StoryPage,
 })

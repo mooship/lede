@@ -1,0 +1,14 @@
+# Wrangler local dev secrets — copy to .dev.vars and fill in values
+# .dev.vars is gitignored; this file is committed as a reference
+
+# Neon dev branch connection string
+DATABASE_URL=postgres://user:password@host/dbname?sslmode=require
+
+# Anthropic API key — optional; pipeline falls back to raw RSS descriptions without it
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Any strong random string (min 32 chars) — used to protect the edition.build endpoint
+ADMIN_SECRET=
+
+# Comma-separated allowed origins for CORS (e.g. http://localhost:5173)
+WEB_ORIGIN=http://localhost:5173
