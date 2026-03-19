@@ -14,6 +14,7 @@ function makeEnv(secret = 'super-secret'): Env {
     ANTHROPIC_API_KEY: undefined,
     ADMIN_SECRET: secret,
     WEB_ORIGIN: 'http://localhost:5173',
+    RATE_LIMITER: { limit: async () => ({ success: true }) },
   }
 }
 

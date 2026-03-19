@@ -57,6 +57,7 @@ function makeEnv() {
     ANTHROPIC_API_KEY: 'key',
     ADMIN_SECRET: 'test-secret',
     WEB_ORIGIN: 'http://localhost:5173',
+    RATE_LIMITER: { limit: async () => ({ success: true }) },
   }
 }
 
