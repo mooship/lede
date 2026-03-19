@@ -27,6 +27,9 @@ const JUNK_PATTERNS = [
   /best\s+deals/i,
   /sale\s+ends/i,
   /sponsored/i,
+  /^what'?s\s+cooking/i,
+  /\brecipe[s]?\b/i,
+  /\bhoroscope[s]?\b/i,
 ]
 
 export function isRecentEnough(pubDate: string | undefined | null, todayStr: string): boolean {
