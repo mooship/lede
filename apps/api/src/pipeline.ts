@@ -330,17 +330,24 @@ export async function buildEdition(env: Env): Promise<void> {
 
   const feedResults = await Promise.allSettled(feedEntries.map(({ url }) => fetchFeed(url)))
 
+  const feedStats: Record<string, 'ok' | 'timeout' | 'error'> = {}
   const allItems: Array<RssItem & { category: Category }> = []
   for (const [i, result] of feedResults.entries()) {
     const feedEntry = feedEntries[i]
     if (!feedEntry) continue
 
     if (result.status === 'fulfilled') {
+      feedStats[feedEntry.url] = 'ok'
       for (const item of result.value) {
         allItems.push({ ...item, category: feedEntry.category })
       }
     } else {
-      console.error(`Failed to fetch ${feedEntry.url}:`, result.reason)
+      const reason = result.reason
+      const isTimeout =
+        reason instanceof Error &&
+        (reason.message.includes('timeout') || reason.message.includes('timed out'))
+      feedStats[feedEntry.url] = isTimeout ? 'timeout' : 'error'
+      console.error(`Failed to fetch ${feedEntry.url}:`, reason)
     }
   }
 
@@ -364,7 +371,9 @@ export async function buildEdition(env: Env): Promise<void> {
     return
   }
 
-  await db.insert(schema.editions).values({ date, builtAt: new Date() })
+  await db
+    .insert(schema.editions)
+    .values({ date, builtAt: new Date(), feedStats: JSON.stringify(feedStats) })
   try {
     await db.insert(schema.stories).values(
       summarised.map((story, i) => ({

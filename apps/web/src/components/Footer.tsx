@@ -41,6 +41,9 @@ export function Footer() {
         <Link to="/about" className={linkClass}>
           About
         </Link>
+        <Link to="/archive" className={linkClass}>
+          Archive
+        </Link>
         {EXTERNAL_LINKS.map(({ label, href }) => (
           <a
             key={label}

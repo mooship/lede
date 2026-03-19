@@ -1,8 +1,14 @@
 import { render, screen } from '@testing-library/react'
 import type { Story } from '@tidel/api'
+import type React from 'react'
 import { vi } from 'vitest'
 
-vi.mock('@tanstack/react-router')
+vi.mock('@tanstack/react-router', () => ({
+  createFileRoute: () => () => null,
+  Link: ({ children }: { children: React.ReactNode }) => children,
+  useNavigate: () => vi.fn(),
+  useSearch: () => ({ category: 'All' }),
+}))
 
 vi.mock('../trpc.js', () => ({
   trpc: {
@@ -45,7 +51,7 @@ async function renderIndex(overrides: {
 describe('Index page (App)', () => {
   it('shows loading indicator when in-flight', async () => {
     await renderIndex({ isLoading: true })
-    expect(screen.getByText(/loading/i)).toBeTruthy()
+    expect(screen.getByTestId('loading-skeleton')).toBeTruthy()
   })
 
   it('shows not_ready state when data is null', async () => {

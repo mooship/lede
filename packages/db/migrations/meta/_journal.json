@@ -29,6 +29,13 @@
       "when": 1773920072450,
       "tag": "0003_flimsy_wrecker",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773949420027,
+      "tag": "0004_stiff_sentinel",
+      "breakpoints": true
     }
   ]
 }
