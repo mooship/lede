@@ -15,6 +15,7 @@ const NAMED_ENTITIES: Record<string, string> = {
   '&lt;': '<',
   '&gt;': '>',
   '&quot;': '"',
+  '&apos;': "'",
   '&#39;': "'",
   '&nbsp;': ' ',
   '&ldquo;': '\u201c',

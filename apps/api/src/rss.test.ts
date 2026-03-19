@@ -65,6 +65,14 @@ describe('fetchFeed', () => {
     expect(items[0]?.description).toBe('The \u201cdeal\u201d was signed')
   })
 
+  it('decodes &apos; entity in title', async () => {
+    mockOfetch.mockResolvedValue(
+      makeRssXml([{ title: "Iran attacks world&apos;s largest gas complex" }]),
+    )
+    const items = await fetchFeed('https://example.com/rss')
+    expect(items[0]?.title).toBe("Iran attacks world's largest gas complex")
+  })
+
   it('decodes numeric decimal HTML entities', async () => {
     mockOfetch.mockResolvedValue(makeRssXml([{ title: '&#65;&#66;&#67;' }]))
     const items = await fetchFeed('https://example.com/rss')
