@@ -5,7 +5,7 @@ export const FEEDS: Record<Category, string[]> = {
     'https://feeds.bbci.co.uk/news/world/rss.xml',
     'https://rss.dw.com/rdf/rss-en-world',
     'https://www.aljazeera.com/xml/rss/all.xml',
-    'https://www.dailymaverick.co.za/dmrss/',
+    'https://feeds.npr.org/1004/rss.xml',
     'https://feeds.news24.com/articles/news24/TopStories/rss',
   ],
   Technology: [

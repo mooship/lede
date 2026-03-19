@@ -118,7 +118,7 @@ Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified
 
 | Category | Feeds |
 |---|---|
-| World | BBC World, DW English, Al Jazeera, Daily Maverick, News24 |
+| World | BBC World, DW English, Al Jazeera, NPR World, News24 |
 | Technology | Ars Technica, Wired, The Verge |
 | Science | BBC Science, New Scientist |
 | Business / Economy | BBC Business, NPR Business |
