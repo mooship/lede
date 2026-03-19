@@ -51,7 +51,6 @@ function IndexPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0f0f0f' }}>
       <Masthead />
-      <NextEditionBanner />
       <CategoryNav active={activeCategory} onChange={setActiveCategory} />
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0' }}>
         <StoryList stories={filtered} />
