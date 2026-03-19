@@ -1,14 +1,19 @@
 import type { Category } from '@lede/api'
-import { describe, expect, it, vi } from 'vitest'
+import { createDb } from '@lede/db'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MAX_STORIES_PER_CATEGORY } from './config.js'
+import type { Env } from './env.js'
 import {
+  buildEdition,
   curateWithClaude,
   deduplicateByTitle,
+  isJunk,
   isRecentEnough,
   normaliseTitle,
   scoreBySourceOverlap,
 } from './pipeline.js'
 import type { RssItem } from './rss.js'
+import { fetchFeed } from './rss.js'
 
 const mockCreate = vi.fn()
 
@@ -18,6 +23,24 @@ vi.mock('@anthropic-ai/sdk', () => {
   }
   return { default: MockAnthropic }
 })
+
+vi.mock('./rss.js', () => ({ fetchFeed: vi.fn() }))
+
+vi.mock('drizzle-orm', () => ({ eq: vi.fn() }))
+
+const mockInsertValues = vi.fn().mockResolvedValue(undefined)
+const mockDeleteWhere = vi.fn().mockResolvedValue(undefined)
+const mockFindFirst = vi.fn()
+const mockDb = {
+  query: { editions: { findFirst: mockFindFirst } },
+  insert: vi.fn(() => ({ values: mockInsertValues })),
+  delete: vi.fn(() => ({ where: mockDeleteWhere })),
+}
+
+vi.mock('@lede/db', () => ({
+  createDb: vi.fn(),
+  schema: { editions: {}, stories: {} },
+}))
 
 type CategorisedItem = RssItem & { category: Category }
 
@@ -61,7 +84,6 @@ describe('isRecentEnough', () => {
   })
 
   it('handles yesterday correctly at month boundary', () => {
-    // today is 2026-03-01, yesterday should be 2026-02-28
     expect(isRecentEnough('2026-02-28T12:00:00Z', '2026-03-01')).toBe(true)
     expect(isRecentEnough('2026-02-27T12:00:00Z', '2026-03-01')).toBe(false)
   })
@@ -257,6 +279,9 @@ describe('curateWithClaude', () => {
     expect(techResults).toHaveLength(3)
     const titles = techResults.map((s) => s.title)
     expect(new Set(titles).size).toBe(3)
+    expect(titles).toContain('Story 1')
+    expect(titles).toContain('Story 2')
+    expect(titles).toContain('Story 3')
   })
 
   it('returns score-sorted fallback and makes no Anthropic call when no API key', async () => {
@@ -268,5 +293,124 @@ describe('curateWithClaude', () => {
     const techResults = result.filter((s) => s.category === 'Technology')
     expect(techResults.length).toBeLessThanOrEqual(MAX_STORIES_PER_CATEGORY)
     expect(techResults[0]?.title).toBe('Story 1')
+  })
+})
+
+describe('isJunk', () => {
+  it('keeps a clean news headline', () => {
+    expect(isJunk('Germany elections: what to expect', '')).toBe(false)
+  })
+
+  it('filters promo code titles', () => {
+    expect(isJunk('Save with this promo code today')).toBe(true)
+  })
+
+  it('filters coupon titles', () => {
+    expect(isJunk('Best coupon deals this week')).toBe(true)
+  })
+
+  it('filters discount code titles', () => {
+    expect(isJunk('Exclusive discount code for subscribers')).toBe(true)
+  })
+
+  it('filters percentage-off titles', () => {
+    expect(isJunk('Get 40% off your next order')).toBe(true)
+  })
+
+  it('filters "deals of the week" titles', () => {
+    expect(isJunk('Best deals of the week')).toBe(true)
+  })
+
+  it('filters sponsored content', () => {
+    expect(isJunk('Sponsored: How to improve your sleep')).toBe(true)
+  })
+
+  it('filters recipe articles', () => {
+    expect(isJunk('5 easy recipes for weeknight dinners')).toBe(true)
+  })
+
+  it('filters horoscope articles', () => {
+    expect(isJunk('Your weekly horoscope')).toBe(true)
+  })
+
+  it('filters digest descriptions with repeated "read the full story"', () => {
+    const desc = 'Read the full story. Read the full story. Read the full story.'
+    expect(isJunk('World news roundup', desc)).toBe(true)
+  })
+
+  it('keeps an article with a single "read the full story" in the description', () => {
+    expect(isJunk('World news roundup', 'Read the full story for details.')).toBe(false)
+  })
+
+  it('is case-insensitive', () => {
+    expect(isJunk('SPONSORED CONTENT: New product launch')).toBe(true)
+  })
+})
+
+describe('buildEdition', () => {
+  const mockEnv: Env = {
+    DATABASE_URL: 'postgres://test',
+    ANTHROPIC_API_KEY: undefined,
+    ADMIN_SECRET: 'secret',
+    WEB_ORIGIN: 'http://localhost',
+  }
+
+  const goodStory: RssItem = {
+    title: 'World leaders meet for climate summit',
+    description: 'Global leaders convened to discuss climate action.',
+    link: 'https://bbc.com/climate',
+    pubDate: new Date().toISOString(),
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(createDb).mockReturnValue(mockDb as ReturnType<typeof createDb>)
+    mockInsertValues.mockResolvedValue(undefined)
+    mockDeleteWhere.mockResolvedValue(undefined)
+    mockFindFirst.mockResolvedValue(undefined)
+  })
+
+  it('returns early without fetching feeds when an edition already exists', async () => {
+    mockFindFirst.mockResolvedValue({ date: '2024-01-01', builtAt: new Date() })
+    await buildEdition(mockEnv)
+    expect(fetchFeed).not.toHaveBeenCalled()
+    expect(mockDb.insert).not.toHaveBeenCalled()
+  })
+
+  it('inserts edition and stories rows on the happy path', async () => {
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    await buildEdition(mockEnv)
+    expect(mockDb.insert).toHaveBeenCalledTimes(2)
+    expect(mockInsertValues).toHaveBeenCalledTimes(2)
+  })
+
+  it('skips edition creation when all stories are filtered as junk', async () => {
+    vi.mocked(fetchFeed).mockResolvedValue([
+      {
+        title: 'Best promo code of the week',
+        description: '',
+        link: 'https://example.com',
+        pubDate: new Date().toISOString(),
+      },
+    ])
+    await buildEdition(mockEnv)
+    expect(mockDb.insert).not.toHaveBeenCalled()
+  })
+
+  it('continues processing when some feeds fail', async () => {
+    vi.mocked(fetchFeed)
+      .mockRejectedValueOnce(new Error('Network error'))
+      .mockResolvedValue([goodStory])
+    await expect(buildEdition(mockEnv)).resolves.toBeUndefined()
+    expect(mockDb.insert).toHaveBeenCalled()
+  })
+
+  it('rolls back the edition row if the stories insert fails', async () => {
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    mockInsertValues
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error('DB write error'))
+    await expect(buildEdition(mockEnv)).rejects.toThrow('DB write error')
+    expect(mockDb.delete).toHaveBeenCalled()
   })
 })

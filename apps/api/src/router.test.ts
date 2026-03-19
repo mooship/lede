@@ -79,14 +79,37 @@ describe('edition.today', () => {
     expect(result).toBeNull()
   })
 
-  it('returns stories when edition exists', async () => {
+  it('returns stories with correct shape when edition exists', async () => {
     mockDb.query.editions.findFirst.mockResolvedValue({ date: '2024-01-01', builtAt: new Date() })
     mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s, pubDate: s.pubDate })))
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: false, env: makeEnv() })
     const result = await caller.edition.today()
-    expect(Array.isArray(result)).toBe(true)
+    expect(result).toHaveLength(1)
+    expect(result?.[0]).toMatchObject({
+      id: '1',
+      title: 'Test Story',
+      summary: 'A summary.',
+      category: 'Technology',
+      source: 'example.com',
+      position: 0,
+      description: null,
+      pubDate: null,
+    })
+  })
+
+  it('falls back to the most recent edition when today has no entry', async () => {
+    mockDb.query.editions.findFirst
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce({ date: '2023-12-31', builtAt: new Date() })
+    mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s })))
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv() })
+    const result = await caller.edition.today()
+    expect(result).toHaveLength(1)
+    expect(mockDb.query.editions.findFirst).toHaveBeenCalledTimes(2)
   })
 })
 

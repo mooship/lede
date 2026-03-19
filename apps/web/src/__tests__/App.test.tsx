@@ -45,21 +45,22 @@ async function renderIndex(overrides: {
 describe('Index page (App)', () => {
   it('shows loading indicator when in-flight', async () => {
     await renderIndex({ isLoading: true })
-    expect(screen.getByText(/loading/i)).not.toBeNull()
+    expect(screen.getByText(/loading/i)).toBeTruthy()
   })
 
   it('shows not_ready state when data is null', async () => {
     await renderIndex({ data: null })
-    expect(screen.getByText(/no editions yet/i)).not.toBeNull()
+    expect(screen.getByText(/no editions yet/i)).toBeTruthy()
   })
 
   it('renders story cards when data is present', async () => {
     await renderIndex({ data: [mockStory] })
-    expect(screen.getByText(mockStory.title)).not.toBeNull()
+    expect(screen.getByRole('heading', { name: mockStory.title })).toBeTruthy()
+    expect(screen.getByRole('link')).toBeTruthy()
   })
 
   it('shows error state on failure', async () => {
     await renderIndex({ error: new Error('Network failure') })
-    expect(screen.getByText(/something went wrong/i)).not.toBeNull()
+    expect(screen.getByText(/something went wrong/i)).toBeTruthy()
   })
 })
