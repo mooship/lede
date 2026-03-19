@@ -147,6 +147,10 @@ Web tests (`apps/web`) use vitest + happy-dom with `@testing-library/react`. No 
 - **CORS** origin callback in Hono uses `resolveCorsOrigin(origin, c.env.WEB_ORIGIN)` from `src/cors.ts`; `WEB_ORIGIN` supports comma-separated URLs
 - **routeTree.gen.ts** is regenerated on every `vite dev` start — commit it after adding new routes
 
+## Library docs
+
+When working with any third-party library or package (Drizzle, Hono, tRPC, TanStack Router, TanStack Query, PandaCSS, Vitest, Wrangler, Vite, Biome, etc.), use the **context7** MCP tool to fetch up-to-date documentation before writing or modifying code that uses that library.
+
 ## Linter / formatter
 
 Biome (`biome.json` at root). Config: single quotes, `asNeeded` semicolons, 2-space indent, 100 char line width. Ignored: `node_modules`, `dist`, `styled-system`, `migrations`, `.wrangler`.

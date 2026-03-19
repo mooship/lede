@@ -46,7 +46,7 @@ const sourceClass = css({
 })
 
 export function StoryCard({ story, position }: Props) {
-  const accentVar = CATEGORY_CSS_VAR[story.category]
+  const accentVar = CATEGORY_CSS_VAR[story.category] ?? 'var(--colors-text-primary)'
 
   return (
     <Link to="/story/$id" params={{ id: story.id }} className={linkClass}>

@@ -13,10 +13,15 @@ app.use('*', cors({ origin: (origin, c) => resolveCorsOrigin(origin, c.env.WEB_O
 
 app.use('/trpc/edition.today', async (c, next) => {
   await next()
-  const body = await c.res.clone().text()
-  const isNull = body.includes('"data":null')
-  if (!isNull) {
-    c.res.headers.set('Cache-Control', 'public, s-maxage=3600, max-age=3600')
+  try {
+    const body = await c.res.clone().text()
+    const parsed = JSON.parse(body)
+    const data = Array.isArray(parsed) ? parsed[0]?.result?.data : parsed?.result?.data
+    if (data !== null && data !== undefined) {
+      c.res.headers.set('Cache-Control', 'public, s-maxage=3600, max-age=3600')
+    }
+  } catch {
+    // If parsing fails, don't set cache headers
   }
 })
 

@@ -119,6 +119,10 @@ Two tables (`packages/db/src/schema.ts`):
 - **CORS** origin in Hono uses `resolveCorsOrigin(origin, c.env.WEB_ORIGIN)`; `WEB_ORIGIN` supports comma-separated URLs
 - **Cloudflare subrequest budget** (free plan: 50/invocation): 14 RSS feeds + 12 Claude summarise calls + 1 curation call + 3 Neon calls ≈ 30 total — don't add feeds without checking this
 
+## Library Docs
+
+When working with any third-party library or package (Drizzle, Hono, tRPC, TanStack Router, TanStack Query, PandaCSS, Vitest, Wrangler, Vite, Biome, etc.), use the **context7** MCP tool to fetch up-to-date documentation before writing or modifying code that uses that library.
+
 ## Linter / Formatter
 
 Biome (`biome.json` at root): single quotes, `asNeeded` semicolons, 2-space indent, 100-char line width.  

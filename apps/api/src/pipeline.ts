@@ -39,9 +39,9 @@ export function isRecentEnough(pubDate: string | undefined | null, todayStr: str
   if (articleDate === todayStr) {
     return true
   }
-  const yesterday = new Date(todayStr)
+  const yesterday = new Date(`${todayStr}T12:00:00`)
   yesterday.setDate(yesterday.getDate() - 1)
-  const yesterdayStr = yesterday.toISOString().slice(0, 10)
+  const yesterdayStr = SAST_DATE_FORMAT.format(yesterday)
   return articleDate === yesterdayStr
 }
 
@@ -329,18 +329,29 @@ export async function buildEdition(env: Env): Promise<void> {
     }),
   )
 
+  if (summarised.length === 0) {
+    console.warn('[buildEdition] No stories selected — skipping edition creation')
+    return
+  }
+
   await db.insert(schema.editions).values({ date, builtAt: new Date() })
-  await db.insert(schema.stories).values(
-    summarised.map((story, i) => ({
-      editionDate: date,
-      title: story.title,
-      description: story.byline || null,
-      summary: story.summary,
-      category: story.category,
-      link: story.link,
-      pubDate: story.pubDate || null,
-      source: hostnameFromUrl(story.link),
-      position: i,
-    })),
-  )
+  try {
+    await db.insert(schema.stories).values(
+      summarised.map((story, i) => ({
+        editionDate: date,
+        title: story.title,
+        description: story.byline || null,
+        summary: story.summary,
+        category: story.category,
+        link: story.link,
+        pubDate: story.pubDate || null,
+        source: hostnameFromUrl(story.link),
+        position: i,
+      })),
+    )
+  } catch (err) {
+    console.error('[buildEdition] Failed to insert stories, rolling back edition:', err)
+    await db.delete(schema.editions).where(eq(schema.editions.date, date))
+    throw err
+  }
 }
