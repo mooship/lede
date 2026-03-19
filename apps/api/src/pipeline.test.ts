@@ -364,7 +364,7 @@ describe('buildEdition', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(createDb).mockReturnValue(mockDb as ReturnType<typeof createDb>)
+    vi.mocked(createDb).mockReturnValue(mockDb as unknown as ReturnType<typeof createDb>)
     mockInsertValues.mockResolvedValue(undefined)
     mockDeleteWhere.mockResolvedValue(undefined)
     mockFindFirst.mockResolvedValue(undefined)
