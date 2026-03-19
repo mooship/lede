@@ -255,24 +255,32 @@ const MAX_DESCRIPTION_CHARS = 3000
 const SUMMARISE_PROMPT = (item: RssItem) =>
   `You are a news summariser. Write the following for the article below. Use British English. No other text.
 
+TITLE: A clean, concise headline with no source attribution (remove any trailing " | Source", " - Source", " | News24", etc.).
 BYLINE: A single factual sentence, max 25 words.
 SUMMARY: A factual, concise summary of approximately 150 words.
 
 Title: ${item.title}
 Article: ${item.description.slice(0, MAX_DESCRIPTION_CHARS)}`
 
-type SummariseResult = { byline: string; summary: string }
+type SummariseResult = { title: string; byline: string; summary: string }
 
-function parseSummariseResponse(text: string, fallbackByline: string): SummariseResult {
+function parseSummariseResponse(
+  text: string,
+  fallbackTitle: string,
+  fallbackByline: string,
+): SummariseResult {
+  const titleMatch = text.match(/^\*{0,2}TITLE:\*{0,2}\s*(.+)/m)
   const bylineMatch = text.match(/^\*{0,2}BYLINE:\*{0,2}\s*(.+)/m)
   const summaryMatch = text.match(/^\*{0,2}SUMMARY:\*{0,2}\s*([\s\S]+)/m)
+  const title = titleMatch?.[1]?.trim() ?? fallbackTitle
   const byline = bylineMatch?.[1]?.trim() ?? fallbackByline
   const summary = (summaryMatch?.[1]?.trim() ?? text).replace(/^#+\s+\S[^\n]*\n+/, '')
-  return { byline, summary }
+  return { title, byline, summary }
 }
 
 function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult> {
   const raw = async (item: RssItem): Promise<SummariseResult> => ({
+    title: item.title,
     byline: item.description || item.title,
     summary: item.description || item.title,
   })
@@ -289,7 +297,7 @@ function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult>
         })
         const block = msg.content[0]
         const text = block?.type === 'text' ? block.text : ''
-        return parseSummariseResponse(text, item.description || item.title)
+        return parseSummariseResponse(text, item.title, item.description || item.title)
       } catch (err) {
         console.error(`[summariser] Claude failed for "${item.title}", falling back to raw:`, err)
         return raw(item)
@@ -346,8 +354,8 @@ export async function buildEdition(env: Env): Promise<void> {
   const summariser = createSummariser(env)
   const summarised = await Promise.all(
     selected.map(async (item) => {
-      const { byline, summary } = await summariser(item)
-      return { ...item, byline, summary }
+      const { title, byline, summary } = await summariser(item)
+      return { ...item, title, byline, summary }
     }),
   )
 
