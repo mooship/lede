@@ -82,7 +82,6 @@ function IndexPage() {
     staleTime: editionStaleTime,
   })
 
-  // Track edition date seen on first load to detect new editions
   const seenEditionDate = useRef<string | null>(null)
   const [showBanner, setShowBanner] = useState(false)
 
