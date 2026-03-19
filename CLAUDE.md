@@ -121,7 +121,7 @@ Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified
 | World | BBC World, DW English, Al Jazeera, Daily Maverick, News24 |
 | Technology | Ars Technica, Wired, The Verge |
 | Science | BBC Science, New Scientist |
-| Business / Economy | BBC Business, CNBC |
+| Business / Economy | BBC Business, NPR Business |
 | Sport | BBC Sport, ESPN |
 
 Feed count is deliberately capped to stay within Cloudflare Workers' free-plan subrequest limit (50 per invocation). The budget is roughly: 14 feeds + 12 Claude summarisation calls + 1 curation call + 3 Neon HTTP calls = ~30 subrequests.

@@ -32,7 +32,7 @@ npm install
 npm run dev   # wrangler dev on :8787 + vite on :5173
 ```
 
-`apps/api/.dev.vars` and `apps/web/.env.development` are already configured for local dev. Add an `ANTHROPIC_API_KEY` to `apps/api/.dev.vars` to enable Claude Sonnet summaries. Without it, the full article text (or raw RSS description) is used as the summary.
+`apps/api/.dev.vars` and `apps/web/.env.development` are already configured for local dev. Add an `ANTHROPIC_API_KEY` to `apps/api/.dev.vars` to enable Claude Sonnet summaries. Without it, the raw RSS description is used as the summary.
 
 ## Database migrations
 

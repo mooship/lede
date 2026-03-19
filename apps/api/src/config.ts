@@ -19,7 +19,7 @@ export const FEEDS: Record<Category, string[]> = {
   ],
   'Business / Economy': [
     'https://feeds.bbci.co.uk/news/business/rss.xml',
-    'https://www.cnbc.com/id/10001147/device/rss/rss.html',
+    'https://feeds.npr.org/1006/rss.xml',
   ],
   Sport: ['https://feeds.bbci.co.uk/sport/rss.xml', 'https://www.espn.com/espn/rss/news'],
 }
