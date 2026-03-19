@@ -9,10 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ArchiveRouteImport } from './routes/archive'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoryIdRouteImport } from './routes/story.$id'
+import { Route as EditionDateRouteImport } from './routes/edition.$date'
 
+const ArchiveRoute = ArchiveRouteImport.update({
+  id: '/archive',
+  path: '/archive',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -28,39 +41,83 @@ const StoryIdRoute = StoryIdRouteImport.update({
   path: '/story/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditionDateRoute = EditionDateRouteImport.update({
+  id: '/edition/$date',
+  path: '/edition/$date',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/archive': typeof ArchiveRoute
+  '/edition/$date': typeof EditionDateRoute
   '/story/$id': typeof StoryIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/archive': typeof ArchiveRoute
+  '/edition/$date': typeof EditionDateRoute
   '/story/$id': typeof StoryIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/archive': typeof ArchiveRoute
+  '/edition/$date': typeof EditionDateRoute
   '/story/$id': typeof StoryIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/story/$id'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/admin'
+    | '/archive'
+    | '/edition/$date'
+    | '/story/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/story/$id'
-  id: '__root__' | '/' | '/about' | '/story/$id'
+  to: '/' | '/about' | '/admin' | '/archive' | '/edition/$date' | '/story/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/admin'
+    | '/archive'
+    | '/edition/$date'
+    | '/story/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRoute
+  ArchiveRoute: typeof ArchiveRoute
+  EditionDateRoute: typeof EditionDateRoute
   StoryIdRoute: typeof StoryIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/archive': {
+      id: '/archive'
+      path: '/archive'
+      fullPath: '/archive'
+      preLoaderRoute: typeof ArchiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -82,12 +139,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoryIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/edition/$date': {
+      id: '/edition/$date'
+      path: '/edition/$date'
+      fullPath: '/edition/$date'
+      preLoaderRoute: typeof EditionDateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AdminRoute: AdminRoute,
+  ArchiveRoute: ArchiveRoute,
+  EditionDateRoute: EditionDateRoute,
   StoryIdRoute: StoryIdRoute,
 }
 export const routeTree = rootRouteImport

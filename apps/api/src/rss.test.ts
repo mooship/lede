@@ -67,7 +67,7 @@ describe('fetchFeed', () => {
 
   it('decodes &apos; entity in title', async () => {
     mockOfetch.mockResolvedValue(
-      makeRssXml([{ title: "Iran attacks world&apos;s largest gas complex" }]),
+      makeRssXml([{ title: 'Iran attacks world&apos;s largest gas complex' }]),
     )
     const items = await fetchFeed('https://example.com/rss')
     expect(items[0]?.title).toBe("Iran attacks world's largest gas complex")

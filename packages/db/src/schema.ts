@@ -3,6 +3,7 @@ import { date, index, integer, pgTable, text, timestamp, unique, uuid } from 'dr
 export const editions = pgTable('editions', {
   date: date('date').primaryKey(),
   builtAt: timestamp('built_at').notNull(),
+  feedStats: text('feed_stats'),
 })
 
 export const stories = pgTable(
@@ -24,6 +25,6 @@ export const stories = pgTable(
   (t) => [
     index('stories_edition_date_idx').on(t.editionDate),
     index('stories_category_idx').on(t.category),
-    unique('stories_link_unique').on(t.link),
+    unique('stories_link_edition_unique').on(t.link, t.editionDate),
   ],
 )

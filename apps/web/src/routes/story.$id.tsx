@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState } from 'react'
 import { z } from 'zod'
 import { css } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
@@ -7,15 +8,16 @@ import { PageMessage } from '../components/PageMessage.js'
 import { trpc } from '../trpc.js'
 import { editionStaleTime } from '../utils.js'
 
-async function shareStory(title: string, url: string) {
+async function shareStory(title: string, url: string): Promise<boolean> {
   if (navigator.share) {
     await navigator.share({ title, url })
-  } else {
-    try {
-      await navigator.clipboard.writeText(url)
-    } catch {
-      /* clipboard unavailable */
-    }
+    return false
+  }
+  try {
+    await navigator.clipboard.writeText(url)
+    return true
+  } catch {
+    return false
   }
 }
 
@@ -111,6 +113,7 @@ const shareButtonClass = css({
 
 function StoryPage() {
   const { id } = Route.useParams()
+  const [copied, setCopied] = useState(false)
   const { data, isLoading, error } = trpc.edition.today.useQuery(undefined, {
     staleTime: editionStaleTime,
   })
@@ -176,10 +179,17 @@ function StoryPage() {
           <button
             type="button"
             aria-label="Share this story"
-            onClick={() => void shareStory(story.title, window.location.href)}
+            onClick={() => {
+              void shareStory(story.title, window.location.href).then((didCopy) => {
+                if (didCopy) {
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                }
+              })
+            }}
             className={shareButtonClass}
           >
-            Share
+            {copied ? 'Copied!' : 'Share'}
           </button>
         </div>
       </main>
