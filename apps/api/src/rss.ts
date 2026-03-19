@@ -69,6 +69,10 @@ function resolveLink(value: unknown): string {
   return ''
 }
 
+/**
+ * Fetches and parses an RSS, Atom, or RDF feed. Supports HTML entity decoding
+ * and tag stripping in text fields. Times out after 8 seconds.
+ */
 export async function fetchFeed(url: string): Promise<RssItem[]> {
   const text = await ofetch<string, 'text'>(url, { responseType: 'text', timeout: 8000 })
   const feed = parser.parse(text)

@@ -1,3 +1,7 @@
+/**
+ * Returns the reference date for the current edition.
+ * Before 04:00 UTC (06:00 SAST, the build time) the previous day's edition is current.
+ */
 export function getEditionDate(): Date {
   const now = new Date()
   const ref = new Date(now)
@@ -18,5 +22,9 @@ export function msUntilNextEdition(): number {
   return next.getTime() - now.getTime()
 }
 
+/**
+ * Dynamic stale time for the edition query: 5 minutes when no data has loaded yet
+ * (fast retry), otherwise the milliseconds until the next scheduled build.
+ */
 export const editionStaleTime = (query: { state: { data: unknown } }): number =>
   query.state.data == null ? 5 * 60 * 1000 : msUntilNextEdition()

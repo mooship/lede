@@ -9,6 +9,7 @@ import { fetchFeed } from './rss.js'
 
 const SAST_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' })
 
+/** Returns today's date in SAST (Africa/Johannesburg, UTC+2) as YYYY-MM-DD. */
 export function todaySAST(): string {
   return SAST_DATE_FORMAT.format(new Date())
 }
@@ -27,6 +28,10 @@ const JUNK_PATTERNS = [
   /\bhoroscope[s]?\b/i,
 ]
 
+/**
+ * Returns `true` if the article was published today or yesterday (SAST).
+ * Missing or unparseable dates are treated as recent to avoid silently dropping articles.
+ */
 export function isRecentEnough(pubDate: string | undefined | null, todayStr: string): boolean {
   if (!pubDate) {
     return true
@@ -45,6 +50,7 @@ export function isRecentEnough(pubDate: string | undefined | null, todayStr: str
   return articleDate === yesterdayStr
 }
 
+/** Filters promotional, lifestyle, and digest-filler content by title and description heuristics. */
 export function isJunk(title: string, description = ''): boolean {
   if (JUNK_PATTERNS.some((p) => p.test(title))) {
     return true
@@ -82,6 +88,10 @@ function groupByCategory<T extends { category: Category }>(items: T[]): Map<Cate
   return map
 }
 
+/**
+ * Removes duplicate items by normalised title, including substring matches
+ * (e.g. "Story A" and "Story A — updated" are treated as the same story).
+ */
 export function deduplicateByTitle(
   items: Array<RssItem & { category: Category }>,
 ): Array<RssItem & { category: Category }> {
@@ -107,6 +117,10 @@ export function deduplicateByTitle(
 
 export type ScoredItem = RssItem & { category: Category; sourceScore: number }
 
+/**
+ * Scores each unique item by how many distinct source hostnames covered the same story
+ * across the full (pre-dedup) pool. Minimum score is 1.
+ */
 export function scoreBySourceOverlap(
   pool: Array<RssItem & { category: Category }>,
   unique: Array<RssItem & { category: Category }>,
@@ -132,6 +146,10 @@ export function scoreBySourceOverlap(
   })
 }
 
+/**
+ * Asks Claude to pick ~12 stories across all categories from the scored pool.
+ * Falls back to a score-then-recency sort if no API key is set or Claude fails.
+ */
 export async function curateWithClaude(
   scored: ScoredItem[],
   env: Env,
@@ -283,6 +301,10 @@ function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult>
   return raw
 }
 
+/**
+ * Builds and persists today's edition. Idempotent — returns early if an edition
+ * for today's SAST date already exists in the database.
+ */
 export async function buildEdition(env: Env): Promise<void> {
   const db = createDb(env.DATABASE_URL)
   const date = todaySAST()

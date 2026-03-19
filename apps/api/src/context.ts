@@ -5,6 +5,11 @@ export type Context = {
   env: Env
 }
 
+/**
+ * Extracts the Bearer token and compares it to `ADMIN_SECRET` using a
+ * timing-safe equality check to prevent timing-based secret enumeration.
+ * Length mismatch short-circuits before the comparison.
+ */
 export async function createContext(req: Request, env: Env): Promise<Context> {
   const authHeader = req.headers.get('Authorization')
 
