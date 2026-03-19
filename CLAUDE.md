@@ -130,11 +130,11 @@ Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified
 |---|---|
 | World | BBC World, DW English, Al Jazeera, NPR World, News24, France24, PBS NewsHour, CNA |
 | Technology | Ars Technica, Wired, The Verge, The Register, TechCrunch |
-| Science | BBC Science, New Scientist |
-| Business / Economy | BBC Business, NPR Business |
-| Sport | BBC Sport, ESPN |
+| Science | BBC Science, New Scientist, Nature |
+| Business / Economy | BBC Business, NPR Business, Sky News Business |
+| Sport | BBC Sport, ESPN, NPR Sports |
 
-Feed count is deliberately capped to stay within Cloudflare Workers' free-plan subrequest limit (50 per invocation). The budget is roughly: 19 feeds + 15 Claude summarisation calls + 1 curation call + 3 Neon HTTP calls = ~38 subrequests.
+Feed count is deliberately capped to stay within Cloudflare Workers' free-plan subrequest limit (50 per invocation). The budget is roughly: 22 feeds + 15 Claude summarisation calls + 1 curation call + 3 Neon HTTP calls = ~41 subrequests.
 
 ## Testing
 
