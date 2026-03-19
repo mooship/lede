@@ -32,6 +32,13 @@ export function Footer() {
       >
         AGPL-3.0
       </a>
+      {' · '}
+      <a
+        href="mailto:contact@timothybrits.co.za"
+        style={{ color: MUTED, textDecoration: 'none' }}
+      >
+        Feedback
+      </a>
     </footer>
   )
 }
