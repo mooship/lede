@@ -140,10 +140,12 @@ const editionRouter = router({
     },
   ),
 
-  build: protectedProcedure.mutation(async ({ ctx }): Promise<{ ok: true }> => {
-    await buildEdition(ctx.env)
-    return { ok: true }
-  }),
+  build: protectedProcedure
+    .input(z.object({ force: z.boolean().optional() }))
+    .mutation(async ({ ctx, input }): Promise<{ ok: true }> => {
+      await buildEdition(ctx.env, input.force ?? false)
+      return { ok: true }
+    }),
 })
 
 export const appRouter = router({ edition: editionRouter })

@@ -313,7 +313,7 @@ function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult>
  * Builds and persists today's edition. Idempotent — returns early if an edition
  * for today's SAST date already exists in the database.
  */
-export async function buildEdition(env: Env): Promise<void> {
+export async function buildEdition(env: Env, force = false): Promise<void> {
   const db = createDb(env.DATABASE_URL)
   const date = todaySAST()
 
@@ -321,7 +321,8 @@ export async function buildEdition(env: Env): Promise<void> {
     where: eq(schema.editions.date, date),
   })
   if (existing) {
-    return
+    if (!force) return
+    await db.delete(schema.editions).where(eq(schema.editions.date, date))
   }
 
   const feedEntries = Object.entries(FEEDS).flatMap(([category, urls]) =>

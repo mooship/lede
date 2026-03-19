@@ -57,6 +57,7 @@ function makeEnv() {
     ANTHROPIC_API_KEY: 'key',
     ADMIN_SECRET: 'test-secret',
     WEB_ORIGIN: 'http://localhost:5173',
+    RATE_LIMITER: { limit: async () => ({ success: true }) },
   }
 }
 
@@ -122,7 +123,7 @@ describe('edition.build', () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: false, env: makeEnv() })
-    await expect(caller.edition.build()).rejects.toThrow()
+    await expect(caller.edition.build({})).rejects.toThrow()
   })
 
   it('calls buildEdition for admin', async () => {
@@ -130,7 +131,7 @@ describe('edition.build', () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: true, env: makeEnv() })
-    const result = await caller.edition.build()
+    const result = await caller.edition.build({})
     expect(buildEdition).toHaveBeenCalledOnce()
     expect(result).toEqual({ ok: true })
   })
