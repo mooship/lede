@@ -301,12 +301,15 @@ export async function buildEdition(env: Env): Promise<void> {
 
   const allItems: Array<RssItem & { category: Category }> = []
   for (const [i, result] of feedResults.entries()) {
+    const feedEntry = feedEntries[i]
+    if (!feedEntry) continue
+
     if (result.status === 'fulfilled') {
       for (const item of result.value) {
-        allItems.push({ ...item, category: feedEntries[i]!.category })
+        allItems.push({ ...item, category: feedEntry.category })
       }
     } else {
-      console.error(`Failed to fetch ${feedEntries[i]!.url}:`, result.reason)
+      console.error(`Failed to fetch ${feedEntry.url}:`, result.reason)
     }
   }
 
