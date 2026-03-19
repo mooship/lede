@@ -56,7 +56,7 @@ describe('Index page (App)', () => {
   it('renders story cards when data is present', async () => {
     await renderIndex({ data: [mockStory] })
     expect(screen.getByRole('heading', { name: mockStory.title })).toBeTruthy()
-    expect(screen.getByRole('link')).toBeTruthy()
+    expect(screen.getAllByRole('link').length).toBeGreaterThan(0)
   })
 
   it('shows error state on failure', async () => {
