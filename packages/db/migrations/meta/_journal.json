@@ -15,6 +15,13 @@
       "when": 1773829578086,
       "tag": "0001_parched_dust",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773899089356,
+      "tag": "0002_majestic_wild_pack",
+      "breakpoints": true
     }
   ]
 }

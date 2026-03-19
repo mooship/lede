@@ -9,7 +9,7 @@ export const stories = pgTable('stories', {
   id: uuid('id').primaryKey().defaultRandom(),
   editionDate: date('edition_date')
     .notNull()
-    .references(() => editions.date),
+    .references(() => editions.date, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   description: text('description'),
   summary: text('summary').notNull(),
