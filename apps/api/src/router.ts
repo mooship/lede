@@ -1,7 +1,7 @@
 import type { Story } from '@lede/api'
 import { createDb, schema } from '@lede/db'
 import { initTRPC, TRPCError } from '@trpc/server'
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import type { Context } from './context.js'
 import { buildEdition, todaySAST } from './pipeline.js'
 
@@ -21,9 +21,14 @@ const editionRouter = router({
     const db = createDb(ctx.env.DATABASE_URL)
     const date = todaySAST()
 
-    const edition = await db.query.editions.findFirst({
+    let edition = await db.query.editions.findFirst({
       where: eq(schema.editions.date, date),
     })
+    if (!edition) {
+      edition = await db.query.editions.findFirst({
+        orderBy: desc(schema.editions.date),
+      })
+    }
     if (!edition) {
       return null
     }
@@ -31,7 +36,7 @@ const editionRouter = router({
     const rows = await db
       .select()
       .from(schema.stories)
-      .where(eq(schema.stories.editionDate, date))
+      .where(eq(schema.stories.editionDate, edition.date))
       .orderBy(schema.stories.position)
 
     return rows.map((r) => ({
