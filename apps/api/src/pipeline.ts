@@ -194,13 +194,13 @@ export async function curateWithClaude(
 
   const prompt = `You are a news editor curating a daily digest for an international audience.
 
-Select between 8 and ${TARGET_STORY_COUNT} stories total. At most ${MAX_STORIES_PER_CATEGORY} from any single category, and at most 2 from Sport. Try to include at least 1 story from each category if there is something newsworthy.
+Select as close to ${TARGET_STORY_COUNT} stories as possible (minimum 9). At most ${MAX_STORIES_PER_CATEGORY} from any single category. Try to include at least 1 story from each category if there is something newsworthy.
 
 Include only hard news: politics, geopolitics, economic policy, and science discoveries. Aim for geographic diversity — stories from Europe, the Americas, Africa, Asia, the Middle East, and Oceania are all welcome. Exclude food, lifestyle, travel, entertainment, opinion columns, and human-interest content.
 
 For Sport, only select results from major international competitions (World Cup, Olympics, Grand Slams, major league finals) or significant breaking news from the world of sport.
 
-Give strong preference to stories with higher source counts — a story covered by multiple outlets is more significant than one covered by a single source. If two stories cover the same event, pick the higher source count and skip the other.
+Give strong preference to stories with higher source counts — a story covered by multiple outlets is more significant than one covered by a single source. Never select more than one story about the same event or topic — if multiple stories cover the same event, pick the one with the highest source count and skip the rest.
 
 Return ONLY a JSON array of story numbers, e.g. [1, 3, 5, 7]. No other text.
 
