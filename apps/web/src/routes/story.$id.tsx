@@ -129,7 +129,7 @@ function StoryPage() {
   }
 
   const accentVar = CATEGORY_CSS_VAR[story.category] ?? 'var(--colors-text-primary)'
-  const pageTitle = `${story.title} — Elar`
+  const pageTitle = `${story.title} — Tidel`
   const pageDescription = story.description ?? story.summary
 
   return (

@@ -1,4 +1,4 @@
-# Elar
+# Tidel
 
 A daily news digest. Each morning at 06:00 SAST, a Cloudflare Worker fetches RSS feeds across five categories, summarises each story with Claude Sonnet, and publishes a ~12-story edition. The frontend presents the edition as a newspaper-style grid with full story detail pages.
 
@@ -68,10 +68,10 @@ cd apps/api && npm run deploy
 `WEB_ORIGIN` can be a single URL or a comma-separated allowlist, for example:
 
 ```text
-WEB_ORIGIN=https://elar.app,https://elar.timothybrits.co.za,https://lede.timothybrits.co.za
+WEB_ORIGIN=https://tidel.app,https://tidel.timothybrits.co.za,https://lede.timothybrits.co.za
 ```
 
-This uploads the secrets to Cloudflare and deploys the worker in one step. The worker runs at `https://lede.timothybrits.workers.dev` (also available at `https://api.elar.app`) and is configured to rebuild the edition daily at 06:00 SAST via a cron trigger.
+This uploads the secrets to Cloudflare and deploys the worker in one step. The worker runs at `https://lede.timothybrits.workers.dev` (also available at `https://api.tidel.app`) and is configured to rebuild the edition daily at 06:00 SAST via a cron trigger.
 
 ### Frontend (Cloudflare Pages)
 

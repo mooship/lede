@@ -1,4 +1,4 @@
-import type { Category } from '@elar/api'
+import type { Category } from '@tidel/api'
 
 export const FEEDS: Record<Category, string[]> = {
   World: [

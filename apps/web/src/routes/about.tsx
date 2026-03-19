@@ -51,13 +51,13 @@ function AboutPage() {
       <PageHeader />
 
       <main className={mainClass}>
-        <h1 className={pageTitleClass}>About Elar</h1>
+        <h1 className={pageTitleClass}>About Tidel</h1>
         <p className={subtitleClass}>A daily news digest, built in South Africa.</p>
 
         <div className={sectionClass}>
-          <h2 className={headingClass}>What is Elar?</h2>
+          <h2 className={headingClass}>What is Tidel?</h2>
           <p className={bodyClass}>
-            Elar is a free, ad-free daily news digest. Every morning at 06:00 South African time, it
+            Tidel is a free, ad-free daily news digest. Every morning at 06:00 South African time, it
             automatically gathers the most significant stories from trusted sources around the
             world, writes a concise summary of each one, and publishes a clean, readable edition —
             no notifications, no algorithms trying to keep you scrolling, no sponsored content.
@@ -67,7 +67,7 @@ function AboutPage() {
         <div className={sectionClass}>
           <h2 className={headingClass}>How stories are chosen</h2>
           <p className={bodyClass}>
-            Elar reads dozens of RSS feeds from publishers across five categories: World,
+            Tidel reads dozens of RSS feeds from publishers across five categories: World,
             Technology, Science, Business &amp; Economy, and Sport. These are open news feeds that
             publishers make available for free — no paywalled sources are used.
           </p>
@@ -112,7 +112,7 @@ function AboutPage() {
         <div className={sectionClass}>
           <h2 className={headingClass}>Is it free?</h2>
           <p className={bodyClass}>
-            Yes. Elar has no subscription, no account, no advertising. The source code is published
+            Yes. Tidel has no subscription, no account, no advertising. The source code is published
             under the AGPL-3.0 open-source licence, which means anyone can inspect, run, or adapt it
             — and any public version must remain open source too.
           </p>
@@ -127,17 +127,17 @@ function AboutPage() {
 export const Route = createFileRoute('/about')({
   head: () => ({
     meta: [
-      { title: 'About — Elar' },
+      { title: 'About — Tidel' },
       {
         name: 'description',
         content:
-          "How Elar works: a free, ad-free daily news digest built in South Africa that curates and summarises the day's most significant stories.",
+          "How Tidel works: a free, ad-free daily news digest built in South Africa that curates and summarises the day's most significant stories.",
       },
-      { property: 'og:title', content: 'About — Elar' },
+      { property: 'og:title', content: 'About — Tidel' },
       {
         property: 'og:description',
         content:
-          "How Elar works: a free, ad-free daily news digest built in South Africa that curates and summarises the day's most significant stories.",
+          "How Tidel works: a free, ad-free daily news digest built in South Africa that curates and summarises the day's most significant stories.",
       },
       { property: 'og:url', content: `${import.meta.env.VITE_APP_URL ?? ''}/about` },
     ],

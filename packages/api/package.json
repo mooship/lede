@@ -1,5 +1,5 @@
 {
-  "name": "@elar/api",
+  "name": "@tidel/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,6 +13,6 @@
     "lint": "biome check --write ."
   },
   "devDependencies": {
-    "@elar/tsconfig": "*"
+    "@tidel/tsconfig": "*"
   }
 }

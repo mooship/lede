@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { Category } from '@elar/api'
-import { createDb, schema } from '@elar/db'
+import type { Category } from '@tidel/api'
+import { createDb, schema } from '@tidel/db'
 import { eq } from 'drizzle-orm'
 import { FEEDS, MAX_STORIES_PER_CATEGORY, TARGET_STORY_COUNT } from './config.js'
 import type { Env } from './env.js'

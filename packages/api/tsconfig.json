@@ -1,5 +1,5 @@
 {
-  "extends": "@elar/tsconfig/base.json",
+  "extends": "@tidel/tsconfig/base.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src"

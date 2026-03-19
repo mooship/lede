@@ -1,4 +1,4 @@
-import type { Category } from '@elar/api'
+import type { Category } from '@tidel/api'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'

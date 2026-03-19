@@ -1,4 +1,4 @@
-import type { Story } from '@elar/api'
+import type { Story } from '@tidel/api'
 import { css } from '../../styled-system/css'
 import { StoryCard } from './StoryCard.js'
 

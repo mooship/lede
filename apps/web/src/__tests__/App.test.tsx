@@ -1,4 +1,4 @@
-import type { Story } from '@elar/api'
+import type { Story } from '@tidel/api'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 

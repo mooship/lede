@@ -1,8 +1,8 @@
-import type { Story } from '@elar/api'
+import type { Story } from '@tidel/api'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createCallerFactory } from './router.js'
 
-vi.mock('@elar/db', () => ({
+vi.mock('@tidel/db', () => ({
   createDb: vi.fn(() => mockDb),
   schema: {
     editions: { date: 'date' },

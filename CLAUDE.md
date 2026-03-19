@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What is Elar
+## What is Tidel
 
 A daily news digest that fetches RSS feeds across five categories, summarises each story with Claude Sonnet, and publishes a ~12-story edition per day (2–5 per category, Claude decides the split). One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
 

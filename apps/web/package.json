@@ -1,5 +1,5 @@
 {
-  "name": "@elar/web",
+  "name": "@tidel/web",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@elar/api": "*",
+    "@tidel/api": "*",
     "@tanstack/react-query": "latest",
     "@tanstack/react-router": "latest",
     "@trpc/client": "latest",
@@ -24,7 +24,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@elar/tsconfig": "*",
+    "@tidel/tsconfig": "*",
     "@fontsource-variable/syne": "latest",
     "@fontsource/instrument-serif": "latest",
     "@pandacss/dev": "latest",

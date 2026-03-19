@@ -1,4 +1,4 @@
-import type { Category } from '@elar/api'
+import type { Category } from '@tidel/api'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { css } from '../../styled-system/css'
@@ -69,13 +69,13 @@ export default IndexPage
 export const Route = createFileRoute('/')({
   head: () => ({
     meta: [
-      { title: "Elar — Today's News Digest" },
+      { title: "Tidel — Today's News Digest" },
       {
         name: 'description',
         content:
           "Today's most significant stories across world news, technology, science, business, and sport — curated and summarised every morning.",
       },
-      { property: 'og:title', content: "Elar — Today's News Digest" },
+      { property: 'og:title', content: "Tidel — Today's News Digest" },
       {
         property: 'og:description',
         content:

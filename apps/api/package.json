@@ -1,5 +1,5 @@
 {
-  "name": "@elar/api-worker",
+  "name": "@tidel/api-worker",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "latest",
-    "@elar/api": "*",
-    "@elar/db": "*",
+    "@tidel/api": "*",
+    "@tidel/db": "*",
     "@hono/trpc-server": "latest",
     "@neondatabase/serverless": "latest",
     "@trpc/server": "latest",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
-    "@elar/tsconfig": "*",
+    "@tidel/tsconfig": "*",
     "vitest": "latest",
     "wrangler": "latest"
   }

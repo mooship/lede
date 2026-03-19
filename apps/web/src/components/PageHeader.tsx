@@ -45,7 +45,7 @@ export function PageHeader() {
     <header className={headerClass}>
       <div className={innerClass}>
         <Link to="/" className={brandLinkClass}>
-          ELAR
+          TIDEL
         </Link>
         <span className={separatorClass}>|</span>
         <Link to="/" className={backLinkClass}>
