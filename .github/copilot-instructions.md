@@ -119,7 +119,7 @@ Two tables (`packages/db/src/schema.ts`):
 - **Wrangler local dev** lacks `DOMParser` — XML parsing uses `fast-xml-parser`, not browser APIs
 - **CORS** origin in Hono uses `resolveCorsOrigin(origin, c.env.WEB_ORIGIN)`; `WEB_ORIGIN` supports comma-separated URLs
 - **`ADMIN_SECRET`** must be at least 32 characters — enforced by Zod (`validateEnv`) on every request
-- **Cloudflare subrequest budget** (free plan: 50/invocation): 21 RSS feeds + 15 Claude summarise calls + 1 curation call + 3 Neon calls ≈ 40 total — don't add feeds without checking this
+- **Cloudflare subrequest budget** (free plan: 50/invocation): 19 RSS feeds + 15 Claude summarise calls + 1 curation call + 3 Neon calls ≈ 38 total — don't add feeds without checking this
 
 ## Library Docs
 

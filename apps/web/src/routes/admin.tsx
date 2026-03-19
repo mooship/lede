@@ -1,7 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import type { Category } from '@tidel/api'
 import { useState } from 'react'
 import { css } from '../../styled-system/css'
+import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 import { Footer } from '../components/Footer.js'
 import { PageHeader } from '../components/PageHeader.js'
 
@@ -64,7 +66,7 @@ const metaGridClass = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
   gap: '4',
-  marginBottom: '10',
+  marginBottom: '6',
 })
 
 const metaCardClass = css({
@@ -89,6 +91,31 @@ const metaValueClass = css({
   fontWeight: '700',
   fontSize: '1.25rem',
   color: 'textPrimary',
+})
+
+const categoryGridClass = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '3',
+  marginBottom: '10',
+})
+
+const categoryCardClass = css({
+  bg: 'surface',
+  border: '1px solid',
+  borderColor: 'border',
+  px: '4',
+  py: '3',
+  flex: '1',
+  minWidth: '120px',
+})
+
+const actionRowClass = css({
+  display: 'flex',
+  gap: '3',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  marginBottom: '10',
 })
 
 const tableClass = css({ width: '100%', borderCollapse: 'collapse' })
@@ -164,6 +191,14 @@ const errorClass = css({
   marginTop: '4',
 })
 
+const linkClass = css({
+  fontFamily: 'display',
+  fontSize: '0.8rem',
+  color: 'textMuted',
+  textDecoration: 'underline',
+  textUnderlineOffset: '3px',
+})
+
 type FeedStatus = 'ok' | 'timeout' | 'error'
 
 type AdminStatusData = {
@@ -171,7 +206,10 @@ type AdminStatusData = {
   builtAt: string
   storyCount: number
   feedStats: Record<string, FeedStatus> | null
+  categoryBreakdown: Record<string, number>
 } | null
+
+const CATEGORY_ORDER: Category[] = ['World', 'Technology', 'Science', 'Business / Economy', 'Sport']
 
 async function fetchAdminStatus(secret: string): Promise<AdminStatusData> {
   const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
@@ -187,6 +225,31 @@ async function fetchAdminStatus(secret: string): Promise<AdminStatusData> {
     throw Object.assign(new Error(json.error.message), { code })
   }
   return json.result?.data ?? null
+}
+
+async function fetchEditionList(): Promise<Array<{ date: string; storyCount: number }>> {
+  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
+  const res = await fetch(`${apiUrl}/trpc/edition.list`)
+  const json = (await res.json()) as {
+    result?: { data?: Array<{ date: string; storyCount: number }> }
+  }
+  return json.result?.data ?? []
+}
+
+async function triggerBuild(secret: string): Promise<void> {
+  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
+  const res = await fetch(`${apiUrl}/trpc/edition.build`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
+    body: '{}',
+  })
+  const json = (await res.json()) as {
+    result?: { data?: { ok: boolean } }
+    error?: { message: string }
+  }
+  if (json.error) {
+    throw new Error(json.error.message)
+  }
 }
 
 function formatBuiltAt(iso: string): string {
@@ -208,10 +271,25 @@ function StatusBadge({ status }: { status: FeedStatus }) {
 }
 
 function AdminStatus({ secret }: { secret: string }) {
-  const { data, isLoading, error } = useQuery({
+  const queryClient = useQueryClient()
+
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['adminStatus', secret],
     queryFn: () => fetchAdminStatus(secret),
     retry: false,
+  })
+
+  const { data: editions } = useQuery({
+    queryKey: ['editionList'],
+    queryFn: fetchEditionList,
+  })
+
+  const buildMutation = useMutation({
+    mutationFn: () => triggerBuild(secret),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminStatus', secret] })
+      queryClient.invalidateQueries({ queryKey: ['editionList'] })
+    },
   })
 
   if (isLoading) {
@@ -268,12 +346,48 @@ function AdminStatus({ secret }: { secret: string }) {
         </div>
       </div>
 
+      <h2 className={sectionHeadingClass}>Categories</h2>
+      <div className={categoryGridClass}>
+        {CATEGORY_ORDER.map((cat) => (
+          <div key={cat} className={categoryCardClass}>
+            <div className={metaLabelClass} style={{ color: CATEGORY_CSS_VAR[cat] }}>
+              {CATEGORY_LABEL[cat]}
+            </div>
+            <div className={metaValueClass}>{data.categoryBreakdown[cat] ?? 0}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className={actionRowClass}>
+        <button type="button" className={buttonClass} onClick={() => refetch()}>
+          Refresh
+        </button>
+        <button
+          type="button"
+          className={buttonClass}
+          onClick={() => buildMutation.mutate()}
+          disabled={buildMutation.isPending}
+        >
+          {buildMutation.isPending ? 'Building…' : "Build Today's Edition"}
+        </button>
+        {buildMutation.isSuccess && (
+          <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'science' })}>
+            Build complete.
+          </span>
+        )}
+        {buildMutation.isError && (
+          <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'world' })}>
+            Build failed: {(buildMutation.error as Error).message}
+          </span>
+        )}
+      </div>
+
       {feedEntries.length > 0 && (
         <>
           <h2 className={sectionHeadingClass} style={{ marginTop: '8px' }}>
             Feed Status
           </h2>
-          <table className={tableClass}>
+          <table className={tableClass} style={{ marginBottom: '10px' }}>
             <thead>
               <tr>
                 <th className={thClass}>Feed URL</th>
@@ -288,6 +402,38 @@ function AdminStatus({ secret }: { secret: string }) {
                   <td className={tdClass}>{url}</td>
                   <td className={tdClass}>
                     <StatusBadge status={status} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {editions && editions.length > 0 && (
+        <>
+          <h2 className={sectionHeadingClass} style={{ marginTop: '8px' }}>
+            Edition History
+          </h2>
+          <table className={tableClass}>
+            <thead>
+              <tr>
+                <th className={thClass}>Date</th>
+                <th className={thClass} style={{ width: '120px' }}>
+                  Stories
+                </th>
+                <th className={thClass} style={{ width: '80px' }} />
+              </tr>
+            </thead>
+            <tbody>
+              {editions.map((ed) => (
+                <tr key={ed.date}>
+                  <td className={tdClass}>{ed.date}</td>
+                  <td className={tdClass}>{ed.storyCount}</td>
+                  <td className={tdClass}>
+                    <a href={`/edition/${ed.date}`} className={linkClass}>
+                      View
+                    </a>
                   </td>
                 </tr>
               ))}

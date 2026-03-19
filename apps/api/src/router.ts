@@ -111,6 +111,7 @@ const editionRouter = router({
       builtAt: string
       storyCount: number
       feedStats: Record<string, 'ok' | 'timeout' | 'error'> | null
+      categoryBreakdown: Record<string, number>
     } | null> => {
       const db = createDb(ctx.env.DATABASE_URL)
       const edition = await db.query.editions.findFirst({
@@ -121,6 +122,11 @@ const editionRouter = router({
         .select({ storyCount: count(schema.stories.id) })
         .from(schema.stories)
         .where(eq(schema.stories.editionDate, edition.date))
+      const categoryRows = await db
+        .select({ category: schema.stories.category, storyCount: count(schema.stories.id) })
+        .from(schema.stories)
+        .where(eq(schema.stories.editionDate, edition.date))
+        .groupBy(schema.stories.category)
       const feedStats = edition.feedStats
         ? (JSON.parse(edition.feedStats) as Record<string, 'ok' | 'timeout' | 'error'>)
         : null
@@ -129,6 +135,7 @@ const editionRouter = router({
         builtAt: edition.builtAt.toISOString(),
         storyCount: countRow?.storyCount ?? 0,
         feedStats,
+        categoryBreakdown: Object.fromEntries(categoryRows.map((r) => [r.category, r.storyCount])),
       }
     },
   ),
