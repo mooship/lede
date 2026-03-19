@@ -147,7 +147,7 @@ export function scoreBySourceOverlap(
 }
 
 /**
- * Asks Claude to pick ~12 stories across all categories from the scored pool.
+ * Asks Claude to pick ~15 stories across all categories from the scored pool.
  * Falls back to a score-then-recency sort if no API key is set or Claude fails.
  */
 export async function curateWithClaude(

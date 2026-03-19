@@ -1,6 +1,6 @@
 # Tidel
 
-A daily news digest. Each morning at 06:00 SAST, a Cloudflare Worker fetches RSS feeds across five categories, summarises each story with Claude Sonnet, and publishes a ~12-story edition. The frontend presents the edition as a newspaper-style grid with full story detail pages.
+A daily news digest. Each morning at 06:00 SAST, a Cloudflare Worker fetches RSS feeds across five categories, summarises each story with Claude Sonnet, and publishes a ~15-story edition. The frontend presents the edition as a newspaper-style grid with full story detail pages.
 
 ## Stack
 

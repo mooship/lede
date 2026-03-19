@@ -1,6 +1,6 @@
 # Copilot Instructions — Tidel
 
-Tidel is a daily news digest monorepo. A Cloudflare Worker fetches RSS feeds, curates ~12 stories with Claude Sonnet, and persists them to Neon PostgreSQL. A React/Vite frontend reads from the same API via tRPC.
+Tidel is a daily news digest monorepo. A Cloudflare Worker fetches RSS feeds, curates ~15 stories with Claude Sonnet, and persists them to Neon PostgreSQL. A React/Vite frontend reads from the same API via tRPC.
 
 ## Commands
 
@@ -52,7 +52,7 @@ Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`
 2. Fetch all RSS feeds via `Promise.allSettled` (failures are skipped)
 3. Filter junk — regex patterns for promos, coupons, sponsored content
 4. Deduplicate — normalise titles, drop substring matches
-5. Curate — single Claude prompt picks ~12 stories (min 2, max 5 per category); fallback sorts by source-overlap score then `pubDate`
+5. Curate — single Claude prompt picks ~15 stories (min 2, max 5 per category); fallback sorts by source-overlap score then `pubDate`
 6. Summarise — `Promise.all` to Claude Sonnet (~150 words, British English); fallback uses raw RSS description
 7. Persist — sequential `db.insert` for `editions` then `stories` (no transactions — Neon HTTP limitation)
 
@@ -119,7 +119,7 @@ Two tables (`packages/db/src/schema.ts`):
 - **Wrangler local dev** lacks `DOMParser` — XML parsing uses `fast-xml-parser`, not browser APIs
 - **CORS** origin in Hono uses `resolveCorsOrigin(origin, c.env.WEB_ORIGIN)`; `WEB_ORIGIN` supports comma-separated URLs
 - **`ADMIN_SECRET`** must be at least 32 characters — enforced by Zod (`validateEnv`) on every request
-- **Cloudflare subrequest budget** (free plan: 50/invocation): 14 RSS feeds + 12 Claude summarise calls + 1 curation call + 3 Neon calls ≈ 30 total — don't add feeds without checking this
+- **Cloudflare subrequest budget** (free plan: 50/invocation): 21 RSS feeds + 15 Claude summarise calls + 1 curation call + 3 Neon calls ≈ 40 total — don't add feeds without checking this
 
 ## Library Docs
 
