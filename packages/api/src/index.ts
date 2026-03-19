@@ -1,4 +1,4 @@
-export type Category = 'World / Politics' | 'Technology' | 'Science' | 'Business / Economy'
+export type Category = 'World' | 'Technology' | 'Science' | 'Business / Economy' | 'Sport'
 
 export type Story = {
   id: string

@@ -279,7 +279,7 @@ describe('selectStories', () => {
       makeItem('Tech 2', 'Technology', '2024-01-02T00:00:00Z'),
       makeItem('Tech 3', 'Technology', '2024-01-01T00:00:00Z'),
       makeItem('Tech 4', 'Technology', '2023-12-31T00:00:00Z'),
-      makeItem('World 1', 'World / Politics', '2024-01-03T00:00:00Z'),
+      makeItem('World 1', 'World', '2024-01-03T00:00:00Z'),
     ]
     const selected = selectStories(items)
     const techStories = selected.filter((s) => s.category === 'Technology')
@@ -288,12 +288,7 @@ describe('selectStories', () => {
   })
 
   it('trims to TARGET_STORY_COUNT by dropping shortest descriptions when over limit', () => {
-    const categories: Category[] = [
-      'World / Politics',
-      'Technology',
-      'Science',
-      'Business / Economy',
-    ]
+    const categories: Category[] = ['World', 'Technology', 'Science', 'Business / Economy']
     const items: CategorisedItem[] = categories.flatMap((cat) =>
       Array.from({ length: 4 }, (_, i) => ({
         title: `${cat} story ${i + 1}`,

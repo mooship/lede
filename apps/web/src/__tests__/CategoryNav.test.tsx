@@ -24,6 +24,7 @@ describe('CategoryNav', () => {
     expect(screen.getByRole('tab', { name: 'Technology' })).not.toBeNull()
     expect(screen.getByRole('tab', { name: 'Science' })).not.toBeNull()
     expect(screen.getByRole('tab', { name: 'Business' })).not.toBeNull()
+    expect(screen.getByRole('tab', { name: 'Sport' })).not.toBeNull()
   })
 
   it('defaults to All selected', () => {
@@ -46,13 +47,13 @@ describe('CategoryNav', () => {
     render(<Wrapper />)
     screen.getByRole('tab', { name: 'All' }).focus()
     await userEvent.keyboard('{ArrowRight}')
-    expect(screen.getByTestId('active').textContent).toBe('World / Politics')
+    expect(screen.getByTestId('active').textContent).toBe('World')
   })
 
   it('moves selection with ArrowLeft key wrapping to last tab', async () => {
     render(<Wrapper />)
     screen.getByRole('tab', { name: 'All' }).focus()
     await userEvent.keyboard('{ArrowLeft}')
-    expect(screen.getByTestId('active').textContent).toBe('Business / Economy')
+    expect(screen.getByTestId('active').textContent).toBe('Sport')
   })
 })

@@ -5,14 +5,15 @@ import { MUTED } from '../colors.js'
 
 type Tab = Category | 'All'
 
-const TABS: Tab[] = ['All', 'World / Politics', 'Technology', 'Science', 'Business / Economy']
+const TABS: Tab[] = ['All', 'World', 'Technology', 'Science', 'Business / Economy', 'Sport']
 
 const LABELS: Record<Tab, string> = {
   All: 'All',
-  'World / Politics': 'World',
+  World: 'World',
   Technology: 'Technology',
   Science: 'Science',
   'Business / Economy': 'Business',
+  Sport: 'Sport',
 }
 
 const ACCENT: Record<Tab, string> = { All: '#f0f0f0', ...CATEGORY_ACCENT }
