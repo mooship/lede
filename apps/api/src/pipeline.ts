@@ -2,12 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { Category } from '@lede/api'
 import { createDb, schema } from '@lede/db'
 import { eq } from 'drizzle-orm'
-import {
-  FEEDS,
-  MAX_STORIES_PER_CATEGORY,
-  MIN_STORIES_PER_CATEGORY,
-  TARGET_STORY_COUNT,
-} from './config.js'
+import { FEEDS, MAX_STORIES_PER_CATEGORY, TARGET_STORY_COUNT } from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
@@ -181,7 +176,7 @@ export async function curateWithClaude(
 
   const prompt = `You are a news editor curating a daily digest for an international audience.
 
-Select no more than ${TARGET_STORY_COUNT} stories total — fewer is fine if quality demands it. At most ${MAX_STORIES_PER_CATEGORY} from any single category, and at most 2 from Sport.
+Select between 8 and ${TARGET_STORY_COUNT} stories total. At most ${MAX_STORIES_PER_CATEGORY} from any single category, and at most 2 from Sport. Try to include at least 1 story from each category if there is something newsworthy.
 
 Include only hard news: politics, geopolitics, economic policy, and science discoveries. Aim for geographic diversity — stories from Europe, the Americas, Africa, Asia, the Middle East, and Oceania are all welcome. Exclude food, lifestyle, travel, entertainment, opinion columns, and human-interest content.
 

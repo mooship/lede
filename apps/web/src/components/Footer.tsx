@@ -27,7 +27,14 @@ export function Footer() {
       }}
     >
       <span>Made with ♥ in South Africa</span>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem 1.25rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '0.5rem 1.25rem',
+        }}
+      >
         {LINKS.map(({ label, href, external }) => (
           <a
             key={label}
