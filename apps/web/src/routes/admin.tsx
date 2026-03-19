@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { css } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 import { Footer } from '../components/Footer.js'
+import { Modal } from '../components/Modal.js'
 import { PageHeader } from '../components/PageHeader.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
@@ -284,6 +285,8 @@ function AdminStatus({ secret }: { secret: string }) {
     queryFn: fetchEditionList,
   })
 
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+
   const buildMutation = useMutation<void, Error, boolean>({
     mutationFn: (force: boolean) => triggerBuild(secret, force),
     onSuccess: () => {
@@ -358,6 +361,19 @@ function AdminStatus({ secret }: { secret: string }) {
         ))}
       </div>
 
+      {showConfirmModal && (
+        <Modal
+          title="Replace today's edition?"
+          message="This will delete all current articles and rebuild from scratch."
+          confirmLabel="Rebuild"
+          onConfirm={() => {
+            setShowConfirmModal(false)
+            buildMutation.mutate(true)
+          }}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+      )}
+
       <div className={actionRowClass}>
         <button type="button" className={buttonClass} onClick={() => refetch()}>
           Refresh
@@ -367,13 +383,7 @@ function AdminStatus({ secret }: { secret: string }) {
           className={buttonClass}
           onClick={() => {
             if (data) {
-              if (
-                !window.confirm(
-                  "Today's edition is already built. This will delete all current articles and rebuild from scratch. Continue?",
-                )
-              )
-                return
-              buildMutation.mutate(true)
+              setShowConfirmModal(true)
             } else {
               buildMutation.mutate(false)
             }
