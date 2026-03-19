@@ -3,7 +3,10 @@ import { getEditionDate } from '../utils.js'
 export function Masthead() {
   const date = getEditionDate()
 
-  const dayName = date.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'Africa/Johannesburg' })
+  const dayName = date.toLocaleDateString('en-GB', {
+    weekday: 'long',
+    timeZone: 'Africa/Johannesburg',
+  })
   const dateLine = date.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',

@@ -20,6 +20,8 @@ Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`
 
 ## Commands
 
+> **Before running any command**, ensure dependencies are installed: `npm install`
+
 ```bash
 # All workspaces
 npm run dev          # turbo dev (starts wrangler dev + vite concurrently)
