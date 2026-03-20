@@ -121,7 +121,7 @@ const fetchStory = createServerFn({ method: 'GET' })
   })
 
 function StoryPage() {
-  const { id } = Route.useParams()
+  Route.useParams()
   const [copied, setCopied] = useState(false)
   const story: Story | null = Route.useLoaderData()
 
@@ -193,7 +193,9 @@ export const Route = createFileRoute('/story/$id')({
   pendingComponent: () => <PageMessage message="Loading…" variant="loading" />,
   loader: async ({ params }) => fetchStory({ data: params.id }),
   head: ({ loaderData: story }) => {
-    if (!story) return {}
+    if (!story) {
+      return {}
+    }
     const title = `${story.title} — Tidel`
     const description = story.description ?? story.summary ?? ''
     const storyUrl = `${import.meta.env.VITE_APP_URL ?? ''}/story/${story.id}`
