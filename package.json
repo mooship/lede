@@ -12,7 +12,7 @@
     "test": "turbo test",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install || true"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
