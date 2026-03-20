@@ -5,13 +5,9 @@
   "main": "dist/server/index.js",
   "assets": { "directory": "dist/client" },
   "vars": {
-    "API_URL": "http://localhost:8787"
+    "API_URL": "https://api.tidel.app"
   },
-  "env": {
-    "production": {
-      "vars": {
-        "API_URL": "https://api.tidel.app"
-      }
-    }
+  "observability": {
+    "enabled": true
   }
 }

@@ -8,7 +8,7 @@
     "dev": "panda codegen --silent && vite dev",
     "build": "panda codegen --silent && vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy --config wrangler.deploy.jsonc --env production",
+    "deploy": "npm run build && wrangler deploy --config wrangler.deploy.jsonc",
     "test": "vitest run",
     "lint": "biome check --write .",
     "typecheck": "tsc --noEmit"

@@ -16,7 +16,7 @@ namespace_id = "1001"
 simple       = { limit = 60, period = 60 }
 
 [env.production]
-name = "tidel"
+name = "tidel-api"
 
 [[env.production.routes]]
 pattern = "api.tidel.app"
