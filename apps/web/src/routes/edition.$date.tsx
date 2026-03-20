@@ -120,7 +120,7 @@ function EditionPage() {
             No{activeSlot === 'afternoon' ? ' afternoon' : ''} edition found for{' '}
             {formatEditionDate(date)}.{' '}
             <Link to="/archive" className={css({ color: 'textSecondary' })}>
-              Browse archive →
+              Browse archive {'\u2192\uFE0E'}
             </Link>
           </p>
         </div>
