@@ -19,7 +19,7 @@ export async function createContext(
   const authHeader = req.headers.get('Authorization')
 
   if (!authHeader?.startsWith('Bearer ')) {
-    return { isAdmin: false, env }
+    return { isAdmin: false, env, executionCtx }
   }
 
   const token = authHeader.slice(7)

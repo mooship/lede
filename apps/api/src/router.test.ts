@@ -18,6 +18,7 @@ vi.mock('@tidel/db', () => ({
 vi.mock('./pipeline.js', () => ({
   buildEdition: vi.fn(),
   todaySAST: vi.fn(() => '2024-01-01'),
+  currentSlot: vi.fn(() => 'morning'),
 }))
 
 vi.mock('drizzle-orm', () => ({
@@ -79,6 +80,12 @@ function makeEnv() {
   }
 }
 
+const mockExecutionCtx = {
+  waitUntil: vi.fn(),
+  passThroughOnException: () => {},
+  props: {},
+} as unknown as ExecutionContext
+
 async function getRouter() {
   const { appRouter } = await import('./router.js')
   return appRouter
@@ -93,7 +100,7 @@ describe('edition.today', () => {
     mockDb.query.editions.findFirst.mockResolvedValue(undefined)
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv() })
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.today({})
     expect(result).toBeNull()
   })
@@ -107,7 +114,7 @@ describe('edition.today', () => {
     mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s, pubDate: s.pubDate })))
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv() })
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.today({})
     expect(result).toHaveLength(1)
     expect(result?.[0]).toMatchObject({
@@ -129,7 +136,7 @@ describe('edition.today', () => {
     mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s })))
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv() })
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.today({})
     expect(result).toHaveLength(1)
     expect(mockDb.query.editions.findFirst).toHaveBeenCalledTimes(2)
@@ -139,7 +146,7 @@ describe('edition.today', () => {
     mockDb.query.editions.findFirst.mockResolvedValue(undefined)
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv() })
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.today({ slot: 'afternoon' })
     expect(result).toBeNull()
     expect(mockDb.query.editions.findFirst).toHaveBeenCalledTimes(1)
@@ -154,7 +161,7 @@ describe('edition.build', () => {
   it('rejects unauthenticated calls', async () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv() })
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
     await expect(caller.edition.build({})).rejects.toThrow()
   })
 
@@ -162,7 +169,7 @@ describe('edition.build', () => {
     const { buildEdition } = await import('./pipeline.js')
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: true, env: makeEnv() })
+    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.build({ slot: 'afternoon' })
     expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), false, 'afternoon')
     expect(result).toEqual({ ok: true })
@@ -172,7 +179,7 @@ describe('edition.build', () => {
     const { buildEdition } = await import('./pipeline.js')
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: true, env: makeEnv() })
+    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
     await caller.edition.build({})
     expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), false, 'morning')
   })

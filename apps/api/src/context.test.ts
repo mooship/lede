@@ -18,10 +18,11 @@ function makeEnv(secret = 'super-secret'): Env {
   }
 }
 
-const mockExecutionCtx: ExecutionContext = {
+const mockExecutionCtx = {
   waitUntil: () => {},
   passThroughOnException: () => {},
-}
+  props: {},
+} as unknown as ExecutionContext
 
 function byteEqual(a: ArrayBufferView, b: ArrayBufferView): boolean {
   const av = new Uint8Array(a.buffer, a.byteOffset, a.byteLength)
@@ -83,7 +84,7 @@ describe('createContext', () => {
   it('includes env in the returned context', async () => {
     const env = makeEnv()
     const req = new Request('https://example.com')
-    const ctx = await createContext(req, env)
+    const ctx = await createContext(req, env, mockExecutionCtx)
     expect(ctx.env).toBe(env)
   })
 })
