@@ -15,6 +15,7 @@ const innerClass = css({
   py: '5',
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'space-between',
 })
 
 const brandLinkClass = css({
@@ -27,13 +28,32 @@ const brandLinkClass = css({
   lineHeight: '1',
 })
 
-export function PageHeader() {
+const backLinkClass = css({
+  fontFamily: 'display',
+  fontSize: '0.65rem',
+  fontWeight: '700',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase',
+  color: 'textMuted',
+  textDecoration: 'none',
+})
+
+interface PageHeaderProps {
+  backTo?: string
+}
+
+export function PageHeader({ backTo }: PageHeaderProps) {
   return (
     <header className={headerClass}>
       <div className={innerClass}>
         <Link to="/" className={brandLinkClass}>
           TIDEL
         </Link>
+        {backTo && (
+          <Link to={backTo} className={backLinkClass}>
+            ← Back
+          </Link>
+        )}
       </div>
     </header>
   )

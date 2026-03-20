@@ -130,7 +130,7 @@ function StoryPage() {
 
   return (
     <div className={pageClass}>
-      <PageHeader />
+      <PageHeader backTo="/" />
 
       <main className={mainClass}>
         <div className={metaRowClass}>
