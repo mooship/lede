@@ -106,7 +106,7 @@ function EditionPage() {
               TIDEL
             </Link>
             <Link to="/archive" className={archiveLinkClass}>
-              ← Archive
+              {'\u2190\uFE0E'} Archive
             </Link>
           </div>
         </div>
