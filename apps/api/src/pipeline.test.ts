@@ -353,6 +353,7 @@ describe('buildEdition', () => {
     ANTHROPIC_API_KEY: undefined,
     ADMIN_SECRET: 'secret',
     WEB_ORIGIN: 'http://localhost',
+    RATE_LIMITER: { limit: async () => ({ success: true }) },
   }
 
   const goodStory: RssItem = {

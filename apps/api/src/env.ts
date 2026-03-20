@@ -14,5 +14,5 @@ type RateLimiter = {
 export type Env = z.infer<typeof envSchema> & { RATE_LIMITER: RateLimiter }
 
 export function validateEnv(raw: unknown): Env {
-  return envSchema.parse(raw)
+  return envSchema.parse(raw) as Env
 }

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { css } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 import { Footer } from '../components/Footer.js'
+import { Modal } from '../components/Modal.js'
 import { PageHeader } from '../components/PageHeader.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
@@ -236,12 +237,12 @@ async function fetchEditionList(): Promise<Array<{ date: string; storyCount: num
   return json.result?.data ?? []
 }
 
-async function triggerBuild(secret: string): Promise<void> {
+async function triggerBuild(secret: string, force = false): Promise<void> {
   const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
   const res = await fetch(`${apiUrl}/trpc/edition.build`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
-    body: '{}',
+    body: JSON.stringify({ force }),
   })
   const json = (await res.json()) as {
     result?: { data?: { ok: boolean } }
@@ -284,8 +285,10 @@ function AdminStatus({ secret }: { secret: string }) {
     queryFn: fetchEditionList,
   })
 
-  const buildMutation = useMutation({
-    mutationFn: () => triggerBuild(secret),
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+
+  const buildMutation = useMutation<void, Error, boolean>({
+    mutationFn: (force: boolean) => triggerBuild(secret, force),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminStatus', secret] })
       queryClient.invalidateQueries({ queryKey: ['editionList'] })
@@ -358,6 +361,19 @@ function AdminStatus({ secret }: { secret: string }) {
         ))}
       </div>
 
+      {showConfirmModal && (
+        <Modal
+          title="Replace today's edition?"
+          message="This will delete all current articles and rebuild from scratch."
+          confirmLabel="Rebuild"
+          onConfirm={() => {
+            setShowConfirmModal(false)
+            buildMutation.mutate(true)
+          }}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+      )}
+
       <div className={actionRowClass}>
         <button
           type="button"
@@ -370,11 +386,22 @@ function AdminStatus({ secret }: { secret: string }) {
         <button
           type="button"
           className={buttonClass}
-          onClick={() => buildMutation.mutate()}
+          onClick={() => {
+            if (data) {
+              setShowConfirmModal(true)
+            } else {
+              buildMutation.mutate(false)
+            }
+          }}
           disabled={buildMutation.isPending}
         >
           {buildMutation.isPending ? 'Building…' : "Build Today's Edition"}
         </button>
+        {data && !buildMutation.isPending && !buildMutation.isSuccess && (
+          <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'business' })}>
+            Warning: today&apos;s edition exists — clicking will replace all articles.
+          </span>
+        )}
         {buildMutation.isSuccess && (
           <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'science' })}>
             Build complete.
