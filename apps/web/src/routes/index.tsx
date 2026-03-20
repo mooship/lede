@@ -103,7 +103,9 @@ function IndexPage() {
   const [showBanner, setShowBanner] = useState(false)
 
   useEffect(() => {
-    if (!data || data.length === 0) return
+    if (!data || data.length === 0) {
+      return
+    }
     const firstId = data[0]?.id ?? ''
     if (seenEditionDate.current === null) {
       seenEditionDate.current = firstId

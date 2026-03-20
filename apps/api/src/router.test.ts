@@ -142,7 +142,6 @@ describe('edition.today', () => {
     const caller = factory({ isAdmin: false, env: makeEnv() })
     const result = await caller.edition.today({ slot: 'afternoon' })
     expect(result).toBeNull()
-    // No fallback for afternoon — findFirst called only once
     expect(mockDb.query.editions.findFirst).toHaveBeenCalledTimes(1)
   })
 })

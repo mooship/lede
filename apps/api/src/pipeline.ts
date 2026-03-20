@@ -441,7 +441,6 @@ export async function buildEdition(
       .where(and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)))
   }
 
-  // For the afternoon slot, exclude links already published in today's morning edition.
   let excludeLinks = new Set<string>()
   if (slot === 'afternoon') {
     const morningStories = await db

@@ -306,7 +306,6 @@ describe('curateWithClaude', () => {
   })
 
   it('afternoon slot uses afternoon max per category', async () => {
-    // Give Claude a response selecting many items; cap should be afternoon max (3 not 5)
     mockCreate.mockResolvedValueOnce({
       content: [{ type: 'text', text: '[1, 2, 3, 4, 5, 6, 7, 8]' }],
     })

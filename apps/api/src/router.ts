@@ -59,7 +59,6 @@ const editionRouter = router({
         let edition = await db.query.editions.findFirst({
           where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)),
         })
-        // Morning only: fall back to the latest morning edition if today's isn't built yet
         if (!edition && slot === 'morning') {
           edition = await db.query.editions.findFirst({
             where: eq(schema.editions.slot, 'morning'),
@@ -112,8 +111,6 @@ const editionRouter = router({
           ),
         )
         .groupBy(schema.editions.date, schema.editions.slot)
-        // Order by date desc, then morning before afternoon within a date
-        // ('morning' > 'afternoon' alphabetically, so desc puts morning first)
         .orderBy(desc(schema.editions.date), desc(schema.editions.slot))
       return rows.map((r) => ({ date: r.date, slot: r.slot, storyCount: r.storyCount }))
     },
@@ -131,7 +128,9 @@ const editionRouter = router({
       const edition = await db.query.editions.findFirst({
         where: and(eq(schema.editions.date, input.date), eq(schema.editions.slot, input.slot)),
       })
-      if (!edition) return null
+      if (!edition) {
+        return null
+      }
       const rows = await db
         .select()
         .from(schema.stories)
@@ -157,18 +156,18 @@ const editionRouter = router({
       categoryBreakdown: Record<string, number>
     }> | null> => {
       const db = createDb(ctx.env.DATABASE_URL)
-      // Find the most recent date
       const latest = await db.query.editions.findFirst({
         orderBy: desc(schema.editions.date),
       })
-      if (!latest) return null
+      if (!latest) {
+        return null
+      }
 
-      // Fetch all slots for that date
       const editionRows = await db
         .select()
         .from(schema.editions)
         .where(eq(schema.editions.date, latest.date))
-        .orderBy(desc(schema.editions.slot)) // morning before afternoon
+        .orderBy(desc(schema.editions.slot))
 
       const results = await Promise.all(
         editionRows.map(async (edition) => {
@@ -234,7 +233,9 @@ const storyRouter = router({
         .from(schema.stories)
         .where(eq(schema.stories.id, input))
         .limit(1)
-      if (!rows[0]) return null
+      if (!rows[0]) {
+        return null
+      }
       return mapStoryRow(rows[0])
     }),
 })

@@ -47,7 +47,7 @@ const dateClass = css({
 })
 
 interface MastheadProps {
-  editionDate?: string | null | undefined // YYYY-MM-DD; null/undefined hides the date
+  editionDate?: string | null | undefined
   slot?: 'morning' | 'afternoon'
 }
 
