@@ -19,7 +19,7 @@
     "@neondatabase/serverless": "latest",
     "@trpc/server": "latest",
     "drizzle-orm": "latest",
-    "fast-xml-parser": "^5.5.6",
+    "fast-xml-parser": "^5.5.7",
     "hono": "latest",
     "ofetch": "latest",
     "zod": "^4.3.6"
