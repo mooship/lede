@@ -192,17 +192,27 @@ export async function curateWithClaude(
     categoryBlocks.push(`${category}:\n${lines.join('\n')}`)
   }
 
-  const prompt = `You are a news editor curating a daily digest for an international audience.
+  const prompt = `You are a senior news editor curating a daily digest for an international audience.
 
-Select as close to ${TARGET_STORY_COUNT} stories as possible (minimum 9). At most ${MAX_STORIES_PER_CATEGORY} from any single category. Try to include at least 1 story from each category if there is something newsworthy.
+You MUST select between 9 and ${TARGET_STORY_COUNT} stories. Aim for exactly ${TARGET_STORY_COUNT}.
 
-Include only hard news: politics, geopolitics, economic policy, and science discoveries. Aim for geographic diversity — stories from Europe, the Americas, Africa, Asia, the Middle East, and Oceania are all welcome. Exclude food, lifestyle, travel, entertainment, opinion columns, and human-interest content.
+Rules:
+- At most ${MAX_STORIES_PER_CATEGORY} stories from any single category.
+- Include at least 1 story from each category, provided something newsworthy exists.
+- Never select more than one story about the same event or topic. If multiple stories cover the same event, pick the one with the highest source count and skip the rest.
 
-For Sport, only select results from major international competitions (World Cup, Olympics, Grand Slams, major league finals) or significant breaking news from the world of sport.
+Editorial criteria by category:
+- World: Prioritise hard news — politics, geopolitics, conflict, diplomacy, and major policy decisions. Aim for geographic diversity across Europe, the Americas, Africa, Asia, the Middle East, and Oceania.
+- Technology: Select significant product launches, regulatory actions, cybersecurity incidents, and industry shifts. Skip gadget reviews, app updates, and listicles.
+- Science: Select discoveries, studies, and space/climate developments with broad significance.
+- Business / Economy: Select macroeconomic policy, central bank decisions, major corporate news, and market-moving events. Skip personal finance tips and stock picks.
+- Sport: Only select results from major international competitions (World Cup, Olympics, Grand Slams, Champions League, major league finals) or significant breaking news. Skip routine match results and transfer rumours.
 
-Give strong preference to stories with higher source counts — a story covered by multiple outlets is more significant than one covered by a single source. Never select more than one story about the same event or topic — if multiple stories cover the same event, pick the one with the highest source count and skip the rest.
+Exclude across all categories: food, lifestyle, travel, entertainment, opinion columns, human-interest stories, and promotional content.
 
-Return ONLY a JSON array of story numbers, e.g. [1, 3, 5, 7]. No other text.
+Source count is a strong signal of significance — a story covered by multiple outlets is more important than one covered by a single source. Prefer higher source counts when choosing between stories of similar newsworthiness.
+
+Respond with ONLY a JSON array of story numbers, e.g. [1, 3, 5, 7]. No explanation, no markdown fences, no preamble.
 
 ${categoryBlocks.join('\n\n')}`
 
@@ -224,7 +234,9 @@ ${categoryBlocks.join('\n\n')}`
     const indices: number[] = JSON.parse(match[0])
     const seen = new Set<number>()
     const validIndices = indices.filter((n) => {
-      if (!Number.isInteger(n) || n < 1 || n > allStories.length || seen.has(n)) return false
+      if (!Number.isInteger(n) || n < 1 || n > allStories.length || seen.has(n)) {
+        return false
+      }
       seen.add(n)
       return true
     })
@@ -253,11 +265,18 @@ ${categoryBlocks.join('\n\n')}`
 const MAX_DESCRIPTION_CHARS = 3000
 
 const SUMMARISE_PROMPT = (item: RssItem) =>
-  `You are a news summariser. Write the following for the article below. Use British English. No other text.
+  `You are a news summariser writing for a daily digest. Use British English throughout.
 
-TITLE: A clean, publication-quality headline. Strip any source attribution from the start or end (e.g. "| News24", "- BBC Sport", "Reuters: ").
-BYLINE: A single factual sentence, max 25 words.
-SUMMARY: A factual, concise summary of approximately 150 words.
+Given the article below, produce exactly three labelled fields:
+
+TITLE: A clean, publication-quality headline. Remove any source attribution (e.g. "| News24", "- BBC Sport", "Reuters: ") and any leading/trailing punctuation artifacts. Do not wrap in quotes.
+BYLINE: A single factual sentence of no more than 25 words that captures the key development. Do not repeat the title.
+SUMMARY: A factual, neutral summary of approximately 150 words. Lead with the most important fact. Do not editoralise or speculate. Use past tense for events that have occurred.
+
+Output format — use exactly these labels, one per line, with no other text:
+TITLE: <headline>
+BYLINE: <sentence>
+SUMMARY: <paragraph>
 
 Title: ${item.title}
 Article: ${item.description.slice(0, MAX_DESCRIPTION_CHARS)}`
@@ -321,7 +340,9 @@ export async function buildEdition(env: Env, force = false): Promise<void> {
     where: eq(schema.editions.date, date),
   })
   if (existing) {
-    if (!force) return
+    if (!force) {
+      return
+    }
     await db.delete(schema.editions).where(eq(schema.editions.date, date))
   }
 
@@ -335,7 +356,9 @@ export async function buildEdition(env: Env, force = false): Promise<void> {
   const allItems: Array<RssItem & { category: Category }> = []
   for (const [i, result] of feedResults.entries()) {
     const feedEntry = feedEntries[i]
-    if (!feedEntry) continue
+    if (!feedEntry) {
+      continue
+    }
 
     if (result.status === 'fulfilled') {
       feedStats[feedEntry.url] = 'ok'
