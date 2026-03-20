@@ -397,11 +397,15 @@ function AdminStatus({ secret }: { secret: string }) {
         >
           {buildMutation.isPending ? 'Building…' : "Build Today's Edition"}
         </button>
-        {data && !buildMutation.isPending && !buildMutation.isSuccess && (
-          <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'business' })}>
-            Warning: today&apos;s edition exists — clicking will replace all articles.
-          </span>
-        )}
+        {data &&
+          data.date ===
+            new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Johannesburg' }) &&
+          !buildMutation.isPending &&
+          !buildMutation.isSuccess && (
+            <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'business' })}>
+              Warning: today&apos;s edition exists — clicking will replace all articles.
+            </span>
+          )}
         {buildMutation.isSuccess && (
           <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'science' })}>
             Build complete.
