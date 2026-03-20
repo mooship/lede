@@ -51,7 +51,7 @@ export function PageHeader({ backTo }: PageHeaderProps) {
         </Link>
         {backTo && (
           <Link to={backTo} className={backLinkClass}>
-            ← Back
+            {'\u2190\uFE0E'} Back
           </Link>
         )}
       </div>
