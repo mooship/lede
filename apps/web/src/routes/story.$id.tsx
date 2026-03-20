@@ -130,23 +130,9 @@ function StoryPage() {
   }
 
   const accentVar = CATEGORY_CSS_VAR[story.category] ?? 'var(--colors-text-primary)'
-  const pageTitle = `${story.title} — Tidel`
-  const pageDescription = story.description ?? story.summary
-  const storyUrl = `${import.meta.env.VITE_APP_URL ?? ''}/story/${id}`
 
   return (
     <div className={pageClass}>
-      <title>{pageTitle}</title>
-      <meta name="description" content={pageDescription} />
-      <meta property="og:title" content={pageTitle} />
-      <meta property="og:description" content={pageDescription} />
-      <meta property="og:type" content="article" />
-      <meta property="og:url" content={storyUrl} />
-      {story.pubDate && <meta property="article:published_time" content={story.pubDate} />}
-      <link rel="canonical" href={storyUrl} />
-      <meta name="twitter:title" content={pageTitle} />
-      <meta name="twitter:description" content={pageDescription} />
-
       <PageHeader />
 
       <main className={mainClass}>
@@ -206,5 +192,26 @@ export const Route = createFileRoute('/story/$id')({
   },
   pendingComponent: () => <PageMessage message="Loading…" variant="loading" />,
   loader: async ({ params }) => fetchStory({ data: params.id }),
+  head: ({ loaderData: story }) => {
+    if (!story) return {}
+    const title = `${story.title} — Tidel`
+    const description = story.description ?? story.summary ?? ''
+    const storyUrl = `${import.meta.env.VITE_APP_URL ?? ''}/story/${story.id}`
+    return {
+      meta: [
+        { title },
+        { name: 'description', content: description },
+        { property: 'og:title', content: title },
+        { property: 'og:description', content: description },
+        { property: 'og:type', content: 'article' },
+        { property: 'og:url', content: storyUrl },
+        ...(story.pubDate ? [{ property: 'article:published_time', content: story.pubDate }] : []),
+        { name: 'twitter:card', content: 'summary' },
+        { name: 'twitter:title', content: title },
+        { name: 'twitter:description', content: description },
+      ],
+      links: [{ rel: 'canonical', href: storyUrl }],
+    }
+  },
   component: StoryPage,
 })
