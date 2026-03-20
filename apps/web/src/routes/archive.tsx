@@ -27,15 +27,12 @@ const itemClass = css({
   '&:first-child': { borderTop: '1px solid', borderTopColor: 'border' },
 })
 
-const linkClass = css({
+const itemInnerClass = css({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
   py: '5',
   px: '0',
-  textDecoration: 'none',
-  transition: 'background 0.1s',
-  '&:hover': { background: 'surface' },
 })
 
 const dateLabelClass = css({
@@ -46,13 +43,27 @@ const dateLabelClass = css({
   letterSpacing: '-0.01em',
 })
 
-const countClass = css({
+const slotsClass = css({
+  display: 'flex',
+  gap: '3',
+  alignItems: 'center',
+  flexShrink: '0',
+})
+
+const slotLinkClass = css({
   fontFamily: 'display',
   fontSize: '0.65rem',
   fontWeight: '700',
-  letterSpacing: '0.1em',
+  letterSpacing: '0.08em',
   textTransform: 'uppercase',
   color: 'textMuted',
+  textDecoration: 'none',
+  border: '1px solid',
+  borderColor: 'border',
+  px: '3',
+  py: '1',
+  transition: 'color 0.1s, border-color 0.1s',
+  '&:hover': { color: 'textPrimary', borderColor: 'textMuted' },
 })
 
 function formatArchiveDate(dateStr: string): string {
@@ -65,14 +76,27 @@ function formatArchiveDate(dateStr: string): string {
   })
 }
 
+type EditionEntry = { date: string; slot: string; storyCount: number }
+
 const fetchEditionList = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<Array<{ date: string; storyCount: number }>> => {
+  async (): Promise<Array<EditionEntry>> => {
     return createServerTrpcCaller().edition.list.query()
   },
 )
 
+function groupByDate(editions: EditionEntry[]): Map<string, EditionEntry[]> {
+  const map = new Map<string, EditionEntry[]>()
+  for (const ed of editions) {
+    const group = map.get(ed.date) ?? []
+    group.push(ed)
+    map.set(ed.date, group)
+  }
+  return map
+}
+
 function ArchivePage() {
-  const data: Array<{ date: string; storyCount: number }> = Route.useLoaderData()
+  const data: Array<EditionEntry> = Route.useLoaderData()
+  const grouped = groupByDate(data)
 
   return (
     <div className={pageClass}>
@@ -92,12 +116,25 @@ function ArchivePage() {
           </p>
         ) : (
           <ul className={listClass}>
-            {data.map((edition) => (
-              <li key={edition.date} className={itemClass}>
-                <Link to="/edition/$date" params={{ date: edition.date }} className={linkClass}>
-                  <span className={dateLabelClass}>{formatArchiveDate(edition.date)}</span>
-                  <span className={countClass}>{edition.storyCount} stories</span>
-                </Link>
+            {[...grouped.entries()].map(([date, slots]) => (
+              <li key={date} className={itemClass}>
+                <div className={itemInnerClass}>
+                  <span className={dateLabelClass}>{formatArchiveDate(date)}</span>
+                  <div className={slotsClass}>
+                    {slots.map((ed) => (
+                      <Link
+                        key={ed.slot}
+                        to="/edition/$date"
+                        params={{ date }}
+                        search={{ slot: ed.slot as 'morning' | 'afternoon' }}
+                        className={slotLinkClass}
+                        aria-label={`${ed.slot === 'morning' ? 'Morning' : 'Afternoon'} edition for ${formatArchiveDate(date)}, ${ed.storyCount} stories`}
+                      >
+                        {ed.slot === 'morning' ? 'Morning' : 'Afternoon'} · {ed.storyCount}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </li>
             ))}
           </ul>

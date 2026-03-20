@@ -5,8 +5,13 @@ import { createCallerFactory } from './router.js'
 vi.mock('@tidel/db', () => ({
   createDb: vi.fn(() => mockDb),
   schema: {
-    editions: { date: 'date' },
-    stories: { editionDate: 'editionDate', position: 'position' },
+    editions: { date: 'date', slot: 'slot' },
+    stories: {
+      editionDate: 'editionDate',
+      editionSlot: 'editionSlot',
+      position: 'position',
+      id: 'id',
+    },
   },
 }))
 
@@ -17,13 +22,17 @@ vi.mock('./pipeline.js', () => ({
 
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn((a, b) => `${String(a)}=${b}`),
+  and: vi.fn((...args: unknown[]) => args.join('&')),
   desc: vi.fn((a) => `${String(a)} desc`),
+  asc: vi.fn((a) => `${String(a)} asc`),
+  count: vi.fn(() => 'count'),
 }))
 
 const mockStories: Story[] = [
   {
     id: '1',
     editionDate: '2024-01-01',
+    editionSlot: 'morning',
     title: 'Test Story',
     description: null,
     summary: 'A summary.',
@@ -44,7 +53,15 @@ const mockDb = {
   select: vi.fn().mockReturnThis(),
   from: vi.fn().mockReturnThis(),
   where: vi.fn().mockReturnThis(),
+  leftJoin: vi.fn().mockReturnThis(),
+  groupBy: vi.fn().mockReturnThis(),
   orderBy: vi.fn().mockResolvedValue(
+    mockStories.map((s) => ({
+      ...s,
+      pubDate: s.pubDate,
+    })),
+  ),
+  limit: vi.fn().mockResolvedValue(
     mockStories.map((s) => ({
       ...s,
       pubDate: s.pubDate,
@@ -77,17 +94,21 @@ describe('edition.today', () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: false, env: makeEnv() })
-    const result = await caller.edition.today()
+    const result = await caller.edition.today({})
     expect(result).toBeNull()
   })
 
   it('returns stories with correct shape when edition exists', async () => {
-    mockDb.query.editions.findFirst.mockResolvedValue({ date: '2024-01-01', builtAt: new Date() })
+    mockDb.query.editions.findFirst.mockResolvedValue({
+      date: '2024-01-01',
+      slot: 'morning',
+      builtAt: new Date(),
+    })
     mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s, pubDate: s.pubDate })))
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: false, env: makeEnv() })
-    const result = await caller.edition.today()
+    const result = await caller.edition.today({})
     expect(result).toHaveLength(1)
     expect(result?.[0]).toMatchObject({
       id: '1',
@@ -101,17 +122,27 @@ describe('edition.today', () => {
     })
   })
 
-  it('falls back to the most recent edition when today has no entry', async () => {
+  it('falls back to the most recent morning edition when today has no entry', async () => {
     mockDb.query.editions.findFirst
       .mockResolvedValueOnce(undefined)
-      .mockResolvedValueOnce({ date: '2023-12-31', builtAt: new Date() })
+      .mockResolvedValueOnce({ date: '2023-12-31', slot: 'morning', builtAt: new Date() })
     mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s })))
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: false, env: makeEnv() })
-    const result = await caller.edition.today()
+    const result = await caller.edition.today({})
     expect(result).toHaveLength(1)
     expect(mockDb.query.editions.findFirst).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns null for afternoon slot when no afternoon edition exists', async () => {
+    mockDb.query.editions.findFirst.mockResolvedValue(undefined)
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv() })
+    const result = await caller.edition.today({ slot: 'afternoon' })
+    expect(result).toBeNull()
+    expect(mockDb.query.editions.findFirst).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -127,13 +158,22 @@ describe('edition.build', () => {
     await expect(caller.edition.build({})).rejects.toThrow()
   })
 
-  it('calls buildEdition for admin', async () => {
+  it('calls buildEdition with correct slot for admin', async () => {
     const { buildEdition } = await import('./pipeline.js')
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: true, env: makeEnv() })
-    const result = await caller.edition.build({})
-    expect(buildEdition).toHaveBeenCalledOnce()
+    const result = await caller.edition.build({ slot: 'afternoon' })
+    expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), false, 'afternoon')
     expect(result).toEqual({ ok: true })
+  })
+
+  it('defaults to morning slot when not specified', async () => {
+    const { buildEdition } = await import('./pipeline.js')
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: true, env: makeEnv() })
+    await caller.edition.build({})
+    expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), false, 'morning')
   })
 })

@@ -52,8 +52,9 @@ app.use(
   }),
 )
 
-async function handleCron(_event: ScheduledEvent, env: Env): Promise<void> {
-  await buildEdition(env)
+async function handleCron(event: ScheduledEvent, env: Env): Promise<void> {
+  if (event.cron === '0 4 * * *') await buildEdition(env, false, 'morning')
+  if (event.cron === '0 12 * * *') await buildEdition(env, false, 'afternoon')
 }
 
 export default {

@@ -1,7 +1,11 @@
 import type { Category } from '@tidel/api'
 import { createDb } from '@tidel/db'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { MAX_STORIES_PER_CATEGORY } from './config.js'
+import {
+  AFTERNOON_MAX_STORIES_PER_CATEGORY,
+  AFTERNOON_TARGET_STORY_COUNT,
+  MAX_STORIES_PER_CATEGORY,
+} from './config.js'
 import type { Env } from './env.js'
 import {
   buildEdition,
@@ -26,15 +30,21 @@ vi.mock('@anthropic-ai/sdk', () => {
 
 vi.mock('./rss.js', () => ({ fetchFeed: vi.fn() }))
 
-vi.mock('drizzle-orm', () => ({ eq: vi.fn() }))
+vi.mock('drizzle-orm', () => ({ eq: vi.fn(), and: vi.fn() }))
 
 const mockInsertValues = vi.fn().mockResolvedValue(undefined)
 const mockDeleteWhere = vi.fn().mockResolvedValue(undefined)
 const mockFindFirst = vi.fn()
+const mockSelectWhere = vi.fn().mockResolvedValue([])
 const mockDb = {
   query: { editions: { findFirst: mockFindFirst } },
   insert: vi.fn(() => ({ values: mockInsertValues })),
   delete: vi.fn(() => ({ where: mockDeleteWhere })),
+  select: vi.fn(() => ({
+    from: vi.fn(() => ({
+      where: mockSelectWhere,
+    })),
+  })),
 }
 
 vi.mock('@tidel/db', () => ({
@@ -294,6 +304,25 @@ describe('curateWithClaude', () => {
     expect(techResults.length).toBeLessThanOrEqual(MAX_STORIES_PER_CATEGORY)
     expect(techResults[0]?.title).toBe('Story 1')
   })
+
+  it('afternoon slot uses afternoon max per category', async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: 'text', text: '[1, 2, 3, 4, 5, 6, 7, 8]' }],
+    })
+    const scored = makeScoredItems(8)
+    const env = { ANTHROPIC_API_KEY: 'test-key' } as Parameters<typeof curateWithClaude>[1]
+    const result = await curateWithClaude(scored, env, 'afternoon')
+    const techResults = result.filter((s) => s.category === 'Technology')
+    expect(techResults.length).toBeLessThanOrEqual(AFTERNOON_MAX_STORIES_PER_CATEGORY)
+  })
+
+  it('afternoon slot fallback targets afternoon story count', async () => {
+    mockCreate.mockClear()
+    const scored = makeScoredItems(20)
+    const env = {} as Parameters<typeof curateWithClaude>[1]
+    const result = await curateWithClaude(scored, env, 'afternoon')
+    expect(result.length).toBeLessThanOrEqual(AFTERNOON_TARGET_STORY_COUNT)
+  })
 })
 
 describe('isJunk', () => {
@@ -369,13 +398,23 @@ describe('buildEdition', () => {
     mockInsertValues.mockResolvedValue(undefined)
     mockDeleteWhere.mockResolvedValue(undefined)
     mockFindFirst.mockResolvedValue(undefined)
+    mockSelectWhere.mockResolvedValue([])
   })
 
-  it('returns early without fetching feeds when an edition already exists', async () => {
-    mockFindFirst.mockResolvedValue({ date: '2024-01-01', builtAt: new Date() })
+  it('returns early without fetching feeds when a morning edition already exists', async () => {
+    mockFindFirst.mockResolvedValue({ date: '2024-01-01', slot: 'morning', builtAt: new Date() })
     await buildEdition(mockEnv)
     expect(fetchFeed).not.toHaveBeenCalled()
     expect(mockDb.insert).not.toHaveBeenCalled()
+  })
+
+  it('idempotency is slot-specific: morning edition does not prevent afternoon build', async () => {
+    // First call to findFirst (afternoon idempotency check) returns undefined
+    mockFindFirst.mockResolvedValue(undefined)
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    await buildEdition(mockEnv, false, 'afternoon')
+    // Should proceed to fetch feeds
+    expect(fetchFeed).toHaveBeenCalled()
   })
 
   it('inserts edition and stories rows on the happy path', async () => {
@@ -383,6 +422,48 @@ describe('buildEdition', () => {
     await buildEdition(mockEnv)
     expect(mockDb.insert).toHaveBeenCalledTimes(2)
     expect(mockInsertValues).toHaveBeenCalledTimes(2)
+  })
+
+  it('inserts slot field in edition and stories for morning', async () => {
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    await buildEdition(mockEnv, false, 'morning')
+    const editionInsertCall = mockInsertValues.mock.calls[0]
+    expect(editionInsertCall?.[0]).toMatchObject({ slot: 'morning' })
+    const storiesInsertCall = mockInsertValues.mock.calls[1]
+    const insertedStories = storiesInsertCall?.[0] as Array<{ editionSlot: string }>
+    expect(insertedStories[0]?.editionSlot).toBe('morning')
+  })
+
+  it('inserts slot field as afternoon for afternoon build', async () => {
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    await buildEdition(mockEnv, false, 'afternoon')
+    const editionInsertCall = mockInsertValues.mock.calls[0]
+    expect(editionInsertCall?.[0]).toMatchObject({ slot: 'afternoon' })
+    const storiesInsertCall = mockInsertValues.mock.calls[1]
+    const insertedStories = storiesInsertCall?.[0] as Array<{ editionSlot: string }>
+    expect(insertedStories[0]?.editionSlot).toBe('afternoon')
+  })
+
+  it('afternoon build queries morning stories for cross-slot dedup', async () => {
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    await buildEdition(mockEnv, false, 'afternoon')
+    expect(mockDb.select).toHaveBeenCalled()
+    expect(mockSelectWhere).toHaveBeenCalled()
+  })
+
+  it('afternoon build excludes links present in morning stories', async () => {
+    const morningLink = 'https://bbc.com/climate'
+    mockSelectWhere.mockResolvedValueOnce([{ link: morningLink }])
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory]) // goodStory.link === morningLink
+    await buildEdition(mockEnv, false, 'afternoon')
+    // The only story was in morning, so nothing to insert
+    expect(mockDb.insert).not.toHaveBeenCalled()
+  })
+
+  it('morning build does not query morning stories for dedup', async () => {
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    await buildEdition(mockEnv, false, 'morning')
+    expect(mockDb.select).not.toHaveBeenCalled()
   })
 
   it('skips edition creation when all stories are filtered as junk', async () => {

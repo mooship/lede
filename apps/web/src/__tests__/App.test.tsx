@@ -10,12 +10,13 @@ vi.mock('@tanstack/react-router', () => ({
   }),
   Link: ({ children }: { children: React.ReactNode }) => children,
   useNavigate: () => vi.fn(),
-  useSearch: () => ({ category: 'All' }),
+  useSearch: () => ({ category: 'All', slot: 'morning' }),
 }))
 
 vi.mock('@tanstack/react-start', () => ({
   createServerFn: () => ({
     validator: () => ({ handler: () => vi.fn() }),
+    inputValidator: () => ({ handler: () => vi.fn() }),
     handler: () => vi.fn(),
   }),
 }))
@@ -27,6 +28,7 @@ vi.mock('../trpc.js', () => ({
 const mockStory: Story = {
   id: '1',
   editionDate: '2024-01-01',
+  editionSlot: 'morning',
   title: 'Test Story',
   description: null,
   summary: 'Summary text.',

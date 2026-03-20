@@ -47,10 +47,11 @@ const dateClass = css({
 })
 
 interface MastheadProps {
-  editionDate?: string | null | undefined // YYYY-MM-DD; null/undefined hides the date
+  editionDate?: string | null | undefined
+  slot?: 'morning' | 'afternoon'
 }
 
-export function Masthead({ editionDate }: MastheadProps) {
+export function Masthead({ editionDate, slot }: MastheadProps) {
   const date = editionDate ? new Date(`${editionDate}T00:00:00Z`) : null
 
   const dayName = date?.toLocaleDateString('en-GB', {
@@ -64,12 +65,19 @@ export function Masthead({ editionDate }: MastheadProps) {
     timeZone: 'Africa/Johannesburg',
   })
 
+  const subtitle =
+    slot === 'morning'
+      ? 'Morning Edition'
+      : slot === 'afternoon'
+        ? 'Afternoon Edition'
+        : 'Daily Edition'
+
   return (
     <header className={headerClass}>
       <div className={innerClass}>
         <div>
           <h1 className={titleClass}>Tidel</h1>
-          <p className={subtitleClass}>Daily Edition</p>
+          <p className={subtitleClass}>{subtitle}</p>
         </div>
         {date && (
           <div className={dateClass}>
