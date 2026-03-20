@@ -273,7 +273,7 @@ function StatusBadge({ status }: { status: FeedStatus }) {
 function AdminStatus({ secret }: { secret: string }) {
   const queryClient = useQueryClient()
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['adminStatus', secret],
     queryFn: () => fetchAdminStatus(secret),
     retry: false,
@@ -359,8 +359,13 @@ function AdminStatus({ secret }: { secret: string }) {
       </div>
 
       <div className={actionRowClass}>
-        <button type="button" className={buttonClass} onClick={() => refetch()}>
-          Refresh
+        <button
+          type="button"
+          className={buttonClass}
+          onClick={() => refetch()}
+          disabled={isFetching}
+        >
+          {isFetching ? 'Refreshing…' : 'Refresh'}
         </button>
         <button
           type="button"
