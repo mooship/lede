@@ -157,7 +157,7 @@ function StoryPage() {
             style={{ color: accentVar, borderColor: accentVar }}
             aria-label="Read full article (opens in new tab)"
           >
-            Read Full Article →
+            Read Full Article {'\u2192\uFE0E'}
           </a>
           <button
             type="button"
