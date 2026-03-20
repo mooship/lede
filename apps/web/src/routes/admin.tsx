@@ -2,13 +2,21 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import type { Category } from '@tidel/api'
 import { useState } from 'react'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 import { Footer } from '../components/Footer.js'
 import { Modal } from '../components/Modal.js'
 import { PageHeader } from '../components/PageHeader.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
+
+const metaValueSmClass = css({ fontSize: '0.9rem' })
+const metaValueWarnClass = css({ color: 'business' })
+const sectionMtClass = css({ marginTop: '2' })
+const tableMbClass = css({ marginBottom: '10px' })
+const thNarrowClass = css({ width: '100px' })
+const thMediumClass = css({ width: '120px' })
+const thTinyClass = css({ width: '80px' })
 const mainClass = css({ maxWidth: '900px', mx: 'auto', px: '8', pt: '12', pb: '20' })
 
 const pageTitleClass = css({
@@ -330,9 +338,7 @@ function AdminStatus({ secret }: { secret: string }) {
         </div>
         <div className={metaCardClass}>
           <div className={metaLabelClass}>Built at (SAST)</div>
-          <div className={metaValueClass} style={{ fontSize: '0.9rem' }}>
-            {formatBuiltAt(data.builtAt)}
-          </div>
+          <div className={cx(metaValueClass, metaValueSmClass)}>{formatBuiltAt(data.builtAt)}</div>
         </div>
         <div className={metaCardClass}>
           <div className={metaLabelClass}>Stories</div>
@@ -340,10 +346,7 @@ function AdminStatus({ secret }: { secret: string }) {
         </div>
         <div className={metaCardClass}>
           <div className={metaLabelClass}>Feeds OK / Total</div>
-          <div
-            className={metaValueClass}
-            style={{ color: failCount > 0 ? 'var(--colors-business)' : undefined }}
-          >
+          <div className={cx(metaValueClass, failCount > 0 ? metaValueWarnClass : undefined)}>
             {data.feedStats ? `${okCount} / ${feedEntries.length}` : '—'}
           </div>
         </div>
@@ -420,16 +423,14 @@ function AdminStatus({ secret }: { secret: string }) {
 
       {feedEntries.length > 0 && (
         <>
-          <h2 className={sectionHeadingClass} style={{ marginTop: '8px' }}>
-            Feed Status
-          </h2>
-          <table className={tableClass} style={{ marginBottom: '10px' }}>
+          <h2 className={cx(sectionHeadingClass, sectionMtClass)}>Feed Status</h2>
+          <table className={cx(tableClass, tableMbClass)}>
             <thead>
               <tr>
                 <th scope="col" className={thClass}>
                   Feed URL
                 </th>
-                <th scope="col" className={thClass} style={{ width: '100px' }}>
+                <th scope="col" className={cx(thClass, thNarrowClass)}>
                   Status
                 </th>
               </tr>
@@ -450,24 +451,17 @@ function AdminStatus({ secret }: { secret: string }) {
 
       {editions && editions.length > 0 && (
         <>
-          <h2 className={sectionHeadingClass} style={{ marginTop: '8px' }}>
-            Edition History
-          </h2>
+          <h2 className={cx(sectionHeadingClass, sectionMtClass)}>Edition History</h2>
           <table className={tableClass}>
             <thead>
               <tr>
                 <th scope="col" className={thClass}>
                   Date
                 </th>
-                <th scope="col" className={thClass} style={{ width: '120px' }}>
+                <th scope="col" className={cx(thClass, thMediumClass)}>
                   Stories
                 </th>
-                <th
-                  scope="col"
-                  className={thClass}
-                  style={{ width: '80px' }}
-                  aria-label="Actions"
-                />
+                <th scope="col" className={cx(thClass, thTinyClass)} aria-label="Actions" />
               </tr>
             </thead>
             <tbody>

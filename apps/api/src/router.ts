@@ -43,6 +43,7 @@ const editionRouter = router({
 
       return rows.map((r) => ({
         id: r.id,
+        editionDate: r.editionDate,
         title: r.title,
         description: r.description ?? null,
         summary: r.summary,
@@ -92,6 +93,7 @@ const editionRouter = router({
         .orderBy(schema.stories.position)
       return rows.map((r) => ({
         id: r.id,
+        editionDate: r.editionDate,
         title: r.title,
         description: r.description ?? null,
         summary: r.summary,

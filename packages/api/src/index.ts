@@ -2,6 +2,7 @@ export type Category = 'World' | 'Technology' | 'Science' | 'Business / Economy'
 
 export type Story = {
   id: string
+  editionDate: string
   title: string
   description: string | null
   summary: string

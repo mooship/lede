@@ -1,5 +1,4 @@
 import { css } from '../../styled-system/css'
-import { getEditionDate } from '../utils.js'
 
 const headerClass = css({
   width: '100%',
@@ -47,14 +46,18 @@ const dateClass = css({
   lineHeight: '1.5',
 })
 
-export function Masthead() {
-  const date = getEditionDate()
+interface MastheadProps {
+  editionDate?: string | null // YYYY-MM-DD; null/undefined hides the date
+}
 
-  const dayName = date.toLocaleDateString('en-GB', {
+export function Masthead({ editionDate }: MastheadProps) {
+  const date = editionDate ? new Date(`${editionDate}T00:00:00Z`) : null
+
+  const dayName = date?.toLocaleDateString('en-GB', {
     weekday: 'long',
     timeZone: 'Africa/Johannesburg',
   })
-  const dateLine = date.toLocaleDateString('en-GB', {
+  const dateLine = date?.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -68,10 +71,12 @@ export function Masthead() {
           <h1 className={titleClass}>Tidel</h1>
           <p className={subtitleClass}>Daily Edition</p>
         </div>
-        <div className={dateClass}>
-          <div>{dayName}</div>
-          <div>{dateLine}</div>
-        </div>
+        {date && (
+          <div className={dateClass}>
+            <div>{dayName}</div>
+            <div>{dateLine}</div>
+          </div>
+        )}
       </div>
     </header>
   )

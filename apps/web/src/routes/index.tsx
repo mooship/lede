@@ -124,21 +124,14 @@ function IndexPage() {
   return (
     <div className={pageClass}>
       {showBanner && (
-        <div className={bannerClass} style={{ backgroundColor: 'var(--colors-science)' }}>
-          <span className={bannerTextClass} style={{ color: 'var(--colors-bg)' }}>
-            Today's edition is ready
-          </span>
-          <button
-            type="button"
-            onClick={handleBannerRefresh}
-            className={bannerButtonClass}
-            style={{ color: 'var(--colors-bg)', borderColor: 'var(--colors-bg)' }}
-          >
+        <div className={bannerClass}>
+          <span className={bannerTextClass}>Today's edition is ready</span>
+          <button type="button" onClick={handleBannerRefresh} className={bannerButtonClass}>
             Refresh
           </button>
         </div>
       )}
-      <Masthead />
+      <Masthead editionDate={data[0]?.editionDate} />
       <main>
         <CategoryNav active={activeCategory} onChange={handleCategoryChange} />
         <div className={storyWrapClass}>

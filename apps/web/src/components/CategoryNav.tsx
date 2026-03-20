@@ -1,6 +1,6 @@
 import type { Category } from '@tidel/api'
 import { useRef, useState } from 'react'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR } from '../categories.js'
 
 type Tab = Category | 'All'
@@ -45,6 +45,8 @@ const tabListClass = css({
   touchAction: 'pan-x',
   '&::-webkit-scrollbar': { display: 'none' },
 })
+
+const tabHoveredClass = css({ color: 'textLight' })
 
 const tabBaseClass = css({
   fontFamily: 'display',
@@ -114,9 +116,9 @@ export function CategoryNav({ active, onChange }: Props) {
               onMouseEnter={() => setHovered(tab)}
               onMouseLeave={() => setHovered(null)}
               onKeyDown={(e) => handleKeyDown(e, index)}
-              className={tabBaseClass}
+              className={cx(tabBaseClass, isHovered && !isActive ? tabHoveredClass : undefined)}
               style={{
-                color: isActive ? accentVar : isHovered ? 'var(--colors-text-light)' : undefined,
+                color: isActive ? accentVar : undefined,
                 borderBottomColor: isActive ? accentVar : undefined,
               }}
             >
