@@ -17,14 +17,6 @@ app.use('*', (c, next) => {
 
 app.use('*', cors({ origin: (origin, c) => resolveCorsOrigin(origin, c.env.WEB_ORIGIN) }))
 
-const BUILD_COMPLETE_MINUTES_UTC = 4 * 60 + 30
-
-function editionCacheMaxAge(): number {
-  const now = new Date()
-  const currentMinutesUTC = now.getUTCHours() * 60 + now.getUTCMinutes()
-  return currentMinutesUTC < BUILD_COMPLETE_MINUTES_UTC ? 120 : 3600
-}
-
 app.use('/trpc/edition.today', async (c, next) => {
   await next()
   try {
@@ -32,8 +24,10 @@ app.use('/trpc/edition.today', async (c, next) => {
     const parsed = JSON.parse(body)
     const data = Array.isArray(parsed) ? parsed[0]?.result?.data : parsed?.result?.data
     if (data !== null && data !== undefined) {
-      const maxAge = editionCacheMaxAge()
-      c.res.headers.set('Cache-Control', `public, s-maxage=${maxAge}, max-age=${maxAge}`)
+      c.res.headers.set(
+        'Cache-Control',
+        'public, s-maxage=60, stale-while-revalidate=86400, max-age=3600',
+      )
     }
   } catch {}
 })
