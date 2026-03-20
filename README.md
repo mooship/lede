@@ -11,7 +11,7 @@ A daily news digest. Each morning at 06:00 SAST, a Cloudflare Worker fetches RSS
 | ORM | Drizzle |
 | Summarisation | Anthropic Claude Sonnet (fallback: raw RSS description) |
 | Auth | Static `ADMIN_SECRET` bearer token |
-| Frontend | React + Vite + TanStack Router |
+| Frontend | React + TanStack Start (SSR) + TanStack Router |
 | Monorepo | Turborepo + npm workspaces |
 | Linter | Biome |
 
@@ -89,7 +89,7 @@ cd apps/web && npm run build
 # upload dist/ to Cloudflare Pages
 ```
 
-If you connect the Pages project to this git repository, set `VITE_API_URL` as an environment variable in the Cloudflare Pages dashboard instead — the local `.env.production` file is not accessible during CI builds.
+If you connect the Pages project to this git repository, set `VITE_API_URL` and `VITE_APP_URL` as environment variables in the Cloudflare Pages dashboard instead — the local `.env.production` file is not accessible during CI builds.
 
 ## Other commands
 
