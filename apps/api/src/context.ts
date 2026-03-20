@@ -3,6 +3,7 @@ import type { Env } from './env.js'
 export type Context = {
   isAdmin: boolean
   env: Env
+  executionCtx: ExecutionContext
 }
 
 /**
@@ -10,7 +11,11 @@ export type Context = {
  * timing-safe equality check to prevent timing-based secret enumeration.
  * Length mismatch short-circuits before the comparison.
  */
-export async function createContext(req: Request, env: Env): Promise<Context> {
+export async function createContext(
+  req: Request,
+  env: Env,
+  executionCtx: ExecutionContext,
+): Promise<Context> {
   const authHeader = req.headers.get('Authorization')
 
   if (!authHeader?.startsWith('Bearer ')) {
@@ -28,5 +33,5 @@ export async function createContext(req: Request, env: Env): Promise<Context> {
         timingSafeEqual(a: ArrayBufferView, b: ArrayBufferView): boolean
       }
     ).timingSafeEqual(a, b)
-  return { isAdmin, env }
+  return { isAdmin, env, executionCtx }
 }

@@ -48,7 +48,7 @@ app.use(
   '/trpc/*',
   trpcServer({
     router: appRouter,
-    createContext: ({ req }, c) => createContext(req, c.env),
+    createContext: ({ req }, c) => createContext(req, c.env, c.executionCtx),
   }),
 )
 

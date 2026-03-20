@@ -217,8 +217,8 @@ const editionRouter = router({
         slot: slotSchema.optional().default('morning'),
       }),
     )
-    .mutation(async ({ ctx, input }): Promise<{ ok: true }> => {
-      await buildEdition(ctx.env, input.force ?? false, input.slot)
+    .mutation(({ ctx, input }): { ok: true } => {
+      ctx.executionCtx.waitUntil(buildEdition(ctx.env, input.force ?? false, input.slot))
       return { ok: true }
     }),
 })

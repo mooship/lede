@@ -18,6 +18,11 @@ function makeEnv(secret = 'super-secret'): Env {
   }
 }
 
+const mockExecutionCtx: ExecutionContext = {
+  waitUntil: () => {},
+  passThroughOnException: () => {},
+}
+
 function byteEqual(a: ArrayBufferView, b: ArrayBufferView): boolean {
   const av = new Uint8Array(a.buffer, a.byteOffset, a.byteLength)
   const bv = new Uint8Array(b.buffer, b.byteOffset, b.byteLength)
@@ -35,7 +40,7 @@ describe('createContext', () => {
 
   it('returns isAdmin: false when there is no Authorization header', async () => {
     const req = new Request('https://example.com')
-    const ctx = await createContext(req, makeEnv())
+    const ctx = await createContext(req, makeEnv(), mockExecutionCtx)
     expect(ctx.isAdmin).toBe(false)
     expect(mockTimingSafeEqual).not.toHaveBeenCalled()
   })
@@ -44,7 +49,7 @@ describe('createContext', () => {
     const req = new Request('https://example.com', {
       headers: { Authorization: 'super-secret' },
     })
-    const ctx = await createContext(req, makeEnv())
+    const ctx = await createContext(req, makeEnv(), mockExecutionCtx)
     expect(ctx.isAdmin).toBe(false)
     expect(mockTimingSafeEqual).not.toHaveBeenCalled()
   })
@@ -53,7 +58,7 @@ describe('createContext', () => {
     const req = new Request('https://example.com', {
       headers: { Authorization: 'Bearer super-secret' },
     })
-    const ctx = await createContext(req, makeEnv('super-secret'))
+    const ctx = await createContext(req, makeEnv('super-secret'), mockExecutionCtx)
     expect(ctx.isAdmin).toBe(true)
     expect(mockTimingSafeEqual).toHaveBeenCalledOnce()
   })
@@ -62,7 +67,7 @@ describe('createContext', () => {
     const req = new Request('https://example.com', {
       headers: { Authorization: 'Bearer wrong-token' },
     })
-    const ctx = await createContext(req, makeEnv('super-secret'))
+    const ctx = await createContext(req, makeEnv('super-secret'), mockExecutionCtx)
     expect(ctx.isAdmin).toBe(false)
   })
 
@@ -70,7 +75,7 @@ describe('createContext', () => {
     const req = new Request('https://example.com', {
       headers: { Authorization: 'Bearer short' },
     })
-    const ctx = await createContext(req, makeEnv('much-longer-secret'))
+    const ctx = await createContext(req, makeEnv('much-longer-secret'), mockExecutionCtx)
     expect(ctx.isAdmin).toBe(false)
     expect(mockTimingSafeEqual).not.toHaveBeenCalled()
   })
