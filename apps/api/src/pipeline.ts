@@ -10,6 +10,7 @@ import {
   AFTERNOON_TARGET_STORY_COUNT,
   FEEDS,
   MAX_STORIES_PER_CATEGORY,
+  MIN_STORIES_PER_CATEGORY,
   TARGET_STORY_COUNT,
 } from './config.js'
 import type { Env } from './env.js'
@@ -201,10 +202,10 @@ function getCurationConfig(slot: 'morning' | 'afternoon'): CurationConfig {
   }
   return {
     target: TARGET_STORY_COUNT,
-    min: 9,
+    min: MIN_STORIES_PER_CATEGORY * 5,
     max: TARGET_STORY_COUNT,
     maxPerCat: MAX_STORIES_PER_CATEGORY,
-    minPerCat: 1,
+    minPerCat: MIN_STORIES_PER_CATEGORY,
     slotLabel: 'morning',
   }
 }
