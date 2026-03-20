@@ -1,8 +1,8 @@
 {
-  "name": "tidel",
+  "name": "tidel-web",
   "compatibility_date": "2026-03-20",
   "compatibility_flags": ["nodejs_compat"],
-  "pages_build_output_dir": "dist/client",
+  "main": "@tanstack/react-start/server-entry",
   "vars": {
     "API_URL": "http://localhost:8787"
   }
