@@ -72,20 +72,14 @@ const searchSchema = z.object({
     .enum(['All', 'World', 'Technology', 'Science', 'Business / Economy', 'Sport'])
     .optional()
     .default('All'),
-  slot: z.enum(['morning', 'afternoon']).optional().default('morning'),
+  slot: z
+    .enum(['morning', 'afternoon'])
+    .optional()
+    .default(() => (isAfternoonAvailable() ? 'afternoon' : 'morning')),
 })
 
 function isAfternoonAvailable(): boolean {
-  const now = new Date()
-  const hourSAST = parseInt(
-    now.toLocaleString('en-US', {
-      timeZone: 'Africa/Johannesburg',
-      hour: 'numeric',
-      hour12: false,
-    }),
-    10,
-  )
-  return hourSAST >= 14
+  return new Date().getUTCHours() >= 12
 }
 
 const fetchTodaysEdition = createServerFn({ method: 'GET' })

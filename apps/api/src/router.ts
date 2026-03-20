@@ -4,7 +4,7 @@ import { initTRPC, TRPCError } from '@trpc/server'
 import { and, count, desc, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import type { Context } from './context.js'
-import { buildEdition, currentSlotSAST, todaySAST } from './pipeline.js'
+import { buildEdition, currentSlot, todaySAST } from './pipeline.js'
 
 const t = initTRPC.context<Context>().create()
 
@@ -214,7 +214,7 @@ const editionRouter = router({
     .input(
       z.object({
         force: z.boolean().optional(),
-        slot: slotSchema.optional().default(() => currentSlotSAST()),
+        slot: slotSchema.optional().default(() => currentSlot()),
       }),
     )
     .mutation(({ ctx, input }): { ok: true } => {
