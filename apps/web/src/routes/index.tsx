@@ -109,11 +109,13 @@ function IndexPage() {
     return (
       <div className={pageClass}>
         <Masthead />
-        <div className={skeletonGridClass} data-testid="loading-skeleton">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
+        <main>
+          <div className={skeletonGridClass} data-testid="loading-skeleton">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        </main>
       </div>
     )
   }
@@ -128,9 +130,9 @@ function IndexPage() {
     return (
       <div className={pageClass}>
         <Masthead />
-        <div className={contentClass}>
+        <main className={contentClass}>
           <p className={emptyTextClass}>No editions yet — check back soon.</p>
-        </div>
+        </main>
         <Footer />
       </div>
     )
@@ -157,10 +159,12 @@ function IndexPage() {
         </div>
       )}
       <Masthead />
-      <CategoryNav active={activeCategory} onChange={handleCategoryChange} />
-      <div className={storyWrapClass}>
-        <StoryList stories={filtered} />
-      </div>
+      <main>
+        <CategoryNav active={activeCategory} onChange={handleCategoryChange} />
+        <div className={storyWrapClass}>
+          <StoryList stories={filtered} />
+        </div>
+      </main>
       <Footer />
     </div>
   )
