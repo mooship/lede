@@ -163,3 +163,5 @@ When working with any third-party library or package (Drizzle, Hono, tRPC, TanSt
 Biome (`biome.json` at root). Config: single quotes, `asNeeded` semicolons, 2-space indent, 100 char line width. Ignored: `node_modules`, `dist`, `styled-system`, `migrations`, `.wrangler`.
 
 Run `biome check --write .` to fix; `biome check .` to check only.
+
+Lefthook runs `biome check --write` on staged files as a pre-commit hook. It is installed automatically via the `prepare` script on `npm install`.

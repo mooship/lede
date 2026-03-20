@@ -134,3 +134,5 @@ Ignored paths: `node_modules`, `dist`, `styled-system`, `migrations`, `.wrangler
 biome check --write .   # fix
 biome check .           # check only
 ```
+
+Lefthook runs `biome check --write` on staged files as a pre-commit hook. It is installed automatically via the `prepare` script on `npm install`.
