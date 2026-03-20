@@ -46,7 +46,12 @@ cd apps/web && npm run dev     # vite on :5173
 
 # DB migrations (run from packages/db)
 cd packages/db && npx drizzle-kit generate
-cd packages/db && npx drizzle-kit migrate
+
+# Dev branch — DATABASE_URL from apps/api/.dev.vars
+cd packages/db && DATABASE_URL="<dev url>" npx drizzle-kit migrate
+
+# Production branch — DATABASE_URL from apps/api/.secrets.production.json
+cd packages/db && DATABASE_URL="<prod url>" npx drizzle-kit migrate
 ```
 
 ## Environments
