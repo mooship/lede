@@ -5,6 +5,8 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   ADMIN_SECRET: z.string().min(32, 'ADMIN_SECRET must be at least 32 characters'),
   WEB_ORIGIN: z.string().min(1, 'WEB_ORIGIN is required'),
+  CLOUDFLARE_ZONE_ID: z.string().optional(),
+  CLOUDFLARE_API_TOKEN: z.string().optional(),
 })
 
 type RateLimiter = {

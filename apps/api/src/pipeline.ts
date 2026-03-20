@@ -328,6 +328,22 @@ function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult>
   return raw
 }
 
+async function purgeEditionCache(zoneId: string, apiToken: string): Promise<void> {
+  const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ purge_everything: true }),
+  })
+  if (!res.ok) {
+    console.error('[purgeCache] failed:', res.status, await res.text())
+  } else {
+    console.log('[purgeCache] Cloudflare cache purged')
+  }
+}
+
 /**
  * Builds and persists today's edition. Idempotent — returns early if an edition
  * for today's SAST date already exists in the database.
@@ -416,5 +432,9 @@ export async function buildEdition(env: Env, force = false): Promise<void> {
     console.error('[buildEdition] Failed to insert stories, rolling back edition:', err)
     await db.delete(schema.editions).where(eq(schema.editions.date, date))
     throw err
+  }
+
+  if (env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_API_TOKEN) {
+    await purgeEditionCache(env.CLOUDFLARE_ZONE_ID, env.CLOUDFLARE_API_TOKEN)
   }
 }

@@ -77,13 +77,11 @@ cd apps/api && npm run deploy
 # runs: wrangler secret bulk .secrets.production.json --env production && wrangler deploy --env production
 ```
 
-Fill in `apps/web/.env.production` is committed and contains non-secret build-time vars:
+The web app is deployed via Cloudflare (git-connected, builds in CI). Set these environment variables in the Cloudflare dashboard for the web project:
 ```
 VITE_API_URL=https://api.tidel.app
 VITE_APP_URL=https://tidel.app
 ```
-
-Vite bakes these into the client bundle at build time. Do not put secrets here — use `.secrets.production.json` for those.
 
 ## Architecture
 
