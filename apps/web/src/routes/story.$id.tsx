@@ -1,12 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
+import type { Story } from '@tidel/api'
 import { useState } from 'react'
 import { z } from 'zod'
 import { css } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 import { PageHeader } from '../components/PageHeader.js'
 import { PageMessage } from '../components/PageMessage.js'
-import { trpc } from '../trpc.js'
-import { editionStaleTime } from '../utils.js'
+import { createServerTrpcCaller } from '../trpc.js'
 
 async function shareStory(title: string, url: string): Promise<boolean> {
   if (navigator.share) {
@@ -111,22 +112,19 @@ const shareButtonClass = css({
   padding: '0',
 })
 
+const fetchStory = createServerFn({ method: 'GET' })
+  .inputValidator(z.string().uuid())
+  .handler(async ({ data: id }): Promise<Story | null> => {
+    const stories = await createServerTrpcCaller().edition.today.query()
+    if (!stories) return null
+    return stories.find((s) => s.id === id) ?? null
+  })
+
 function StoryPage() {
   const { id } = Route.useParams()
   const [copied, setCopied] = useState(false)
-  const { data, isLoading, error } = trpc.edition.today.useQuery(undefined, {
-    staleTime: editionStaleTime,
-  })
+  const story: Story | null = Route.useLoaderData()
 
-  if (isLoading) {
-    return <PageMessage message="Loading…" variant="loading" />
-  }
-
-  if (error || !data) {
-    return <PageMessage message="Something went wrong." color="var(--colors-world)" />
-  }
-
-  const story = data.find((s) => s.id === id)
   if (!story) {
     return <PageMessage message="Story not found." />
   }
@@ -134,6 +132,7 @@ function StoryPage() {
   const accentVar = CATEGORY_CSS_VAR[story.category] ?? 'var(--colors-text-primary)'
   const pageTitle = `${story.title} — Tidel`
   const pageDescription = story.description ?? story.summary
+  const storyUrl = `${import.meta.env.VITE_APP_URL ?? ''}/story/${id}`
 
   return (
     <div className={pageClass}>
@@ -142,9 +141,9 @@ function StoryPage() {
       <meta property="og:title" content={pageTitle} />
       <meta property="og:description" content={pageDescription} />
       <meta property="og:type" content="article" />
-      <meta property="og:url" content={window.location.href} />
+      <meta property="og:url" content={storyUrl} />
       {story.pubDate && <meta property="article:published_time" content={story.pubDate} />}
-      <link rel="canonical" href={window.location.href} />
+      <link rel="canonical" href={storyUrl} />
       <meta name="twitter:title" content={pageTitle} />
       <meta name="twitter:description" content={pageDescription} />
 
@@ -205,5 +204,7 @@ export const Route = createFileRoute('/story/$id')({
     parse: (raw) => storyParamsSchema.parse(raw),
     stringify: (p) => ({ id: p.id }),
   },
+  pendingComponent: () => <PageMessage message="Loading…" variant="loading" />,
+  loader: async ({ params }) => fetchStory({ data: params.id }),
   component: StoryPage,
 })

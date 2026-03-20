@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import type { Category } from '@tidel/api'
+import { createServerFn } from '@tanstack/react-start'
+import type { Category, Story } from '@tidel/api'
 import { useState } from 'react'
 import { z } from 'zod'
 import { css } from '../../styled-system/css'
@@ -7,7 +8,7 @@ import { CategoryNav } from '../components/CategoryNav.js'
 import { Footer } from '../components/Footer.js'
 import { PageMessage } from '../components/PageMessage.js'
 import { StoryList } from '../components/StoryList.js'
-import { trpc } from '../trpc.js'
+import { createServerTrpcCaller } from '../trpc.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 const storyWrapClass = css({ maxWidth: '1400px', mx: 'auto' })
@@ -68,18 +69,16 @@ function formatEditionDate(dateStr: string): string {
   })
 }
 
+const fetchEditionByDate = createServerFn({ method: 'GET' })
+  .inputValidator(z.string())
+  .handler(async ({ data: date }): Promise<Story[] | null> => {
+    return createServerTrpcCaller().edition.byDate.query({ date })
+  })
+
 function EditionPage() {
   const { date } = Route.useParams()
   const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All')
-  const { data, isLoading, error } = trpc.edition.byDate.useQuery({ date })
-
-  if (isLoading) {
-    return <PageMessage message="Loading edition…" variant="loading" />
-  }
-
-  if (error) {
-    return <PageMessage message="Something went wrong." color="var(--colors-world)" />
-  }
+  const data: Story[] | null = Route.useLoaderData()
 
   if (data == null) {
     return (
@@ -150,5 +149,7 @@ export const Route = createFileRoute('/edition/$date')({
       },
     ],
   }),
+  pendingComponent: () => <PageMessage message="Loading edition…" variant="loading" />,
+  loader: async ({ params }) => fetchEditionByDate({ data: params.date }),
   component: EditionPage,
 })

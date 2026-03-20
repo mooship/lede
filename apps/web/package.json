@@ -5,17 +5,19 @@
   "type": "module",
   "scripts": {
     "prepare": "panda codegen --silent",
-    "dev": "panda codegen --silent && vite",
+    "dev": "panda codegen --silent && vite dev",
     "build": "panda codegen --silent && tsc --noEmit && vite build",
     "preview": "vite preview",
+    "deploy": "npm run build && cp dist/server/index.js dist/client/_worker.js && wrangler pages deploy dist/client",
     "test": "vitest run",
     "lint": "biome check --write .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tidel/api": "*",
     "@tanstack/react-query": "latest",
     "@tanstack/react-router": "latest",
+    "@tanstack/react-start": "^1.166.18",
+    "@tidel/api": "*",
     "@trpc/client": "latest",
     "@trpc/react-query": "latest",
     "ofetch": "latest",
@@ -24,13 +26,13 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@tidel/tsconfig": "*",
+    "@cloudflare/vite-plugin": "^1.29.1",
     "@fontsource-variable/syne": "latest",
     "@fontsource/instrument-serif": "latest",
     "@pandacss/dev": "latest",
-    "@tanstack/router-plugin": "latest",
     "@testing-library/react": "latest",
     "@testing-library/user-event": "latest",
+    "@tidel/tsconfig": "*",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",

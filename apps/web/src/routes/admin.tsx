@@ -530,5 +530,6 @@ function AdminPage() {
 }
 
 export const Route = createFileRoute('/admin')({
+  ssr: false,
   component: AdminPage,
 })

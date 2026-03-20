@@ -1,5 +1,8 @@
-import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
+import { useState } from 'react'
 import { PageMessage } from '../components/PageMessage.js'
+import { createTrpcClient, trpc } from '../trpc.js'
 
 const DESCRIPTION =
   'A free, ad-free daily news digest. Every morning, Tidel curates the most significant stories across world news, technology, science, business, and sport.'
@@ -18,12 +21,28 @@ export const Route = createRootRoute({
       { name: 'twitter:description', content: DESCRIPTION },
     ],
   }),
-  component: () => (
-    <>
-      <HeadContent />
-      <Outlet />
-    </>
-  ),
+  component: Root,
   errorComponent: () => <PageMessage message="Something went wrong." color="var(--colors-world)" />,
   notFoundComponent: () => <PageMessage message="Page not found." />,
 })
+
+function Root() {
+  const [queryClient] = useState(() => new QueryClient())
+  const [trpcClient] = useState(() => createTrpcClient())
+
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <Outlet />
+          </QueryClientProvider>
+        </trpc.Provider>
+        <Scripts />
+      </body>
+    </html>
+  )
+}

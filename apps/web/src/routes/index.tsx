@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
-import type { Category } from '@tidel/api'
+import { createServerFn } from '@tanstack/react-start'
+import type { Category, Story } from '@tidel/api'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 
@@ -7,11 +8,9 @@ import { css } from '../../styled-system/css'
 import { CategoryNav } from '../components/CategoryNav.js'
 import { Footer } from '../components/Footer.js'
 import { Masthead } from '../components/Masthead.js'
-import { PageMessage } from '../components/PageMessage.js'
 import { SkeletonCard } from '../components/SkeletonCard.js'
 import { StoryList } from '../components/StoryList.js'
-import { trpc } from '../trpc.js'
-import { editionStaleTime } from '../utils.js'
+import { createServerTrpcCaller } from '../trpc.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 const contentClass = css({ maxWidth: '1400px', mx: 'auto', px: '8', py: '12' })
@@ -74,13 +73,16 @@ const searchSchema = z.object({
     .default('All'),
 })
 
+const fetchTodaysEdition = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<Story[] | null> => {
+    return createServerTrpcCaller().edition.today.query()
+  },
+)
+
 function IndexPage() {
   const navigate = useNavigate({ from: '/' })
   const { category: activeCategory } = useSearch({ from: '/' })
-
-  const { data, isLoading, error } = trpc.edition.today.useQuery(undefined, {
-    staleTime: editionStaleTime,
-  })
+  const data: Story[] | null = Route.useLoaderData()
 
   const seenEditionDate = useRef<string | null>(null)
   const [showBanner, setShowBanner] = useState(false)
@@ -105,27 +107,6 @@ function IndexPage() {
     void navigate({ search: { category: tab }, replace: true })
   }
 
-  if (isLoading) {
-    return (
-      <div className={pageClass}>
-        <Masthead />
-        <main>
-          <div className={skeletonGridClass} data-testid="loading-skeleton">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <PageMessage message="Something went wrong. Please try again." color="var(--colors-world)" />
-    )
-  }
-
   if (data == null) {
     return (
       <div className={pageClass}>
@@ -133,7 +114,6 @@ function IndexPage() {
         <main className={contentClass}>
           <p className={emptyTextClass}>No editions yet — check back soon.</p>
         </main>
-        <Footer />
       </div>
     )
   }
@@ -192,5 +172,18 @@ export const Route = createFileRoute('/')({
     ],
     links: [{ rel: 'canonical', href: import.meta.env.VITE_APP_URL ?? '' }],
   }),
+  pendingComponent: () => (
+    <div className={pageClass}>
+      <Masthead />
+      <main>
+        <div className={skeletonGridClass} data-testid="loading-skeleton">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </main>
+    </div>
+  ),
+  loader: async () => fetchTodaysEdition(),
   component: IndexPage,
 })

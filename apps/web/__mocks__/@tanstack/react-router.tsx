@@ -1,3 +1,5 @@
+import { vi } from 'vitest'
+
 export const Link = ({
   children,
   to,
@@ -11,4 +13,12 @@ export const Link = ({
   return <a href={href}>{children}</a>
 }
 
-export const createFileRoute = () => (config: { component: unknown }) => config
+export const createFileRoute = () => (config: object) => ({
+  useLoaderData: vi.fn(),
+  useParams: vi.fn(),
+  useSearch: vi.fn(),
+  ...config,
+})
+
+export const useNavigate = () => vi.fn()
+export const useSearch = () => ({ category: 'All' })

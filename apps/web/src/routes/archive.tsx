@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
 import { css } from '../../styled-system/css'
 import { Footer } from '../components/Footer.js'
 import { PageHeader } from '../components/PageHeader.js'
 import { PageMessage } from '../components/PageMessage.js'
-import { trpc } from '../trpc.js'
+import { createServerTrpcCaller } from '../trpc.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 const mainClass = css({ maxWidth: '720px', mx: 'auto', px: '8', pt: '12', pb: '20' })
@@ -64,16 +65,14 @@ function formatArchiveDate(dateStr: string): string {
   })
 }
 
+const fetchEditionList = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<Array<{ date: string; storyCount: number }>> => {
+    return createServerTrpcCaller().edition.list.query()
+  },
+)
+
 function ArchivePage() {
-  const { data, isLoading, error } = trpc.edition.list.useQuery()
-
-  if (isLoading) {
-    return <PageMessage message="Loading archive…" variant="loading" />
-  }
-
-  if (error) {
-    return <PageMessage message="Could not load archive." color="var(--colors-world)" />
-  }
+  const data: Array<{ date: string; storyCount: number }> = Route.useLoaderData()
 
   return (
     <div className={pageClass}>
@@ -123,5 +122,7 @@ export const Route = createFileRoute('/archive')({
     ],
     links: [{ rel: 'canonical', href: `${import.meta.env.VITE_APP_URL ?? ''}/archive` }],
   }),
+  pendingComponent: () => <PageMessage message="Loading archive…" variant="loading" />,
+  loader: async () => fetchEditionList(),
   component: ArchivePage,
 })
