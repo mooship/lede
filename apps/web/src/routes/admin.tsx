@@ -531,5 +531,8 @@ function AdminPage() {
 
 export const Route = createFileRoute('/admin')({
   ssr: false,
+  head: () => ({
+    meta: [{ name: 'robots', content: 'noindex, nofollow' }],
+  }),
   component: AdminPage,
 })
