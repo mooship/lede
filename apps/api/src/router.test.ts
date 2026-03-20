@@ -23,6 +23,7 @@ vi.mock('drizzle-orm', () => ({
 const mockStories: Story[] = [
   {
     id: '1',
+    editionDate: '2024-01-01',
     title: 'Test Story',
     description: null,
     summary: 'A summary.',
