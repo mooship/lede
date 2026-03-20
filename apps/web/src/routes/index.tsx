@@ -159,6 +159,7 @@ function IndexPage() {
         <main className={contentClass}>
           <p className={emptyTextClass}>No editions yet — check back soon.</p>
         </main>
+        <Footer />
       </div>
     )
   }

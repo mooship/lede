@@ -60,33 +60,35 @@ export function SlotSwitcher({
 }: SlotSwitcherProps) {
   return (
     <div className={wrapperClass}>
-      <fieldset className={innerClass} style={{ border: 'none', padding: 0, margin: 0 }}>
-        <button
-          type="button"
-          className={`${pillBase} ${activeSlot === 'morning' ? pillActiveClass : pillInactiveClass}`}
-          onClick={() => onSlotChange('morning')}
-          aria-pressed={activeSlot === 'morning'}
-        >
-          Morning
-        </button>
-        <button
-          type="button"
-          className={`${pillBase} ${
-            !afternoonAvailable
-              ? pillDisabledClass
-              : activeSlot === 'afternoon'
-                ? pillActiveClass
-                : pillInactiveClass
-          }`}
-          onClick={() => {
-            if (afternoonAvailable) onSlotChange('afternoon')
-          }}
-          aria-pressed={activeSlot === 'afternoon'}
-          aria-disabled={!afternoonAvailable}
-          title={!afternoonAvailable ? 'Available at 14:00 SAST' : undefined}
-        >
-          Afternoon
-        </button>
+      <fieldset style={{ border: 'none', padding: 0, margin: 0, width: '100%' }}>
+        <div className={innerClass}>
+          <button
+            type="button"
+            className={`${pillBase} ${activeSlot === 'morning' ? pillActiveClass : pillInactiveClass}`}
+            onClick={() => onSlotChange('morning')}
+            aria-pressed={activeSlot === 'morning'}
+          >
+            Morning
+          </button>
+          <button
+            type="button"
+            className={`${pillBase} ${
+              !afternoonAvailable
+                ? pillDisabledClass
+                : activeSlot === 'afternoon'
+                  ? pillActiveClass
+                  : pillInactiveClass
+            }`}
+            onClick={() => {
+              if (afternoonAvailable) onSlotChange('afternoon')
+            }}
+            aria-pressed={activeSlot === 'afternoon'}
+            aria-disabled={!afternoonAvailable}
+            title={!afternoonAvailable ? 'Available at 14:00 SAST' : undefined}
+          >
+            Afternoon
+          </button>
+        </div>
       </fieldset>
     </div>
   )
