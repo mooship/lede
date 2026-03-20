@@ -1,12 +1,13 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import type { Category, Story } from '@tidel/api'
+import type { Category, Slot, Story } from '@tidel/api'
 import { useState } from 'react'
 import { z } from 'zod'
 import { css } from '../../styled-system/css'
 import { CategoryNav } from '../components/CategoryNav.js'
 import { Footer } from '../components/Footer.js'
 import { PageMessage } from '../components/PageMessage.js'
+import { SlotSwitcher } from '../components/SlotSwitcher.js'
 import { StoryList } from '../components/StoryList.js'
 import { createServerTrpcCaller } from '../trpc.js'
 
@@ -69,16 +70,41 @@ function formatEditionDate(dateStr: string): string {
   })
 }
 
+function isAfternoonAvailable(): boolean {
+  const now = new Date()
+  const hourSAST = parseInt(
+    now.toLocaleString('en-US', {
+      timeZone: 'Africa/Johannesburg',
+      hour: 'numeric',
+      hour12: false,
+    }),
+    10,
+  )
+  return hourSAST >= 14
+}
+
 const fetchEditionByDate = createServerFn({ method: 'GET' })
-  .inputValidator(z.string())
-  .handler(async ({ data: date }): Promise<Story[] | null> => {
-    return createServerTrpcCaller().edition.byDate.query({ date })
+  .inputValidator(z.object({ date: z.string(), slot: z.enum(['morning', 'afternoon']) }))
+  .handler(async ({ data }): Promise<Story[] | null> => {
+    return createServerTrpcCaller().edition.byDate.query({ date: data.date, slot: data.slot })
   })
+
+const searchSchema = z.object({
+  slot: z.enum(['morning', 'afternoon']).optional().default('morning'),
+})
 
 function EditionPage() {
   const { date } = Route.useParams()
+  const { slot: activeSlot } = useSearch({ from: '/edition/$date' })
+  const navigate = useNavigate({ from: '/edition/$date' })
   const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All')
   const data: Story[] | null = Route.useLoaderData()
+
+  function handleSlotChange(slot: Slot) {
+    void navigate({ search: (prev) => ({ ...prev, slot }), replace: true })
+  }
+
+  const afternoonAvailable = isAfternoonAvailable() || (activeSlot === 'afternoon' && data !== null)
 
   if (data == null) {
     return (
@@ -93,9 +119,15 @@ function EditionPage() {
             </Link>
           </div>
         </div>
+        <SlotSwitcher
+          activeSlot={activeSlot}
+          onSlotChange={handleSlotChange}
+          afternoonAvailable={afternoonAvailable}
+        />
         <div className={css({ maxWidth: '720px', mx: 'auto', px: '8', py: '12' })}>
           <p className={css({ fontFamily: 'body', fontSize: '1.1rem', color: 'textMuted' })}>
-            No edition found for {formatEditionDate(date)}.{' '}
+            No{activeSlot === 'afternoon' ? ' afternoon' : ''} edition found for{' '}
+            {formatEditionDate(date)}.{' '}
             <Link to="/archive" className={css({ color: 'textSecondary' })}>
               Browse archive →
             </Link>
@@ -124,6 +156,11 @@ function EditionPage() {
           </Link>
         </div>
       </div>
+      <SlotSwitcher
+        activeSlot={activeSlot}
+        onSlotChange={handleSlotChange}
+        afternoonAvailable={afternoonAvailable}
+      />
       <CategoryNav active={activeCategory} onChange={setActiveCategory} />
       <div className={storyWrapClass}>
         <StoryList stories={filtered} />
@@ -136,10 +173,12 @@ function EditionPage() {
 const dateParamsSchema = z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) })
 
 export const Route = createFileRoute('/edition/$date')({
+  validateSearch: searchSchema,
   params: {
     parse: (raw) => dateParamsSchema.parse(raw),
     stringify: (p) => ({ date: p.date }),
   },
+  loaderDeps: ({ search }) => ({ slot: search.slot }),
   head: ({ params }) => {
     const formattedDate = formatEditionDate(params.date)
     const editionUrl = `${import.meta.env.VITE_APP_URL ?? ''}/edition/${params.date}`
@@ -155,6 +194,7 @@ export const Route = createFileRoute('/edition/$date')({
     }
   },
   pendingComponent: () => <PageMessage message="Loading edition…" variant="loading" />,
-  loader: async ({ params }) => fetchEditionByDate({ data: params.date }),
+  loader: async ({ params, deps }) =>
+    fetchEditionByDate({ data: { date: params.date, slot: deps.slot } }),
   component: EditionPage,
 })

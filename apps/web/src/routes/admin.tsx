@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import type { Category } from '@tidel/api'
+import type { Category, Slot } from '@tidel/api'
 import { useState } from 'react'
 import { css, cx } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
@@ -71,6 +71,19 @@ const sectionHeadingClass = css({
   margin: '0 0 4 0',
 })
 
+const slotHeadingClass = css({
+  fontFamily: 'display',
+  fontWeight: '700',
+  fontSize: '0.75rem',
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: 'textSecondary',
+  margin: '6 0 3 0',
+  paddingBottom: '2',
+  borderBottom: '1px solid',
+  borderColor: 'border',
+})
+
 const metaGridClass = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
@@ -125,6 +138,38 @@ const actionRowClass = css({
   alignItems: 'center',
   flexWrap: 'wrap',
   marginBottom: '10',
+})
+
+const slotSelectorClass = css({
+  display: 'flex',
+  gap: '2',
+  alignItems: 'center',
+  marginBottom: '4',
+})
+
+const slotPillBase = css({
+  fontFamily: 'display',
+  fontSize: '0.65rem',
+  fontWeight: '700',
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  background: 'none',
+  border: '1px solid',
+  borderColor: 'border',
+  cursor: 'pointer',
+  px: '4',
+  py: '1.5',
+  transition: 'color 0.15s, border-color 0.15s',
+})
+
+const slotPillActiveClass = css({
+  color: 'textPrimary',
+  borderColor: 'textMuted',
+})
+
+const slotPillInactiveClass = css({
+  color: 'textMuted',
+  '&:hover': { color: 'textLight' },
 })
 
 const tableClass = css({ width: '100%', borderCollapse: 'collapse' })
@@ -208,15 +253,44 @@ const linkClass = css({
   textUnderlineOffset: '3px',
 })
 
+const slotBadgeMorningClass = css({
+  fontFamily: 'display',
+  fontSize: '0.6rem',
+  fontWeight: '700',
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: 'tech',
+  border: '1px solid',
+  borderColor: 'tech',
+  px: '2',
+  py: '0.5',
+})
+
+const slotBadgeAfternoonClass = css({
+  fontFamily: 'display',
+  fontSize: '0.6rem',
+  fontWeight: '700',
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: 'business',
+  border: '1px solid',
+  borderColor: 'business',
+  px: '2',
+  py: '0.5',
+})
+
 type FeedStatus = 'ok' | 'timeout' | 'error'
 
-type AdminStatusData = {
+type SlotStatusData = {
   date: string
+  slot: string
   builtAt: string
   storyCount: number
   feedStats: Record<string, FeedStatus> | null
   categoryBreakdown: Record<string, number>
-} | null
+}
+
+type AdminStatusData = SlotStatusData[] | null
 
 const CATEGORY_ORDER: Category[] = ['World', 'Technology', 'Science', 'Business / Economy', 'Sport']
 
@@ -236,21 +310,23 @@ async function fetchAdminStatus(secret: string): Promise<AdminStatusData> {
   return json.result?.data ?? null
 }
 
-async function fetchEditionList(): Promise<Array<{ date: string; storyCount: number }>> {
+async function fetchEditionList(): Promise<
+  Array<{ date: string; slot: string; storyCount: number }>
+> {
   const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
   const res = await fetch(`${apiUrl}/trpc/edition.list`)
   const json = (await res.json()) as {
-    result?: { data?: Array<{ date: string; storyCount: number }> }
+    result?: { data?: Array<{ date: string; slot: string; storyCount: number }> }
   }
   return json.result?.data ?? []
 }
 
-async function triggerBuild(secret: string, force = false): Promise<void> {
+async function triggerBuild(secret: string, slot: Slot, force = false): Promise<void> {
   const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
   const res = await fetch(`${apiUrl}/trpc/edition.build`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
-    body: JSON.stringify({ force }),
+    body: JSON.stringify({ force, slot }),
   })
   const json = (await res.json()) as {
     result?: { data?: { ok: boolean } }
@@ -279,75 +355,40 @@ function StatusBadge({ status }: { status: FeedStatus }) {
   return <span className={statusErrClass}>Error</span>
 }
 
-function AdminStatus({ secret }: { secret: string }) {
-  const queryClient = useQueryClient()
+function SlotBadge({ slot }: { slot: string }) {
+  return (
+    <span className={slot === 'morning' ? slotBadgeMorningClass : slotBadgeAfternoonClass}>
+      {slot === 'morning' ? 'Morning' : 'Afternoon'}
+    </span>
+  )
+}
 
-  const { data, isLoading, error, refetch, isFetching } = useQuery({
-    queryKey: ['adminStatus', secret],
-    queryFn: () => fetchAdminStatus(secret),
-    retry: false,
-  })
-
-  const { data: editions } = useQuery({
-    queryKey: ['editionList'],
-    queryFn: fetchEditionList,
-  })
-
-  const [showConfirmModal, setShowConfirmModal] = useState(false)
-
-  const buildMutation = useMutation<void, Error, boolean>({
-    mutationFn: (force: boolean) => triggerBuild(secret, force),
-    onSuccess: () => {
-      void refetch()
-      queryClient.invalidateQueries({ queryKey: ['editionList'] })
-    },
-  })
-
-  if (isLoading) {
-    return (
-      <p className={css({ fontFamily: 'body', color: 'textMuted', fontStyle: 'italic' })}>
-        Loading…
-      </p>
-    )
-  }
-
-  if (error) {
-    const err = error as Error & { code?: string }
-    return (
-      <p className={errorClass}>
-        {err.code === 'UNAUTHORIZED' ? 'Incorrect admin secret.' : `Error: ${error.message}`}
-      </p>
-    )
-  }
-
-  if (!data) {
-    return <p className={css({ fontFamily: 'body', color: 'textMuted' })}>No editions built yet.</p>
-  }
-
-  const feedEntries = data.feedStats ? Object.entries(data.feedStats) : []
+function SlotStatusCard({ slotData }: { slotData: SlotStatusData }) {
+  const feedEntries = slotData.feedStats ? Object.entries(slotData.feedStats) : []
   const okCount = feedEntries.filter(([, s]) => s === 'ok').length
   const failCount = feedEntries.length - okCount
 
   return (
     <div>
-      <h2 className={sectionHeadingClass}>Last Build</h2>
       <div className={metaGridClass}>
         <div className={metaCardClass}>
           <div className={metaLabelClass}>Date</div>
-          <div className={metaValueClass}>{data.date}</div>
+          <div className={metaValueClass}>{slotData.date}</div>
         </div>
         <div className={metaCardClass}>
           <div className={metaLabelClass}>Built at (SAST)</div>
-          <div className={cx(metaValueClass, metaValueSmClass)}>{formatBuiltAt(data.builtAt)}</div>
+          <div className={cx(metaValueClass, metaValueSmClass)}>
+            {formatBuiltAt(slotData.builtAt)}
+          </div>
         </div>
         <div className={metaCardClass}>
           <div className={metaLabelClass}>Stories</div>
-          <div className={metaValueClass}>{data.storyCount}</div>
+          <div className={metaValueClass}>{slotData.storyCount}</div>
         </div>
         <div className={metaCardClass}>
           <div className={metaLabelClass}>Feeds OK / Total</div>
           <div className={cx(metaValueClass, failCount > 0 ? metaValueWarnClass : undefined)}>
-            {data.feedStats ? `${okCount} / ${feedEntries.length}` : '—'}
+            {slotData.feedStats ? `${okCount} / ${feedEntries.length}` : '—'}
           </div>
         </div>
       </div>
@@ -359,66 +400,9 @@ function AdminStatus({ secret }: { secret: string }) {
             <div className={metaLabelClass} style={{ color: CATEGORY_CSS_VAR[cat] }}>
               {CATEGORY_LABEL[cat]}
             </div>
-            <div className={metaValueClass}>{data.categoryBreakdown[cat] ?? 0}</div>
+            <div className={metaValueClass}>{slotData.categoryBreakdown[cat] ?? 0}</div>
           </div>
         ))}
-      </div>
-
-      {showConfirmModal && (
-        <Modal
-          title="Replace today's edition?"
-          message="This will delete all current articles and rebuild from scratch."
-          confirmLabel="Rebuild"
-          onConfirm={() => {
-            setShowConfirmModal(false)
-            buildMutation.mutate(true)
-          }}
-          onCancel={() => setShowConfirmModal(false)}
-        />
-      )}
-
-      <div className={actionRowClass}>
-        <button
-          type="button"
-          className={buttonClass}
-          onClick={() => refetch()}
-          disabled={isFetching}
-        >
-          {isFetching ? 'Refreshing…' : 'Refresh'}
-        </button>
-        <button
-          type="button"
-          className={buttonClass}
-          onClick={() => {
-            if (data) {
-              setShowConfirmModal(true)
-            } else {
-              buildMutation.mutate(false)
-            }
-          }}
-          disabled={buildMutation.isPending}
-        >
-          {buildMutation.isPending ? 'Building…' : "Build Today's Edition"}
-        </button>
-        {data &&
-          data.date ===
-            new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Johannesburg' }) &&
-          !buildMutation.isPending &&
-          !buildMutation.isSuccess && (
-            <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'business' })}>
-              Warning: today&apos;s edition exists — clicking will replace all articles.
-            </span>
-          )}
-        {buildMutation.isSuccess && (
-          <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'science' })}>
-            Build complete.
-          </span>
-        )}
-        {buildMutation.isError && (
-          <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'world' })}>
-            Build failed: {(buildMutation.error as Error).message}
-          </span>
-        )}
       </div>
 
       {feedEntries.length > 0 && (
@@ -448,6 +432,139 @@ function AdminStatus({ secret }: { secret: string }) {
           </table>
         </>
       )}
+    </div>
+  )
+}
+
+function AdminStatus({ secret }: { secret: string }) {
+  const queryClient = useQueryClient()
+
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
+    queryKey: ['adminStatus', secret],
+    queryFn: () => fetchAdminStatus(secret),
+    retry: false,
+  })
+
+  const { data: editions } = useQuery({
+    queryKey: ['editionList'],
+    queryFn: fetchEditionList,
+  })
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [buildSlot, setBuildSlot] = useState<Slot>('morning')
+
+  const buildMutation = useMutation<void, Error, { slot: Slot; force: boolean }>({
+    mutationFn: ({ slot, force }) => triggerBuild(secret, slot, force),
+    onSuccess: () => {
+      void refetch()
+      queryClient.invalidateQueries({ queryKey: ['editionList'] })
+    },
+  })
+
+  const todaySAST = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Johannesburg' })
+  const todaySlotExists = data?.some((s) => s.date === todaySAST && s.slot === buildSlot) ?? false
+
+  if (isLoading) {
+    return (
+      <p className={css({ fontFamily: 'body', color: 'textMuted', fontStyle: 'italic' })}>
+        Loading…
+      </p>
+    )
+  }
+
+  if (error) {
+    const err = error as Error & { code?: string }
+    return (
+      <p className={errorClass}>
+        {err.code === 'UNAUTHORIZED' ? 'Incorrect admin secret.' : `Error: ${error.message}`}
+      </p>
+    )
+  }
+
+  if (!data || data.length === 0) {
+    return <p className={css({ fontFamily: 'body', color: 'textMuted' })}>No editions built yet.</p>
+  }
+
+  return (
+    <div>
+      <h2 className={sectionHeadingClass}>Last Build</h2>
+      {data.map((slotData) => (
+        <div key={slotData.slot}>
+          <p className={slotHeadingClass}>
+            {slotData.slot === 'morning' ? 'Morning Edition' : 'Afternoon Edition'}
+          </p>
+          <SlotStatusCard slotData={slotData} />
+        </div>
+      ))}
+
+      {showConfirmModal && (
+        <Modal
+          title={`Replace today's ${buildSlot} edition?`}
+          message="This will delete all current articles for this slot and rebuild from scratch."
+          confirmLabel="Rebuild"
+          onConfirm={() => {
+            setShowConfirmModal(false)
+            buildMutation.mutate({ slot: buildSlot, force: true })
+          }}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+      )}
+
+      <h2 className={cx(sectionHeadingClass, sectionMtClass)}>Build Edition</h2>
+      <div className={slotSelectorClass}>
+        {(['morning', 'afternoon'] as const).map((s) => (
+          <button
+            key={s}
+            type="button"
+            className={`${slotPillBase} ${buildSlot === s ? slotPillActiveClass : slotPillInactiveClass}`}
+            onClick={() => setBuildSlot(s)}
+            aria-pressed={buildSlot === s}
+          >
+            {s === 'morning' ? 'Morning' : 'Afternoon'}
+          </button>
+        ))}
+      </div>
+      <div className={actionRowClass}>
+        <button
+          type="button"
+          className={buttonClass}
+          onClick={() => refetch()}
+          disabled={isFetching}
+        >
+          {isFetching ? 'Refreshing…' : 'Refresh'}
+        </button>
+        <button
+          type="button"
+          className={buttonClass}
+          onClick={() => {
+            if (todaySlotExists) {
+              setShowConfirmModal(true)
+            } else {
+              buildMutation.mutate({ slot: buildSlot, force: false })
+            }
+          }}
+          disabled={buildMutation.isPending}
+        >
+          {buildMutation.isPending
+            ? 'Building…'
+            : `Build ${buildSlot === 'morning' ? 'Morning' : 'Afternoon'} Edition`}
+        </button>
+        {todaySlotExists && !buildMutation.isPending && !buildMutation.isSuccess && (
+          <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'business' })}>
+            Warning: today&apos;s {buildSlot} edition exists — clicking will replace all articles.
+          </span>
+        )}
+        {buildMutation.isSuccess && (
+          <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'science' })}>
+            Build complete.
+          </span>
+        )}
+        {buildMutation.isError && (
+          <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'world' })}>
+            Build failed: {(buildMutation.error as Error).message}
+          </span>
+        )}
+      </div>
 
       {editions && editions.length > 0 && (
         <>
@@ -458,6 +575,9 @@ function AdminStatus({ secret }: { secret: string }) {
                 <th scope="col" className={thClass}>
                   Date
                 </th>
+                <th scope="col" className={cx(thClass, thNarrowClass)}>
+                  Slot
+                </th>
                 <th scope="col" className={cx(thClass, thMediumClass)}>
                   Stories
                 </th>
@@ -466,14 +586,17 @@ function AdminStatus({ secret }: { secret: string }) {
             </thead>
             <tbody>
               {editions.map((ed) => (
-                <tr key={ed.date}>
+                <tr key={`${ed.date}-${ed.slot}`}>
                   <td className={tdClass}>{ed.date}</td>
+                  <td className={tdClass}>
+                    <SlotBadge slot={ed.slot} />
+                  </td>
                   <td className={tdClass}>{ed.storyCount}</td>
                   <td className={tdClass}>
                     <a
-                      href={`/edition/${ed.date}`}
+                      href={`/edition/${ed.date}?slot=${ed.slot}`}
                       className={linkClass}
-                      aria-label={`View edition for ${ed.date}`}
+                      aria-label={`View ${ed.slot} edition for ${ed.date}`}
                     >
                       View
                     </a>

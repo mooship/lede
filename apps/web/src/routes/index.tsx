@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import type { Category, Story } from '@tidel/api'
+import type { Category, Slot, Story } from '@tidel/api'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 
@@ -9,6 +9,7 @@ import { CategoryNav } from '../components/CategoryNav.js'
 import { Footer } from '../components/Footer.js'
 import { Masthead } from '../components/Masthead.js'
 import { SkeletonCard } from '../components/SkeletonCard.js'
+import { SlotSwitcher } from '../components/SlotSwitcher.js'
 import { StoryList } from '../components/StoryList.js'
 import { createServerTrpcCaller } from '../trpc.js'
 
@@ -71,17 +72,31 @@ const searchSchema = z.object({
     .enum(['All', 'World', 'Technology', 'Science', 'Business / Economy', 'Sport'])
     .optional()
     .default('All'),
+  slot: z.enum(['morning', 'afternoon']).optional().default('morning'),
 })
 
-const fetchTodaysEdition = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<Story[] | null> => {
-    return createServerTrpcCaller().edition.today.query()
-  },
-)
+function isAfternoonAvailable(): boolean {
+  const now = new Date()
+  const hourSAST = parseInt(
+    now.toLocaleString('en-US', {
+      timeZone: 'Africa/Johannesburg',
+      hour: 'numeric',
+      hour12: false,
+    }),
+    10,
+  )
+  return hourSAST >= 14
+}
+
+const fetchTodaysEdition = createServerFn({ method: 'GET' })
+  .inputValidator(z.object({ slot: z.enum(['morning', 'afternoon']) }))
+  .handler(async ({ data }): Promise<Story[] | null> => {
+    return createServerTrpcCaller().edition.today.query({ slot: data.slot })
+  })
 
 function IndexPage() {
   const navigate = useNavigate({ from: '/' })
-  const { category: activeCategory } = useSearch({ from: '/' })
+  const { category: activeCategory, slot: activeSlot } = useSearch({ from: '/' })
   const data: Story[] | null = Route.useLoaderData()
 
   const seenEditionDate = useRef<string | null>(null)
@@ -104,13 +119,41 @@ function IndexPage() {
   }
 
   function handleCategoryChange(tab: Category | 'All') {
-    void navigate({ search: { category: tab }, replace: true })
+    void navigate({ search: (prev) => ({ ...prev, category: tab }), replace: true })
+  }
+
+  function handleSlotChange(slot: Slot) {
+    void navigate({ search: (prev) => ({ ...prev, slot }), replace: true })
+  }
+
+  const afternoonAvailable = isAfternoonAvailable() || (activeSlot === 'afternoon' && data !== null)
+
+  if (data == null && activeSlot === 'afternoon') {
+    return (
+      <div className={pageClass}>
+        <Masthead slot={activeSlot} />
+        <SlotSwitcher
+          activeSlot={activeSlot}
+          onSlotChange={handleSlotChange}
+          afternoonAvailable={afternoonAvailable}
+        />
+        <main className={contentClass}>
+          <p className={emptyTextClass}>No afternoon edition yet — check back later.</p>
+        </main>
+        <Footer />
+      </div>
+    )
   }
 
   if (data == null) {
     return (
       <div className={pageClass}>
-        <Masthead />
+        <Masthead slot={activeSlot} />
+        <SlotSwitcher
+          activeSlot={activeSlot}
+          onSlotChange={handleSlotChange}
+          afternoonAvailable={afternoonAvailable}
+        />
         <main className={contentClass}>
           <p className={emptyTextClass}>No editions yet — check back soon.</p>
         </main>
@@ -131,7 +174,12 @@ function IndexPage() {
           </button>
         </div>
       )}
-      <Masthead editionDate={data[0]?.editionDate} />
+      <Masthead editionDate={data[0]?.editionDate} slot={activeSlot} />
+      <SlotSwitcher
+        activeSlot={activeSlot}
+        onSlotChange={handleSlotChange}
+        afternoonAvailable={afternoonAvailable}
+      />
       <main>
         <CategoryNav active={activeCategory} onChange={handleCategoryChange} />
         <div className={storyWrapClass}>
@@ -147,19 +195,20 @@ export default IndexPage
 
 export const Route = createFileRoute('/')({
   validateSearch: searchSchema,
+  loaderDeps: ({ search }) => ({ slot: search.slot }),
   head: () => ({
     meta: [
       { title: "Tidel — Today's News Digest" },
       {
         name: 'description',
         content:
-          "Today's most significant stories across world news, technology, science, business, and sport — curated and summarised every morning.",
+          "Today's most significant stories across world news, technology, science, business, and sport — curated and summarised every morning and afternoon.",
       },
       { property: 'og:title', content: "Tidel — Today's News Digest" },
       {
         property: 'og:description',
         content:
-          "Today's most significant stories across world news, technology, science, business, and sport — curated and summarised every morning.",
+          "Today's most significant stories across world news, technology, science, business, and sport — curated and summarised every morning and afternoon.",
       },
       { property: 'og:url', content: import.meta.env.VITE_APP_URL ?? '' },
     ],
@@ -177,6 +226,6 @@ export const Route = createFileRoute('/')({
       </main>
     </div>
   ),
-  loader: async () => fetchTodaysEdition(),
+  loader: async ({ deps }) => fetchTodaysEdition({ data: { slot: deps.slot } }),
   component: IndexPage,
 })

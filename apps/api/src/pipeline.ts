@@ -1,8 +1,17 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { Category } from '@tidel/api'
 import { createDb, schema } from '@tidel/db'
-import { eq } from 'drizzle-orm'
-import { FEEDS, MAX_STORIES_PER_CATEGORY, TARGET_STORY_COUNT } from './config.js'
+import { and, eq } from 'drizzle-orm'
+import {
+  AFTERNOON_MAX_STORIES_PER_CATEGORY,
+  AFTERNOON_MAX_STORY_COUNT,
+  AFTERNOON_MIN_STORIES_PER_CATEGORY,
+  AFTERNOON_MIN_STORY_COUNT,
+  AFTERNOON_TARGET_STORY_COUNT,
+  FEEDS,
+  MAX_STORIES_PER_CATEGORY,
+  TARGET_STORY_COUNT,
+} from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
@@ -170,20 +179,49 @@ export function scoreBySourceOverlap(
   })
 }
 
+type CurationConfig = {
+  target: number
+  min: number
+  max: number
+  maxPerCat: number
+  minPerCat: number
+  slotLabel: string
+}
+
+function getCurationConfig(slot: 'morning' | 'afternoon'): CurationConfig {
+  if (slot === 'afternoon') {
+    return {
+      target: AFTERNOON_TARGET_STORY_COUNT,
+      min: AFTERNOON_MIN_STORY_COUNT,
+      max: AFTERNOON_MAX_STORY_COUNT,
+      maxPerCat: AFTERNOON_MAX_STORIES_PER_CATEGORY,
+      minPerCat: AFTERNOON_MIN_STORIES_PER_CATEGORY,
+      slotLabel: 'afternoon',
+    }
+  }
+  return {
+    target: TARGET_STORY_COUNT,
+    min: 9,
+    max: TARGET_STORY_COUNT,
+    maxPerCat: MAX_STORIES_PER_CATEGORY,
+    minPerCat: 1,
+    slotLabel: 'morning',
+  }
+}
+
 /**
- * Asks Claude to pick ~15 stories across all categories from the scored pool.
+ * Asks Claude to pick stories across all categories from the scored pool.
  * Falls back to a score-then-recency sort if no API key is set or Claude fails.
  */
 export async function curateWithClaude(
   scored: ScoredItem[],
   env: Env,
+  slot: 'morning' | 'afternoon' = 'morning',
 ): Promise<Array<RssItem & { category: Category }>> {
+  const cfg = getCurationConfig(slot)
   const byCategory = groupByCategory(scored)
   const numCategories = byCategory.size
-  const fallbackPerCategory = Math.min(
-    MAX_STORIES_PER_CATEGORY,
-    Math.floor(TARGET_STORY_COUNT / numCategories),
-  )
+  const fallbackPerCategory = Math.min(cfg.maxPerCat, Math.floor(cfg.target / numCategories))
 
   const fallbackSort = (items: ScoredItem[]): ScoredItem[] =>
     [...items].sort((a, b) => {
@@ -216,12 +254,17 @@ export async function curateWithClaude(
     categoryBlocks.push(`${category}:\n${lines.join('\n')}`)
   }
 
-  const prompt = `You are a senior news editor curating a daily digest for an international audience.
+  const afternoonNote =
+    slot === 'afternoon'
+      ? '\nThis is an afternoon digest. Focus on stories that broke or developed since this morning. Prefer novelty — avoid topics already covered in the morning news cycle.\n'
+      : ''
 
-You MUST select between 9 and ${TARGET_STORY_COUNT} stories. Aim for exactly ${TARGET_STORY_COUNT}.
+  const prompt = `You are a senior news editor curating a ${cfg.slotLabel} digest for an international audience.
+${afternoonNote}
+You MUST select between ${cfg.min} and ${cfg.max} stories. Aim for exactly ${cfg.target}.
 
 Rules:
-- At most ${MAX_STORIES_PER_CATEGORY} stories from any single category.
+- At most ${cfg.maxPerCat} stories from any single category.
 - Include at least 1 story from each category, provided something newsworthy exists.
 - Never select more than one story about the same event or topic. If multiple stories cover the same event, pick the one with the highest source count and skip the rest.
 
@@ -271,7 +314,7 @@ ${categoryBlocks.join('\n\n')}`
     for (const n of validIndices) {
       const story = allStories[n - 1] as ScoredItem
       const count = countByCategory.get(story.category) ?? 0
-      if (count < MAX_STORIES_PER_CATEGORY) {
+      if (count < cfg.maxPerCat) {
         result.push(story)
         countByCategory.set(story.category, count + 1)
       }
@@ -375,21 +418,37 @@ async function purgeEditionCache(zoneId: string, apiToken: string): Promise<void
 }
 
 /**
- * Builds and persists today's edition. Idempotent — returns early if an edition
- * for today's SAST date already exists in the database.
+ * Builds and persists today's edition for the given slot. Idempotent — returns early if an
+ * edition for today's SAST date and slot already exists in the database.
  */
-export async function buildEdition(env: Env, force = false): Promise<void> {
+export async function buildEdition(
+  env: Env,
+  force = false,
+  slot: 'morning' | 'afternoon' = 'morning',
+): Promise<void> {
   const db = createDb(env.DATABASE_URL)
   const date = todaySAST()
 
   const existing = await db.query.editions.findFirst({
-    where: eq(schema.editions.date, date),
+    where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)),
   })
   if (existing) {
     if (!force) {
       return
     }
-    await db.delete(schema.editions).where(eq(schema.editions.date, date))
+    await db
+      .delete(schema.editions)
+      .where(and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)))
+  }
+
+  // For the afternoon slot, exclude links already published in today's morning edition.
+  let excludeLinks = new Set<string>()
+  if (slot === 'afternoon') {
+    const morningStories = await db
+      .select({ link: schema.stories.link })
+      .from(schema.stories)
+      .where(and(eq(schema.stories.editionDate, date), eq(schema.stories.editionSlot, 'morning')))
+    excludeLinks = new Set(morningStories.map((r) => r.link))
   }
 
   const feedEntries = Object.entries(FEEDS).flatMap(([category, urls]) =>
@@ -422,11 +481,14 @@ export async function buildEdition(env: Env, force = false): Promise<void> {
   }
 
   const filtered = allItems.filter(
-    (item) => !isJunk(item.title, item.description) && isRecentEnough(item.pubDate, date),
+    (item) =>
+      !isJunk(item.title, item.description) &&
+      isRecentEnough(item.pubDate, date) &&
+      !excludeLinks.has(item.link),
   )
   const unique = deduplicateByTitle(filtered)
   const scored = scoreBySourceOverlap(filtered, unique)
-  const selected = await curateWithClaude(scored, env)
+  const selected = await curateWithClaude(scored, env, slot)
 
   const summariser = createSummariser(env)
   const summarised = await Promise.all(
@@ -443,11 +505,12 @@ export async function buildEdition(env: Env, force = false): Promise<void> {
 
   await db
     .insert(schema.editions)
-    .values({ date, builtAt: new Date(), feedStats: JSON.stringify(feedStats) })
+    .values({ date, slot, builtAt: new Date(), feedStats: JSON.stringify(feedStats) })
   try {
     await db.insert(schema.stories).values(
       summarised.map((story, i) => ({
         editionDate: date,
+        editionSlot: slot,
         title: story.title,
         description: story.byline || null,
         summary: story.summary,
@@ -460,7 +523,9 @@ export async function buildEdition(env: Env, force = false): Promise<void> {
     )
   } catch (err) {
     console.error('[buildEdition] Failed to insert stories, rolling back edition:', err)
-    await db.delete(schema.editions).where(eq(schema.editions.date, date))
+    await db
+      .delete(schema.editions)
+      .where(and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)))
     throw err
   }
 

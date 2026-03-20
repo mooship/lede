@@ -115,9 +115,7 @@ const shareButtonClass = css({
 const fetchStory = createServerFn({ method: 'GET' })
   .inputValidator(z.string().uuid())
   .handler(async ({ data: id }): Promise<Story | null> => {
-    const stories = await createServerTrpcCaller().edition.today.query()
-    if (!stories) return null
-    return stories.find((s) => s.id === id) ?? null
+    return createServerTrpcCaller().story.byId.query(id)
   })
 
 function StoryPage() {

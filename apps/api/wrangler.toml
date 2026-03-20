@@ -3,7 +3,7 @@ main               = "src/index.ts"
 compatibility_date = "2026-03-20"
 
 [triggers]
-crons = ["0 4 * * *"]
+crons = ["0 4 * * *", "0 12 * * *"]
 
 [observability.logs]
 enabled = true
@@ -24,7 +24,7 @@ pattern = "api.tidel.app"
 custom_domain = true
 
 [env.production.triggers]
-crons = ["0 4 * * *"]
+crons = ["0 4 * * *", "0 12 * * *"]
 
 [[env.production.unsafe.bindings]]
 name         = "RATE_LIMITER"
