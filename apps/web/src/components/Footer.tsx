@@ -28,7 +28,14 @@ const linksClass = css({
 
 const separatorClass = css({ color: 'border', userSelect: 'none' })
 
-const linkClass = css({ color: 'textMuted', textDecoration: 'none' })
+const linkClass = css({
+  color: 'textMuted',
+  textDecoration: 'none',
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: '44px',
+  px: '1',
+})
 
 const ALL_LINKS = [
   { label: 'About', internal: '/about' as const },

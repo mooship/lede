@@ -58,8 +58,8 @@ export function StoryCard({ story, position }: Props) {
             aria-label={`Category: ${CATEGORY_LABEL[story.category]}`}
             style={{
               color: accentVar,
-              backgroundColor: `color-mix(in srgb, ${accentVar} 10%, transparent)`,
-              borderColor: `color-mix(in srgb, ${accentVar} 30%, transparent)`,
+              backgroundColor: `color-mix(in srgb, ${accentVar} 15%, var(--colors-surface))`,
+              borderColor: `color-mix(in srgb, ${accentVar} 40%, var(--colors-surface))`,
             }}
           >
             {CATEGORY_LABEL[story.category]}

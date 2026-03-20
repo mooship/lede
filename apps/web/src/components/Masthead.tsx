@@ -34,7 +34,7 @@ const subtitleClass = css({
   fontSize: '0.6rem',
   fontWeight: '700',
   letterSpacing: '0.2em',
-  color: 'textDim',
+  color: 'textMuted',
   textTransform: 'uppercase',
   margin: '0.4rem 0 0 0.1rem',
 })
