@@ -422,8 +422,10 @@ function AdminStatus({ secret }: { secret: string }) {
           <table className={tableClass} style={{ marginBottom: '10px' }}>
             <thead>
               <tr>
-                <th className={thClass}>Feed URL</th>
-                <th className={thClass} style={{ width: '100px' }}>
+                <th scope="col" className={thClass}>
+                  Feed URL
+                </th>
+                <th scope="col" className={thClass} style={{ width: '100px' }}>
                   Status
                 </th>
               </tr>
@@ -450,11 +452,18 @@ function AdminStatus({ secret }: { secret: string }) {
           <table className={tableClass}>
             <thead>
               <tr>
-                <th className={thClass}>Date</th>
-                <th className={thClass} style={{ width: '120px' }}>
+                <th scope="col" className={thClass}>
+                  Date
+                </th>
+                <th scope="col" className={thClass} style={{ width: '120px' }}>
                   Stories
                 </th>
-                <th className={thClass} style={{ width: '80px' }} />
+                <th
+                  scope="col"
+                  className={thClass}
+                  style={{ width: '80px' }}
+                  aria-label="Actions"
+                />
               </tr>
             </thead>
             <tbody>
@@ -463,7 +472,11 @@ function AdminStatus({ secret }: { secret: string }) {
                   <td className={tdClass}>{ed.date}</td>
                   <td className={tdClass}>{ed.storyCount}</td>
                   <td className={tdClass}>
-                    <a href={`/edition/${ed.date}`} className={linkClass}>
+                    <a
+                      href={`/edition/${ed.date}`}
+                      className={linkClass}
+                      aria-label={`View edition for ${ed.date}`}
+                    >
                       View
                     </a>
                   </td>
@@ -498,6 +511,7 @@ function AdminPage() {
           <input
             type="password"
             placeholder="Admin secret"
+            aria-label="Admin secret"
             value={inputSecret}
             onChange={(e) => setInputSecret(e.target.value)}
             className={inputClass}

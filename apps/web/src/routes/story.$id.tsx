@@ -173,6 +173,7 @@ function StoryPage() {
             rel="noopener noreferrer"
             className={readLinkClass}
             style={{ color: accentVar, borderColor: accentVar }}
+            aria-label="Read full article (opens in new tab)"
           >
             Read Full Article →
           </a>

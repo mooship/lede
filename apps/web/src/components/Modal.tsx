@@ -10,9 +10,7 @@ const overlayClass = css({
   justifyContent: 'center',
   zIndex: '1000',
   px: '6',
-  border: 'none',
   cursor: 'default',
-  appearance: 'none',
   width: '100%',
 })
 
@@ -97,26 +95,36 @@ export function Modal({
   onConfirm,
   onCancel,
 }: ModalProps) {
+  const cancelRef = useRef<HTMLButtonElement>(null)
   const confirmRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     confirmRef.current?.focus()
 
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') onCancel()
+      if (e.key === 'Escape') {
+        onCancel()
+        return
+      }
+      if (e.key !== 'Tab') return
+      if (e.shiftKey) {
+        if (document.activeElement === cancelRef.current) {
+          e.preventDefault()
+          confirmRef.current?.focus()
+        }
+      } else {
+        if (document.activeElement === confirmRef.current) {
+          e.preventDefault()
+          cancelRef.current?.focus()
+        }
+      }
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [onCancel])
 
   return (
-    <button
-      type="button"
-      className={overlayClass}
-      onClick={onCancel}
-      tabIndex={-1}
-      aria-label="Close modal"
-    >
+    <div className={overlayClass}>
       <div
         className={dialogClass}
         onClick={(e) => e.stopPropagation()}
@@ -133,7 +141,7 @@ export function Modal({
           {message}
         </p>
         <div className={buttonRowClass}>
-          <button type="button" className={cancelButtonClass} onClick={onCancel}>
+          <button type="button" className={cancelButtonClass} onClick={onCancel} ref={cancelRef}>
             {cancelLabel}
           </button>
           <button type="button" className={confirmButtonClass} onClick={onConfirm} ref={confirmRef}>
@@ -141,6 +149,6 @@ export function Modal({
           </button>
         </div>
       </div>
-    </button>
+    </div>
   )
 }

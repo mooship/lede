@@ -33,10 +33,22 @@ const linkClass = css({ color: 'textMuted', textDecoration: 'none' })
 const ALL_LINKS = [
   { label: 'About', internal: '/about' as const },
   { label: 'Archive', internal: '/archive' as const },
-  { label: 'Source', href: 'https://github.com/mooship/tidel' },
-  { label: 'AGPL-3.0', href: 'https://opensource.org/license/agpl-3-0-only' },
-  { label: 'Feedback', href: 'mailto:contact@tidel.app' },
-  { label: 'Report a bug', href: 'https://github.com/mooship/tidel/issues/new' },
+  {
+    label: 'Source',
+    href: 'https://github.com/mooship/tidel',
+    ariaLabel: 'Source code (opens in new tab)',
+  },
+  {
+    label: 'AGPL-3.0',
+    href: 'https://opensource.org/license/agpl-3-0-only',
+    ariaLabel: 'AGPL-3.0 licence (opens in new tab)',
+  },
+  { label: 'Feedback', href: 'mailto:contact@tidel.app', ariaLabel: 'Send feedback by email' },
+  {
+    label: 'Report a bug',
+    href: 'https://github.com/mooship/tidel/issues/new',
+    ariaLabel: 'Report a bug (opens in new tab)',
+  },
 ]
 
 export function Footer() {
@@ -56,7 +68,13 @@ export function Footer() {
                 {label}
               </Link>
             ) : (
-              <a href={link.href} className={linkClass} target="_blank" rel="noopener noreferrer">
+              <a
+                href={link.href}
+                className={linkClass}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={link.ariaLabel}
+              >
                 {label}
               </a>
             )}
