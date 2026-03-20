@@ -10,7 +10,7 @@ export default defineConfig({
     tanstackStart(),
     react(),
     FontaineTransform.vite({
-      fallbacks: ['Arial', 'sans-serif'],
+      fallbacks: ['Arial', 'Helvetica Neue'],
       resolvePath: (id) => new URL(id, import.meta.url),
     }),
   ],
