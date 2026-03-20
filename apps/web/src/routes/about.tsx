@@ -58,7 +58,7 @@ function AboutPage() {
           <h2 className={headingClass}>What is it?</h2>
           <p className={bodyClass}>
             A free, ad-free daily digest of the day's most significant stories. Every morning at
-            06:00 South African time, Tidel pulls from trusted RSS feeds, uses Claude (Anthropic's
+            04:00 UTC, Tidel pulls from trusted RSS feeds, uses Claude (Anthropic's
             AI) to pick the most newsworthy stories and summarise each one, then publishes a clean
             edition — no noise, no notifications, no sponsored content.
           </p>
