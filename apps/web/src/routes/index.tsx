@@ -226,6 +226,7 @@ export const Route = createFileRoute('/')({
           ))}
         </div>
       </main>
+      <Footer />
     </div>
   ),
   loader: async ({ deps }) => fetchTodaysEdition({ data: { slot: deps.slot } }),

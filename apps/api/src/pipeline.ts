@@ -48,6 +48,12 @@ export function todaySAST(): string {
   return SAST_DATE_FORMAT.format(new Date())
 }
 
+/** Returns 'afternoon' after 14:00 SAST (12:00 UTC), otherwise 'morning'. */
+export function currentSlotSAST(): 'morning' | 'afternoon' {
+  const hourSAST = (new Date().getUTCHours() + 2) % 24
+  return hourSAST >= 14 ? 'afternoon' : 'morning'
+}
+
 const JUNK_PATTERNS = [
   /promo\s*code/i,
   /coupon/i,
