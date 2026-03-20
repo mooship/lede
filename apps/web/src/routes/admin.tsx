@@ -290,7 +290,7 @@ function AdminStatus({ secret }: { secret: string }) {
   const buildMutation = useMutation<void, Error, boolean>({
     mutationFn: (force: boolean) => triggerBuild(secret, force),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminStatus', secret] })
+      void refetch()
       queryClient.invalidateQueries({ queryKey: ['editionList'] })
     },
   })
