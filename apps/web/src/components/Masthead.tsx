@@ -52,17 +52,17 @@ interface MastheadProps {
 }
 
 export function Masthead({ editionDate, slot }: MastheadProps) {
-  const date = editionDate ? new Date(`${editionDate}T00:00:00Z`) : null
+  const date = editionDate ? new Date(`${editionDate}T12:00:00Z`) : null
 
   const dayName = date?.toLocaleDateString('en-GB', {
     weekday: 'long',
-    timeZone: 'Africa/Johannesburg',
+    timeZone: 'UTC',
   })
   const dateLine = date?.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-    timeZone: 'Africa/Johannesburg',
+    timeZone: 'UTC',
   })
 
   const subtitle =
