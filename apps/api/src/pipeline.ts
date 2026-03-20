@@ -206,9 +206,9 @@ Editorial criteria by category:
 - Technology: Select significant product launches, regulatory actions, cybersecurity incidents, and industry shifts. Skip gadget reviews, app updates, and listicles.
 - Science: Select discoveries, studies, and space/climate developments with broad significance.
 - Business / Economy: Select macroeconomic policy, central bank decisions, major corporate news, and market-moving events. Skip personal finance tips and stock picks.
-- Sport: Only select results from major international competitions (World Cup, Olympics, Grand Slams, Champions League, major league finals) or significant breaking news. Skip routine match results and transfer rumours.
+- Sport: Only select results from major international competitions (World Cup, Olympics, Grand Slams, Champions League, major league finals) or significant breaking news. Skip routine match results, transfer rumours, and roundup articles that merely list results without a specific story.
 
-Exclude across all categories: food, lifestyle, travel, entertainment, opinion columns, human-interest stories, and promotional content.
+Exclude across all categories: food, lifestyle, travel, entertainment, opinion columns, human-interest stories, promotional content, and roundup/recap articles that aggregate multiple events without a clear central news development (e.g. "Day One results", "weekly roundup", "all the winners").
 
 Source count is a strong signal of significance — a story covered by multiple outlets is more important than one covered by a single source. Prefer higher source counts when choosing between stories of similar newsworthiness.
 
