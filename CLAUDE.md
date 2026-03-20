@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What is Tidel
 
-A daily news digest that fetches RSS feeds across five categories, summarises each story with Claude Sonnet, and publishes a ~15-story edition per day (2–5 per category, Claude decides the split). One edition is built at 06:00 SAST (04:00 UTC) via a Cloudflare Worker cron trigger.
+A daily news digest that fetches RSS feeds across five categories, summarises each story with Claude Sonnet, and publishes a ~12-story morning edition and ~9-story afternoon edition per day. Morning builds at 04:00 UTC, afternoon at 12:00 UTC via Cloudflare Worker cron triggers.
 
 ## Monorepo structure
 
@@ -93,7 +93,7 @@ VITE_APP_URL=https://tidel.app
 ### Pipeline (`apps/api/src/pipeline.ts`)
 
 `buildEdition(env)` runs daily:
-1. Idempotency check — query `editions` table for today's SAST date; return early if row exists
+1. Idempotency check — query `editions` table for today's UTC date; return early if row exists
 2. Fetch all feeds via `Promise.allSettled` (failures are logged and skipped)
 3. Filter junk — regex patterns for promo codes, coupons, sponsored content
 4. Deduplicate — normalise titles (lowercase, strip punctuation), drop substring matches
@@ -103,7 +103,7 @@ VITE_APP_URL=https://tidel.app
 
 ### tRPC router (`apps/api/src/router.ts`)
 
-- `edition.today` — public query, returns `Story[] | null` for today's SAST date; has a 5 s timeout guard
+- `edition.today` — public query, returns `Story[] | null` for today's UTC date; has a 5 s timeout guard
 - `edition.build` — protected mutation, checks Bearer token against `ADMIN_SECRET`
 
 Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified in `context.ts` using `crypto.subtle.timingSafeEqual`.

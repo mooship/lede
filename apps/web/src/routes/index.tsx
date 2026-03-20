@@ -22,6 +22,8 @@ const emptyTextClass = css({
   fontSize: '1.1rem',
   color: 'textMuted',
   lineHeight: '1.75',
+  px: '8',
+  py: '12',
 })
 
 const bannerClass = css({
@@ -180,7 +182,11 @@ function IndexPage() {
       <main>
         <CategoryNav active={activeCategory} onChange={handleCategoryChange} />
         <div className={storyWrapClass}>
-          <StoryList stories={filtered} />
+          {filtered.length === 0 ? (
+            <p className={emptyTextClass}>No {activeCategory} stories in this edition.</p>
+          ) : (
+            <StoryList stories={filtered} />
+          )}
         </div>
       </main>
       <Footer />

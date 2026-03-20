@@ -4,7 +4,7 @@ import { initTRPC, TRPCError } from '@trpc/server'
 import { and, count, desc, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import type { Context } from './context.js'
-import { buildEdition, currentSlot, todaySAST } from './pipeline.js'
+import { buildEdition, currentSlot, todayUTC } from './pipeline.js'
 
 const t = initTRPC.context<Context>().create()
 
@@ -52,7 +52,7 @@ const editionRouter = router({
     .input(z.object({ slot: slotSchema.optional().default('morning') }))
     .query(async ({ ctx, input }): Promise<Story[] | null> => {
       const db = createDb(ctx.env.DATABASE_URL)
-      const date = todaySAST()
+      const date = todayUTC()
       const { slot } = input
 
       const queryFn = async (): Promise<Story[] | null> => {

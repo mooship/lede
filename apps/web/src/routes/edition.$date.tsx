@@ -71,16 +71,7 @@ function formatEditionDate(dateStr: string): string {
 }
 
 function isAfternoonAvailable(): boolean {
-  const now = new Date()
-  const hourSAST = parseInt(
-    now.toLocaleString('en-US', {
-      timeZone: 'Africa/Johannesburg',
-      hour: 'numeric',
-      hour12: false,
-    }),
-    10,
-  )
-  return hourSAST >= 14
+  return new Date().getUTCHours() >= 12
 }
 
 const fetchEditionByDate = createServerFn({ method: 'GET' })
@@ -163,7 +154,21 @@ function EditionPage() {
       />
       <CategoryNav active={activeCategory} onChange={setActiveCategory} />
       <div className={storyWrapClass}>
-        <StoryList stories={filtered} />
+        {filtered.length === 0 ? (
+          <p
+            className={css({
+              fontFamily: 'body',
+              fontSize: '1.1rem',
+              color: 'textMuted',
+              px: '8',
+              py: '12',
+            })}
+          >
+            No {activeCategory} stories in this edition.
+          </p>
+        ) : (
+          <StoryList stories={filtered} />
+        )}
       </div>
       <Footer />
     </div>

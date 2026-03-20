@@ -14,7 +14,7 @@ const metaValueSmClass = css({ fontSize: '0.9rem' })
 const metaValueWarnClass = css({ color: 'business' })
 const sectionMtClass = css({ marginTop: '2' })
 const tableMbClass = css({ marginBottom: '10px' })
-const thNarrowClass = css({ width: '100px' })
+const thNarrowClass = css({ width: '120px' })
 const thMediumClass = css({ width: '120px' })
 const thTinyClass = css({ width: '80px' })
 const mainClass = css({ maxWidth: '900px', mx: 'auto', px: '8', pt: '12', pb: '20' })
@@ -259,10 +259,11 @@ const slotBadgeMorningClass = css({
   fontWeight: '700',
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
+  whiteSpace: 'nowrap',
   color: 'tech',
   border: '1px solid',
   borderColor: 'tech',
-  px: '2',
+  px: '3',
   py: '0.5',
 })
 
@@ -272,10 +273,11 @@ const slotBadgeAfternoonClass = css({
   fontWeight: '700',
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
+  whiteSpace: 'nowrap',
   color: 'business',
   border: '1px solid',
   borderColor: 'business',
-  px: '2',
+  px: '3',
   py: '0.5',
 })
 
@@ -344,7 +346,7 @@ function formatBuiltAt(iso: string): string {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Africa/Johannesburg',
+    timeZone: 'UTC',
     timeZoneName: 'short',
   })
 }
@@ -376,7 +378,7 @@ function SlotStatusCard({ slotData }: { slotData: SlotStatusData }) {
           <div className={metaValueClass}>{slotData.date}</div>
         </div>
         <div className={metaCardClass}>
-          <div className={metaLabelClass}>Built at (SAST)</div>
+          <div className={metaLabelClass}>Built at (UTC)</div>
           <div className={cx(metaValueClass, metaValueSmClass)}>
             {formatBuiltAt(slotData.builtAt)}
           </div>
@@ -461,8 +463,8 @@ function AdminStatus({ secret }: { secret: string }) {
     },
   })
 
-  const todaySAST = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Johannesburg' })
-  const todaySlotExists = data?.some((s) => s.date === todaySAST && s.slot === buildSlot) ?? false
+  const todayUTC = new Date().toLocaleDateString('en-CA', { timeZone: 'UTC' })
+  const todaySlotExists = data?.some((s) => s.date === todayUTC && s.slot === buildSlot) ?? false
 
   if (isLoading) {
     return (

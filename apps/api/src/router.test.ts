@@ -17,7 +17,7 @@ vi.mock('@tidel/db', () => ({
 
 vi.mock('./pipeline.js', () => ({
   buildEdition: vi.fn(),
-  todaySAST: vi.fn(() => '2024-01-01'),
+  todayUTC: vi.fn(() => '2024-01-01'),
   currentSlot: vi.fn(() => 'morning'),
 }))
 

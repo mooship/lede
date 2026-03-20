@@ -42,8 +42,8 @@ describe('SlotSwitcher', () => {
 
   it('shows tooltip on disabled afternoon button', () => {
     render(<SlotSwitcher activeSlot="morning" onSlotChange={vi.fn()} afternoonAvailable={false} />)
-    expect(screen.getByRole('button', { name: /afternoon/i }).getAttribute('title')).toBe(
-      'Available at 14:00 SAST',
+    expect(screen.getByRole('button', { name: /afternoon/i }).getAttribute('title')).toMatch(
+      /^Available at /,
     )
   })
 

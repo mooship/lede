@@ -1,11 +1,11 @@
 /**
  * Returns the reference date for the current edition.
- * Before 04:00 UTC (06:00 SAST, the build time) the previous day's edition is current.
+ * Before 04:00 UTC (the morning build time) the previous day's edition is current.
  */
 export function getEditionDate(): Date {
   const now = new Date()
   const ref = new Date(now)
-  ref.setUTCHours(4, 0, 0, 0) // 04:00 UTC = 06:00 SAST (edition build time)
+  ref.setUTCHours(4, 0, 0, 0)
   if (ref > now) {
     ref.setUTCDate(ref.getUTCDate() - 1) // before today's build → use yesterday's
   }

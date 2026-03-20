@@ -1,5 +1,11 @@
 import { css } from '../../styled-system/css'
 
+function afternoonLocalTime(): string {
+  const d = new Date()
+  d.setUTCHours(12, 0, 0, 0)
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+}
+
 const wrapperClass = css({
   width: '100%',
   borderBottom: '1px solid',
@@ -84,7 +90,7 @@ export function SlotSwitcher({
             }}
             aria-pressed={activeSlot === 'afternoon'}
             aria-disabled={!afternoonAvailable}
-            title={!afternoonAvailable ? 'Available at 14:00 SAST' : undefined}
+            title={!afternoonAvailable ? `Available at ${afternoonLocalTime()}` : undefined}
           >
             Afternoon
           </button>

@@ -17,7 +17,7 @@ import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
 
-const SAST_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' })
+const UTC_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' })
 
 async function withRetry<T>(
   fn: () => Promise<T>,
@@ -43,9 +43,9 @@ async function withRetry<T>(
   throw lastErr
 }
 
-/** Returns today's date in SAST (Africa/Johannesburg, UTC+2) as YYYY-MM-DD. */
-export function todaySAST(): string {
-  return SAST_DATE_FORMAT.format(new Date())
+/** Returns today's date in UTC as YYYY-MM-DD. */
+export function todayUTC(): string {
+  return UTC_DATE_FORMAT.format(new Date())
 }
 
 /** Returns 'afternoon' after 12:00 UTC (when the afternoon cron runs), otherwise 'morning'. */
@@ -68,7 +68,7 @@ const JUNK_PATTERNS = [
 ]
 
 /**
- * Returns `true` if the article was published today or yesterday (SAST).
+ * Returns `true` if the article was published today or yesterday (UTC).
  * Missing or unparseable dates are treated as recent to avoid silently dropping articles.
  */
 export function isRecentEnough(pubDate: string | undefined | null, todayStr: string): boolean {
@@ -79,13 +79,13 @@ export function isRecentEnough(pubDate: string | undefined | null, todayStr: str
   if (Number.isNaN(d.getTime())) {
     return true
   }
-  const articleDate = SAST_DATE_FORMAT.format(d)
+  const articleDate = UTC_DATE_FORMAT.format(d)
   if (articleDate === todayStr) {
     return true
   }
-  const yesterday = new Date(`${todayStr}T12:00:00`)
-  yesterday.setDate(yesterday.getDate() - 1)
-  const yesterdayStr = SAST_DATE_FORMAT.format(yesterday)
+  const yesterday = new Date(`${todayStr}T12:00:00Z`)
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1)
+  const yesterdayStr = UTC_DATE_FORMAT.format(yesterday)
   return articleDate === yesterdayStr
 }
 
@@ -425,7 +425,7 @@ async function purgeEditionCache(zoneId: string, apiToken: string): Promise<void
 
 /**
  * Builds and persists today's edition for the given slot. Idempotent — returns early if an
- * edition for today's SAST date and slot already exists in the database.
+ * edition for today's UTC date and slot already exists in the database.
  */
 export async function buildEdition(
   env: Env,
@@ -433,7 +433,7 @@ export async function buildEdition(
   slot: 'morning' | 'afternoon' = 'morning',
 ): Promise<void> {
   const db = createDb(env.DATABASE_URL)
-  const date = todaySAST()
+  const date = todayUTC()
 
   const existing = await db.query.editions.findFirst({
     where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)),

@@ -1,6 +1,6 @@
 # Tidel
 
-A daily news digest. Each morning at 06:00 SAST, a Cloudflare Worker fetches RSS feeds across five categories, summarises each story with Claude Sonnet, and publishes a ~15-story edition. The frontend presents the edition as a newspaper-style grid with full story detail pages.
+A daily news digest. Cloudflare Worker crons build a morning edition at 04:00 UTC and an afternoon edition at 12:00 UTC, fetching RSS feeds across five categories and summarising each story with Claude. The frontend presents each edition as a newspaper-style grid with full story detail pages.
 
 ## Stack
 
@@ -72,7 +72,7 @@ cd apps/api && npm run deploy
 WEB_ORIGIN=https://tidel.app
 ```
 
-This uploads the secrets to Cloudflare and deploys the worker in one step. The worker runs at `https://api.tidel.app` and is configured to rebuild the edition daily at 06:00 SAST via a cron trigger.
+This uploads the secrets to Cloudflare and deploys the worker in one step. The worker runs at `https://api.tidel.app` and is configured to build editions at 04:00 UTC (morning) and 12:00 UTC (afternoon) via cron triggers.
 
 ### Frontend (Cloudflare Pages)
 
