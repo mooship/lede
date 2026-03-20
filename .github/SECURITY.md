@@ -16,7 +16,7 @@ You can expect an acknowledgement within 48 hours and a resolution or update wit
 
 | In scope | Out of scope |
 |---|---|
-| The Tidel web app (`tidel.app`, `tidel.timothybrits.co.za`) | Third-party news sources linked from the site |
+| The Tidel web app (`tidel.app`) | Third-party news sources linked from the site |
 | The API worker | The Neon or Cloudflare infrastructure itself |
 | Authentication and authorisation logic | Issues requiring physical access |
 

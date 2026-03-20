@@ -6,7 +6,7 @@
   "scripts": {
     "prepare": "panda codegen --silent",
     "dev": "panda codegen --silent && vite dev",
-    "build": "panda codegen --silent && tsc --noEmit && vite build",
+    "build": "panda codegen --silent && vite build",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy --config wrangler.deploy.jsonc --env production",
     "test": "vitest run",

@@ -79,8 +79,8 @@ cd apps/api && npm run deploy
 
 Fill in `apps/web/.env.production` (gitignored) with production web vars:
 ```
-VITE_API_URL=https://tidel.timothybrits.workers.dev
-VITE_APP_URL=https://your-domain.com
+VITE_API_URL=https://api.tidel.app
+VITE_APP_URL=https://tidel.app
 ```
 
 If deploying the web app via Cloudflare Pages (builds in CI), those same vars must also be set in the Pages dashboard — local `.env.production` only applies to local builds.
