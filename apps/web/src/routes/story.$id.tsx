@@ -72,7 +72,7 @@ const bylineClass = css({
 })
 
 const summaryClass = css({
-  fontFamily: 'display',
+  fontFamily: 'body',
   fontSize: '1rem',
   color: 'textSecondary',
   lineHeight: '1.85',
