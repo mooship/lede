@@ -9,6 +9,30 @@ import { fetchFeed } from './rss.js'
 
 const SAST_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' })
 
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  { maxAttempts = 3, baseDelayMs = 1000 }: { maxAttempts?: number; baseDelayMs?: number } = {},
+): Promise<T> {
+  let lastErr: unknown
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      lastErr = err
+      if (attempt < maxAttempts) {
+        const base = baseDelayMs * 2 ** (attempt - 1)
+        const delay = base + Math.random() * base * 0.25
+        console.warn(
+          `[retry] attempt ${attempt}/${maxAttempts} failed, retrying in ${Math.round(delay)}ms:`,
+          err,
+        )
+        await new Promise((resolve) => setTimeout(resolve, delay))
+      }
+    }
+  }
+  throw lastErr
+}
+
 /** Returns today's date in SAST (Africa/Johannesburg, UTC+2) as YYYY-MM-DD. */
 export function todaySAST(): string {
   return SAST_DATE_FORMAT.format(new Date())
@@ -217,19 +241,20 @@ Respond with ONLY a JSON array of story numbers, e.g. [1, 3, 5, 7]. No explanati
 ${categoryBlocks.join('\n\n')}`
 
   try {
-    const msg = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 200,
-      messages: [{ role: 'user', content: prompt }],
+    const match = await withRetry(async () => {
+      const msg = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 200,
+        messages: [{ role: 'user', content: prompt }],
+      })
+      const block = msg.content[0]
+      const text = block?.type === 'text' ? block.text : ''
+      const m = text.match(/\[[\d,\s]+\]/)
+      if (!m) {
+        throw new Error(`no JSON array in Claude response: ${text.slice(0, 100)}`)
+      }
+      return m
     })
-    const block = msg.content[0]
-    const text = block?.type === 'text' ? block.text : ''
-    const match = text.match(/\[[\d,\s]+\]/)
-
-    if (!match) {
-      console.warn('[curate] no JSON array in Claude response, falling back')
-      return fallbackResult()
-    }
 
     const indices: number[] = JSON.parse(match[0])
     const seen = new Set<number>()
@@ -257,7 +282,7 @@ ${categoryBlocks.join('\n\n')}`
     )
     return result
   } catch (err) {
-    console.warn('[curate] Claude failed, falling back:', err)
+    console.warn('[curate] Claude failed after all retries, falling back:', err)
     return fallbackResult()
   }
 }
@@ -309,16 +334,21 @@ function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult>
     console.log('[summariser] Claude Sonnet')
     return async (item) => {
       try {
-        const msg = await client.messages.create({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 500,
-          messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
+        return await withRetry(async () => {
+          const msg = await client.messages.create({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 500,
+            messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
+          })
+          const block = msg.content[0]
+          const text = block?.type === 'text' ? block.text : ''
+          return parseSummariseResponse(text, item.title, item.description || item.title)
         })
-        const block = msg.content[0]
-        const text = block?.type === 'text' ? block.text : ''
-        return parseSummariseResponse(text, item.title, item.description || item.title)
       } catch (err) {
-        console.error(`[summariser] Claude failed for "${item.title}", falling back to raw:`, err)
+        console.error(
+          `[summariser] Claude failed after all retries for "${item.title}", falling back to raw:`,
+          err,
+        )
         return raw(item)
       }
     }
