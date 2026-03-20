@@ -11,10 +11,12 @@
     "build": "turbo build",
     "test": "turbo test",
     "lint": "turbo lint",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "prepare": "lefthook install"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
+    "lefthook": "^2.1.4",
     "turbo": "latest",
     "typescript": "latest"
   }
