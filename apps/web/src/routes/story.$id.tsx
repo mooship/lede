@@ -121,7 +121,6 @@ const fetchStory = createServerFn({ method: 'GET' })
   })
 
 function StoryPage() {
-  Route.useParams()
   const [copied, setCopied] = useState(false)
   const story: Story | null = Route.useLoaderData()
 

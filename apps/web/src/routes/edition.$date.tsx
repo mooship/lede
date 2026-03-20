@@ -140,15 +140,20 @@ export const Route = createFileRoute('/edition/$date')({
     parse: (raw) => dateParamsSchema.parse(raw),
     stringify: (p) => ({ date: p.date }),
   },
-  head: ({ params }) => ({
-    meta: [
-      { title: `Edition ${params.date} — Tidel` },
-      {
-        name: 'description',
-        content: `Tidel news digest for ${params.date}.`,
-      },
-    ],
-  }),
+  head: ({ params }) => {
+    const formattedDate = formatEditionDate(params.date)
+    const editionUrl = `${import.meta.env.VITE_APP_URL ?? ''}/edition/${params.date}`
+    return {
+      meta: [
+        { title: `${formattedDate} — Tidel` },
+        { name: 'description', content: `Tidel news digest for ${formattedDate}.` },
+        { property: 'og:title', content: `${formattedDate} — Tidel` },
+        { property: 'og:description', content: `Tidel news digest for ${formattedDate}.` },
+        { property: 'og:url', content: editionUrl },
+      ],
+      links: [{ rel: 'canonical', href: editionUrl }],
+    }
+  },
   pendingComponent: () => <PageMessage message="Loading edition…" variant="loading" />,
   loader: async ({ params }) => fetchEditionByDate({ data: params.date }),
   component: EditionPage,
