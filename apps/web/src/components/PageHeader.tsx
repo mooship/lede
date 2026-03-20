@@ -15,7 +15,6 @@ const innerClass = css({
   py: '5',
   display: 'flex',
   alignItems: 'center',
-  gap: '6',
 })
 
 const brandLinkClass = css({
@@ -28,28 +27,12 @@ const brandLinkClass = css({
   lineHeight: '1',
 })
 
-const separatorClass = css({ color: 'border', fontSize: '1.25rem', lineHeight: '1' })
-
-const backLinkClass = css({
-  fontFamily: 'display',
-  fontSize: '0.65rem',
-  fontWeight: '700',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-  color: 'textMuted',
-  textDecoration: 'none',
-})
-
 export function PageHeader() {
   return (
     <header className={headerClass}>
       <div className={innerClass}>
         <Link to="/" className={brandLinkClass}>
           TIDEL
-        </Link>
-        <span className={separatorClass}>|</span>
-        <Link to="/" className={backLinkClass}>
-          ← Back
         </Link>
       </div>
     </header>

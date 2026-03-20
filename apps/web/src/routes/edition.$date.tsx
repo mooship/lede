@@ -5,7 +5,6 @@ import { z } from 'zod'
 import { css } from '../../styled-system/css'
 import { CategoryNav } from '../components/CategoryNav.js'
 import { Footer } from '../components/Footer.js'
-import { PageHeader } from '../components/PageHeader.js'
 import { PageMessage } from '../components/PageMessage.js'
 import { StoryList } from '../components/StoryList.js'
 import { trpc } from '../trpc.js'
@@ -24,10 +23,20 @@ const dateHeaderInnerClass = css({
   maxWidth: '1400px',
   mx: 'auto',
   px: '8',
-  py: '6',
+  py: '5',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
+})
+
+const brandLinkClass = css({
+  fontFamily: 'display',
+  fontSize: '1.5rem',
+  fontWeight: '800',
+  letterSpacing: '-0.03em',
+  color: 'textPrimary',
+  textDecoration: 'none',
+  lineHeight: '1',
 })
 
 const dateTitleClass = css({
@@ -75,7 +84,16 @@ function EditionPage() {
   if (data == null) {
     return (
       <div className={pageClass}>
-        <PageHeader />
+        <div className={dateHeaderClass}>
+          <div className={dateHeaderInnerClass}>
+            <Link to="/" className={brandLinkClass}>
+              TIDEL
+            </Link>
+            <Link to="/archive" className={archiveLinkClass}>
+              ← Archive
+            </Link>
+          </div>
+        </div>
         <div className={css({ maxWidth: '720px', mx: 'auto', px: '8', py: '12' })}>
           <p className={css({ fontFamily: 'body', fontSize: '1.1rem', color: 'textMuted' })}>
             No edition found for {formatEditionDate(date)}.{' '}
@@ -96,9 +114,11 @@ function EditionPage() {
 
   return (
     <div className={pageClass}>
-      <PageHeader />
       <div className={dateHeaderClass}>
         <div className={dateHeaderInnerClass}>
+          <Link to="/" className={brandLinkClass}>
+            TIDEL
+          </Link>
           <h1 className={dateTitleClass}>{formattedDate}</h1>
           <Link to="/archive" className={archiveLinkClass}>
             ← Archive
