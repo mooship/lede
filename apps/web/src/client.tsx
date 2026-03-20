@@ -1,5 +1,5 @@
 import '@fontsource-variable/syne'
-import '@fontsource/instrument-serif'
+import '@fontsource-variable/plus-jakarta-sans'
 import './index.css'
 
 import { StartClient } from '@tanstack/react-start/client'

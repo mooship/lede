@@ -26,7 +26,7 @@ export default defineConfig({
         },
         fonts: {
           display: { value: "'Syne Variable', 'Syne', sans-serif" },
-          body: { value: "'Instrument Serif', Georgia, serif" },
+          body: { value: "'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', sans-serif" },
         },
       },
 
