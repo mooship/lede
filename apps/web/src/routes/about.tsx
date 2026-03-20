@@ -55,76 +55,28 @@ function AboutPage() {
         <p className={subtitleClass}>A daily news digest, built in South Africa.</p>
 
         <div className={sectionClass}>
-          <h2 className={headingClass}>What is Tidel?</h2>
+          <h2 className={headingClass}>What is it?</h2>
           <p className={bodyClass}>
-            Tidel is a free, ad-free daily news digest. Every morning at 06:00 South African time,
-            it automatically gathers the most significant stories from trusted sources around the
-            world, writes a concise summary of each one, and publishes a clean, readable edition —
-            no notifications, no algorithms trying to keep you scrolling, no sponsored content.
+            A free, ad-free daily digest of the day's most significant stories. Every morning at
+            06:00 South African time, Tidel pulls from trusted RSS feeds, uses Claude (Anthropic's
+            AI) to pick the most newsworthy stories and summarise each one, then publishes a clean
+            edition — no noise, no notifications, no sponsored content.
           </p>
         </div>
 
         <div className={sectionClass}>
-          <h2 className={headingClass}>How stories are chosen</h2>
+          <h2 className={headingClass}>Open source &amp; free</h2>
           <p className={bodyClass}>
-            Tidel reads dozens of RSS feeds from publishers across five categories: World,
-            Technology, Science, Business &amp; Economy, and Sport. These are open news feeds that
-            publishers make available for free — no paywalled sources are used.
-          </p>
-          <p className={bodyClass}>
-            Once the headlines are collected, Claude, Anthropic's AI model, reviews the full list and selects the most
-            newsworthy stories. It looks for hard news — politics, geopolitics, economic policy,
-            science discoveries — and aims for geographic diversity, drawing from Europe, the
-            Americas, Africa, Asia, the Middle East, and Oceania. Lifestyle, food, entertainment,
-            and opinion pieces are excluded. For sport, only results or news from major
-            international competitions make the cut.
-          </p>
-          <p className={bodyClass}>
-            Stories that appear across multiple sources are weighted more heavily. If five outlets
-            are all reporting on the same event, that's a signal it matters.
-          </p>
-        </div>
-
-        <div className={sectionClass}>
-          <h2 className={headingClass}>How summaries are written</h2>
-          <p className={bodyClass}>
-            Each selected story is summarised by Claude, Anthropic's AI model. The summary is around 150 words — long
-            enough to give you the full picture, short enough to read in under a minute. A
-            one-sentence byline captures the core fact at a glance.
-          </p>
-          <p className={bodyClass}>
-            Summaries are written in British English, the spelling convention used across much of
-            the world outside North America. Every story also links back to the original source so
-            you can read the full article if you want more.
-          </p>
-        </div>
-
-        <div className={sectionClass}>
-          <h2 className={headingClass}>Why these categories?</h2>
-          <p className={bodyClass}>
-            The five categories reflect the news that tends to matter most day to day: what's
-            happening in the world, what's changing in technology, what science is discovering, how
-            economies are moving, and what's happening in sport. The balance between them shifts
-            each day depending on the news — there's no fixed quota.
-          </p>
-        </div>
-
-        <div className={sectionClass}>
-          <h2 className={headingClass}>Is it free?</h2>
-          <p className={bodyClass}>
-            Yes. Tidel has no subscription, no account, no advertising. The source code is published
-            under the AGPL-3.0 open-source licence, which means anyone can inspect, run, or adapt it
-            — and any public version must remain open source too.
+            No subscription, no account, no ads. The source code is published under the AGPL-3.0
+            licence — anyone can inspect, run, or adapt it.
           </p>
         </div>
 
         <div className={sectionClass}>
           <h2 className={headingClass}>Privacy</h2>
           <p className={bodyClass}>
-            Tidel does not use cookies, collect personal data, or track you in any way. There are no
-            accounts, no login, and nothing stored about your visits. The only analytics in use are
-            Cloudflare Web Analytics — a privacy-respecting, cookieless measurement tool that does
-            not build profiles or share data with third parties.
+            No cookies, no personal data, no tracking. The only analytics are Cloudflare Web
+            Analytics — cookieless and privacy-respecting.
           </p>
         </div>
       </main>
