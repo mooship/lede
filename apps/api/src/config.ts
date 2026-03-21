@@ -18,7 +18,6 @@ export const FEEDS: Record<Category, string[]> = {
   Science: [
     'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',
     'https://www.nature.com/nature.rss',
-    'https://www.france24.com/en/earth/rss',
     'https://www.lemonde.fr/en/science/rss_full.xml',
     'https://rss.dw.com/xml/rss_en_science',
   ],
@@ -30,7 +29,6 @@ export const FEEDS: Record<Category, string[]> = {
   ],
   Sport: [
     'https://feeds.bbci.co.uk/sport/rss.xml',
-    'https://www.france24.com/en/sport/rss',
     'https://www.lemonde.fr/en/sports/rss_full.xml',
     'https://www.espn.com/espn/rss/news',
     'https://rss.dw.com/rdf/rss-en-sports',
@@ -39,7 +37,6 @@ export const FEEDS: Record<Category, string[]> = {
     'https://hyperallergic.com/feed/',
     'https://pitchfork.com/rss/news/',
     'https://www.avclub.com/rss',
-    'https://www.france24.com/en/culture/rss',
     'https://www.lemonde.fr/en/culture/rss_full.xml',
     'https://rss.dw.com/rdf/rss-en-cul',
   ],
