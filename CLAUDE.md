@@ -20,6 +20,8 @@ Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`
 
 > **Before running any command**, ensure dependencies are installed: `npm install`
 
+> **Moon requires internet to download plugins** — `npm run build/test/lint/typecheck` will fail in offline environments. Instead, run the underlying commands directly per project (e.g. `npx tsc --noEmit`, `./node_modules/.bin/biome check .`, `npx vitest run`).
+
 ```bash
 # All workspaces
 npm run dev          # moon run :dev (starts wrangler dev + vite concurrently)
