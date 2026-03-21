@@ -2,6 +2,7 @@ import { trpcServer } from '@hono/trpc-server'
 import type { Story } from '@tidel/api'
 import { createDb, schema } from '@tidel/db'
 import { and, desc, eq } from 'drizzle-orm'
+import type { Context } from 'hono'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { createContext } from './context.js'
@@ -229,7 +230,7 @@ async function fetchFeedData(
 }
 
 async function handleFeedRequest(
-  c: Parameters<Parameters<typeof app.get>[1]>[0],
+  c: Context<{ Bindings: Env }>,
   format: 'atom' | 'rss',
 ): Promise<Response> {
   const slotParam = c.req.query('slot')
