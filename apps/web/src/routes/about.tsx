@@ -140,10 +140,19 @@ function AboutPage() {
               <tbody>
                 <tr>
                   <td>
-                    <span className={tzNameClass}>UTC</span>
+                    <span className={tzNameClass}>Western US</span>
+                    <span className={tzOffsetClass}>UTC−8</span>
                   </td>
-                  <td>06:00</td>
-                  <td>15:00</td>
+                  <td>22:00*</td>
+                  <td>07:00</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span className={tzNameClass}>Central US</span>
+                    <span className={tzOffsetClass}>UTC−6</span>
+                  </td>
+                  <td>00:00*</td>
+                  <td>09:00</td>
                 </tr>
                 <tr>
                   <td>
@@ -163,11 +172,27 @@ function AboutPage() {
                 </tr>
                 <tr>
                   <td>
+                    <span className={tzNameClass}>Central Europe</span>
+                    <span className={tzOffsetClass}>UTC+1</span>
+                  </td>
+                  <td>07:00</td>
+                  <td>16:00</td>
+                </tr>
+                <tr>
+                  <td>
                     <span className={tzNameClass}>South Africa</span>
                     <span className={tzOffsetClass}>UTC+2</span>
                   </td>
                   <td>08:00</td>
                   <td>17:00</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span className={tzNameClass}>India</span>
+                    <span className={tzOffsetClass}>UTC+5:30</span>
+                  </td>
+                  <td>11:30</td>
+                  <td>20:30</td>
                 </tr>
                 <tr>
                   <td>
