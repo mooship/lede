@@ -37,6 +37,17 @@ const linkClass = css({
   px: '1',
 })
 
+const coffeeClass = css({
+  color: 'textPrimary',
+  textDecoration: 'none',
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: '44px',
+  px: '1',
+  opacity: '0.85',
+  _hover: { opacity: '1' },
+})
+
 const ALL_LINKS = [
   { label: 'About', internal: '/about' as const },
   { label: 'Archive', internal: '/archive' as const },
@@ -55,6 +66,12 @@ const ALL_LINKS = [
     label: 'Report a bug',
     href: 'https://github.com/mooship/tidel/issues/new',
     ariaLabel: 'Report a bug (opens in new tab)',
+  },
+  {
+    label: '☕ Buy me a coffee',
+    href: 'https://buymeacoffee.com/timothybrits',
+    ariaLabel: 'Buy me a coffee (opens in new tab)',
+    highlight: true,
   },
 ]
 
@@ -77,7 +94,7 @@ export function Footer() {
             ) : (
               <a
                 href={link.href}
-                className={linkClass}
+                className={'highlight' in link && link.highlight ? coffeeClass : linkClass}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={link.ariaLabel}
