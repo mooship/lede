@@ -28,26 +28,26 @@ describe('handleCron (scheduled handler)', () => {
     vi.mocked(buildEdition).mockClear()
   })
 
-  it('calls buildEdition with morning slot for 0 4 * * * cron', async () => {
-    await worker.scheduled(makeScheduledEvent('0 4 * * *'), mockEnv as never)
+  it('calls buildEdition with morning slot for 0 6 * * * cron', async () => {
+    await worker.scheduled(makeScheduledEvent('0 6 * * *'), mockEnv as never)
     expect(buildEdition).toHaveBeenCalledOnce()
     expect(buildEdition).toHaveBeenCalledWith(mockEnv, 'morning')
   })
 
-  it('calls buildEdition with afternoon slot for 0 12 * * * cron', async () => {
-    await worker.scheduled(makeScheduledEvent('0 12 * * *'), mockEnv as never)
+  it('calls buildEdition with afternoon slot for 0 15 * * * cron', async () => {
+    await worker.scheduled(makeScheduledEvent('0 15 * * *'), mockEnv as never)
     expect(buildEdition).toHaveBeenCalledOnce()
     expect(buildEdition).toHaveBeenCalledWith(mockEnv, 'afternoon')
   })
 
   it('does not call buildEdition for an unknown cron expression', async () => {
-    await worker.scheduled(makeScheduledEvent('0 6 * * *'), mockEnv as never)
+    await worker.scheduled(makeScheduledEvent('0 8 * * *'), mockEnv as never)
     expect(buildEdition).not.toHaveBeenCalled()
   })
 
   it('calls both morning and afternoon when both crons match (independent checks)', async () => {
-    await worker.scheduled(makeScheduledEvent('0 4 * * *'), mockEnv as never)
-    await worker.scheduled(makeScheduledEvent('0 12 * * *'), mockEnv as never)
+    await worker.scheduled(makeScheduledEvent('0 6 * * *'), mockEnv as never)
+    await worker.scheduled(makeScheduledEvent('0 15 * * *'), mockEnv as never)
     expect(buildEdition).toHaveBeenCalledTimes(2)
     expect(buildEdition).toHaveBeenNthCalledWith(1, mockEnv, 'morning')
     expect(buildEdition).toHaveBeenNthCalledWith(2, mockEnv, 'afternoon')

@@ -57,10 +57,21 @@ function AboutPage() {
         <div className={sectionClass}>
           <h2 className={headingClass}>What is it?</h2>
           <p className={bodyClass}>
-            A free, ad-free daily digest of the day's most significant stories. Every morning at
-            04:00 UTC, Tidel pulls from trusted RSS feeds, uses Claude (Anthropic's AI) to pick the
+            A free, ad-free daily digest of the day's most significant stories. Every morning and
+            afternoon, Tidel pulls from trusted RSS feeds, uses Claude (Anthropic's AI) to pick the
             most newsworthy stories and summarise each one, then publishes a clean edition — no
             noise, no notifications, no sponsored content.
+          </p>
+        </div>
+
+        <div className={sectionClass}>
+          <h2 className={headingClass}>When do editions appear?</h2>
+          <p className={bodyClass}>Two editions go live each day:</p>
+          <p className={bodyClass}>
+            <strong>Morning</strong> — 06:00 UTC · 07:00 CET / 08:00 CEST · 06:00 GMT / 07:00 BST
+          </p>
+          <p className={bodyClass}>
+            <strong>Afternoon</strong> — 15:00 UTC · 16:00 CET / 17:00 CEST · 15:00 GMT / 16:00 BST
           </p>
         </div>
 

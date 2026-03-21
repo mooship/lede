@@ -1,15 +1,15 @@
 export function isAfternoonAvailable(): boolean {
-  return new Date().getUTCHours() >= 12
+  return new Date().getUTCHours() >= 15
 }
 
 /**
  * Returns the reference date for the current edition.
- * Before 04:00 UTC (the morning build time) the previous day's edition is current.
+ * Before 06:00 UTC (the morning build time) the previous day's edition is current.
  */
 export function getEditionDate(): Date {
   const now = new Date()
   const ref = new Date(now)
-  ref.setUTCHours(4, 0, 0, 0)
+  ref.setUTCHours(6, 0, 0, 0)
   if (ref > now) {
     ref.setUTCDate(ref.getUTCDate() - 1) // before today's build → use yesterday's
   }
@@ -19,7 +19,7 @@ export function getEditionDate(): Date {
 export function msUntilNextEdition(): number {
   const now = new Date()
   const next = new Date()
-  next.setUTCHours(4, 0, 0, 0)
+  next.setUTCHours(6, 0, 0, 0)
   if (next <= now) {
     next.setUTCDate(next.getUTCDate() + 1)
   }

@@ -2,7 +2,7 @@
 
 ## What is Tidel
 
-A daily news digest that fetches RSS feeds across six categories, summarises each story with Claude Haiku, and publishes a ~15-story morning edition and ~12-story afternoon edition per day. Morning builds at 04:00 UTC, afternoon at 12:00 UTC via Cloudflare Worker cron triggers.
+A daily news digest that fetches RSS feeds across six categories, summarises each story with Claude Haiku, and publishes a ~15-story morning edition and ~12-story afternoon edition per day. Morning builds at 06:00 UTC, afternoon at 15:00 UTC via Cloudflare Worker cron triggers.
 
 ## Monorepo structure
 
@@ -109,7 +109,7 @@ cd apps/web && npm run deploy
 
 Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified in `context.ts` using `crypto.subtle.timingSafeEqual`.
 
-Builds run automatically via cron (04:00 UTC morning, 12:00 UTC afternoon). The build endpoint is idempotent — it skips if an edition already exists for that date and slot. To trigger manually via curl, send the input as a plain JSON object (no tRPC `json` wrapper):
+Builds run automatically via cron (06:00 UTC morning, 15:00 UTC afternoon). The build endpoint is idempotent — it skips if an edition already exists for that date and slot. To trigger manually via curl, send the input as a plain JSON object (no tRPC `json` wrapper):
 ```bash
 curl -X POST https://api.tidel.app/trpc/edition.build \
   -H "Content-Type: application/json" \

@@ -10,23 +10,23 @@ describe('getEditionDate', () => {
     vi.useRealTimers()
   })
 
-  it('returns the current day when time is after 04:00 UTC (edition already built)', () => {
+  it('returns the current day when time is after 06:00 UTC (edition already built)', () => {
     vi.setSystemTime(new Date('2024-03-06T10:00:00Z'))
     const date = getEditionDate()
     expect(date.getUTCFullYear()).toBe(2024)
     expect(date.getUTCMonth()).toBe(2)
     expect(date.getUTCDate()).toBe(6)
-    expect(date.getUTCHours()).toBe(4)
+    expect(date.getUTCHours()).toBe(6)
   })
 
-  it('returns the previous day when time is before 04:00 UTC (edition not yet built)', () => {
+  it('returns the previous day when time is before 06:00 UTC (edition not yet built)', () => {
     vi.setSystemTime(new Date('2024-03-06T02:00:00Z'))
     const date = getEditionDate()
     expect(date.getUTCDate()).toBe(5)
   })
 
-  it('returns the current day at exactly 04:00 UTC', () => {
-    vi.setSystemTime(new Date('2024-03-06T04:00:00Z'))
+  it('returns the current day at exactly 06:00 UTC', () => {
+    vi.setSystemTime(new Date('2024-03-06T06:00:00Z'))
     const date = getEditionDate()
     expect(date.getUTCDate()).toBe(6)
   })
@@ -53,17 +53,17 @@ describe('msUntilNextEdition', () => {
     expect(msUntilNextEdition()).toBeGreaterThan(0)
   })
 
-  it('returns ~18 hours when current time is 10:00 UTC', () => {
+  it('returns ~20 hours when current time is 10:00 UTC', () => {
     vi.setSystemTime(new Date('2024-03-06T10:00:00Z'))
     const ms = msUntilNextEdition()
-    const expected = 18 * 60 * 60 * 1000
+    const expected = 20 * 60 * 60 * 1000
     expect(Math.abs(ms - expected)).toBeLessThan(1000)
   })
 
-  it('returns ~2 hours when current time is 02:00 UTC', () => {
+  it('returns ~4 hours when current time is 02:00 UTC', () => {
     vi.setSystemTime(new Date('2024-03-06T02:00:00Z'))
     const ms = msUntilNextEdition()
-    const expected = 2 * 60 * 60 * 1000
+    const expected = 4 * 60 * 60 * 1000
     expect(Math.abs(ms - expected)).toBeLessThan(1000)
   })
 })
@@ -88,7 +88,7 @@ describe('editionStaleTime', () => {
   it('returns time until next edition when data is present', () => {
     vi.setSystemTime(new Date('2024-03-06T10:00:00Z'))
     const result = editionStaleTime({ state: { data: [{ id: '1' }] } })
-    const expected = 18 * 60 * 60 * 1000
+    const expected = 20 * 60 * 60 * 1000
     expect(Math.abs(result - expected)).toBeLessThan(1000)
   })
 })

@@ -53,10 +53,10 @@ app.use(
 )
 
 async function handleCron(event: ScheduledEvent, env: Env): Promise<void> {
-  if (event.cron === '0 4 * * *') {
+  if (event.cron === '0 6 * * *') {
     await buildEdition(env, 'morning')
   }
-  if (event.cron === '0 12 * * *') {
+  if (event.cron === '0 15 * * *') {
     await buildEdition(env, 'afternoon')
   }
 }
