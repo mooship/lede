@@ -73,10 +73,25 @@ function AboutPage() {
         </div>
 
         <div className={sectionClass}>
+          <h2 className={headingClass}>Editorial perspective</h2>
+          <p className={bodyClass}>
+            Tidel is editorially progressive. Stories are summarised to centre the impacts on
+            working people, marginalised communities, and the environment. We draw from
+            international sources and avoid outlets that reflect a narrow political or commercial
+            agenda.
+          </p>
+        </div>
+
+        <div className={sectionClass}>
           <h2 className={headingClass}>Privacy</h2>
           <p className={bodyClass}>
             No cookies, no personal data, no tracking. The only analytics are Cloudflare Web
-            Analytics — cookieless and privacy-respecting.
+            Analytics — cookieless and privacy-respecting. Requests are processed by Cloudflare's
+            infrastructure; see{' '}
+            <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noreferrer">
+              Cloudflare's privacy policy
+            </a>{' '}
+            for details.
           </p>
         </div>
       </main>
