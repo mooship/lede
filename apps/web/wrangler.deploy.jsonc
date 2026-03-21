@@ -4,6 +4,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "dist/server/index.js",
   "assets": { "directory": "dist/client" },
+  "placement": { "mode": "smart" },
   "workers_dev": true,
   "preview_urls": true,
   "vars": {
