@@ -5,7 +5,7 @@ import { and, desc, eq } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { createContext } from './context.js'
-import { resolveCorsOrigin } from './cors.js'
+import { parseWebOrigins, resolveCorsOrigin } from './cors.js'
 import type { Env } from './env.js'
 import { validateEnv } from './env.js'
 import { buildEdition, todayUTC } from './pipeline.js'
@@ -57,6 +57,10 @@ app.use(
 
 type FeedStory = Story & { builtAt: Date }
 
+function escapeXml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 function buildAtomFeed(
   stories: FeedStory[],
   title: string,
@@ -68,11 +72,8 @@ function buildAtomFeed(
   const entries = stories
     .map((s) => {
       const pubDate = s.builtAt.toISOString()
-      const content = (s.summary ?? s.description ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-      const storyTitle = s.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const content = escapeXml(s.summary ?? s.description ?? '')
+      const storyTitle = escapeXml(s.title)
       const storyUrl = `${appUrl}/story/${s.id}`
       return `  <entry>
     <id>${storyUrl}</id>
@@ -110,11 +111,8 @@ function buildRssFeed(
   const items = stories
     .map((s) => {
       const pubDate = s.builtAt.toUTCString()
-      const description = (s.summary ?? s.description ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-      const storyTitle = s.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const description = escapeXml(s.summary ?? s.description ?? '')
+      const storyTitle = escapeXml(s.title)
       const storyUrl = `${appUrl}/story/${s.id}`
       return `    <item>
       <title>${storyTitle}</title>
@@ -216,8 +214,10 @@ async function fetchFeedData(
       .where(and(eq(schema.stories.editionDate, ed.date), eq(schema.stories.editionSlot, ed.slot)))
       .orderBy(schema.stories.position)
 
-  const morningRows = await fetchRows(morningEdition)
-  const afternoonRows = afternoonEdition ? await fetchRows(afternoonEdition) : []
+  const [morningRows, afternoonRows] = await Promise.all([
+    fetchRows(morningEdition),
+    afternoonEdition ? fetchRows(afternoonEdition) : Promise.resolve([]),
+  ])
   const morning: FeedStory[] = rowsToStories(morningRows).map((s) => ({
     ...s,
     builtAt: morningEdition.builtAt,
@@ -228,39 +228,34 @@ async function fetchFeedData(
   return { stories: [...morning, ...afternoon], title: 'Tidel' }
 }
 
-app.get('/atom.xml', async (c) => {
+async function handleFeedRequest(
+  c: Parameters<Parameters<typeof app.get>[1]>[0],
+  format: 'atom' | 'rss',
+): Promise<Response> {
   const slotParam = c.req.query('slot')
   const db = createDb(c.env.DATABASE_URL)
-  const appUrl = c.env.WEB_ORIGIN.split(',')[0]?.trim() ?? ''
+  const appUrl = parseWebOrigins(c.env.WEB_ORIGIN)[0] ?? ''
   const data = await fetchFeedData(db, slotParam, todayUTC())
   if (!data) return c.text('No edition available', 404)
+  const filename = `${format}.xml`
   const selfUrl =
     slotParam === 'morning' || slotParam === 'afternoon'
-      ? `${appUrl}/atom.xml?slot=${slotParam}`
-      : `${appUrl}/atom.xml`
-  const xml = buildAtomFeed(data.stories, data.title, selfUrl, appUrl)
+      ? `${appUrl}/${filename}?slot=${slotParam}`
+      : `${appUrl}/${filename}`
+  const xml =
+    format === 'atom'
+      ? buildAtomFeed(data.stories, data.title, selfUrl, appUrl)
+      : buildRssFeed(data.stories, data.title, selfUrl, appUrl)
+  const contentType =
+    format === 'atom' ? 'application/atom+xml; charset=utf-8' : 'application/rss+xml; charset=utf-8'
   return c.text(xml, 200, {
-    'Content-Type': 'application/atom+xml; charset=utf-8',
+    'Content-Type': contentType,
     'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
   })
-})
+}
 
-app.get('/rss.xml', async (c) => {
-  const slotParam = c.req.query('slot')
-  const db = createDb(c.env.DATABASE_URL)
-  const appUrl = c.env.WEB_ORIGIN.split(',')[0]?.trim() ?? ''
-  const data = await fetchFeedData(db, slotParam, todayUTC())
-  if (!data) return c.text('No edition available', 404)
-  const selfUrl =
-    slotParam === 'morning' || slotParam === 'afternoon'
-      ? `${appUrl}/rss.xml?slot=${slotParam}`
-      : `${appUrl}/rss.xml`
-  const xml = buildRssFeed(data.stories, data.title, selfUrl, appUrl)
-  return c.text(xml, 200, {
-    'Content-Type': 'application/rss+xml; charset=utf-8',
-    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
-  })
-})
+app.get('/atom.xml', (c) => handleFeedRequest(c, 'atom'))
+app.get('/rss.xml', (c) => handleFeedRequest(c, 'rss'))
 
 async function handleCron(event: ScheduledEvent, env: Env): Promise<void> {
   if (event.cron === '0 6 * * *') {
