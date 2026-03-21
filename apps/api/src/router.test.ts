@@ -68,6 +68,7 @@ const mockDb = {
       pubDate: s.pubDate,
     })),
   ),
+  [Symbol.iterator]: function* () {},
 }
 
 function makeEnv() {
@@ -182,5 +183,245 @@ describe('edition.build', () => {
     const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
     await caller.edition.build({})
     expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), false, 'morning')
+  })
+})
+
+describe('edition.list', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns empty array when no editions exist', async () => {
+    mockDb.orderBy.mockResolvedValue([])
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.edition.list()
+    expect(result).toEqual([])
+  })
+
+  it('returns list with date, slot, and storyCount', async () => {
+    mockDb.orderBy.mockResolvedValue([
+      { date: '2024-01-02', slot: 'afternoon', storyCount: 9 },
+      { date: '2024-01-02', slot: 'morning', storyCount: 12 },
+      { date: '2024-01-01', slot: 'morning', storyCount: 11 },
+    ])
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.edition.list()
+    expect(result).toHaveLength(3)
+    expect(result[0]).toEqual({ date: '2024-01-02', slot: 'afternoon', storyCount: 9 })
+    expect(result[1]).toEqual({ date: '2024-01-02', slot: 'morning', storyCount: 12 })
+    expect(result[2]).toEqual({ date: '2024-01-01', slot: 'morning', storyCount: 11 })
+  })
+})
+
+describe('edition.byDate', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns null when no edition exists for the given date and slot', async () => {
+    mockDb.query.editions.findFirst.mockResolvedValue(undefined)
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.edition.byDate({ date: '2024-01-01' })
+    expect(result).toBeNull()
+  })
+
+  it('returns stories when edition exists for the given date', async () => {
+    mockDb.query.editions.findFirst.mockResolvedValue({
+      date: '2024-01-01',
+      slot: 'morning',
+      builtAt: new Date(),
+    })
+    mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s })))
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.edition.byDate({ date: '2024-01-01', slot: 'morning' })
+    expect(result).toHaveLength(1)
+    expect(result?.[0]).toMatchObject({ id: '1', title: 'Test Story' })
+  })
+
+  it('throws BAD_REQUEST for invalid date format', async () => {
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    await expect(caller.edition.byDate({ date: 'not-a-date' })).rejects.toThrow()
+  })
+
+  it('returns afternoon slot stories when slot is specified', async () => {
+    mockDb.query.editions.findFirst.mockResolvedValue({
+      date: '2024-01-01',
+      slot: 'afternoon',
+      builtAt: new Date(),
+    })
+    const afternoonStory = { ...mockStories[0]!, editionSlot: 'afternoon', id: '2' }
+    mockDb.orderBy.mockResolvedValue([afternoonStory])
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.edition.byDate({ date: '2024-01-01', slot: 'afternoon' })
+    expect(result).toHaveLength(1)
+    expect(result?.[0]?.id).toBe('2')
+  })
+})
+
+describe('edition.adminStatus', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockDb.groupBy.mockResolvedValue([])
+  })
+
+  it('throws UNAUTHORIZED for non-admin callers', async () => {
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    await expect(caller.edition.adminStatus()).rejects.toThrow()
+  })
+
+  it('returns null when no editions exist', async () => {
+    mockDb.query.editions.findFirst.mockResolvedValue(undefined)
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.edition.adminStatus()
+    expect(result).toBeNull()
+  })
+
+  it('returns edition stats with null feedStats when feedStats is null', async () => {
+    const builtAt = new Date('2024-01-01T04:00:00Z')
+    mockDb.query.editions.findFirst.mockResolvedValue({
+      date: '2024-01-01',
+      slot: 'morning',
+      builtAt,
+      feedStats: null,
+    })
+    mockDb.orderBy.mockResolvedValue([
+      { date: '2024-01-01', slot: 'morning', builtAt, feedStats: null },
+    ])
+    mockDb.groupBy.mockResolvedValue([])
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.edition.adminStatus()
+    expect(result).not.toBeNull()
+    expect(result![0]!.feedStats).toBeNull()
+    expect(result![0]!.date).toBe('2024-01-01')
+    expect(result![0]!.builtAt).toBe(builtAt.toISOString())
+  })
+
+  it('parses feedStats JSON string into an object', async () => {
+    const builtAt = new Date('2024-01-01T04:00:00Z')
+    const feedStatsJson = JSON.stringify({
+      'https://feed.example': 'ok',
+      'https://bad.example': 'error',
+    })
+    mockDb.query.editions.findFirst.mockResolvedValue({
+      date: '2024-01-01',
+      slot: 'morning',
+      builtAt,
+      feedStats: feedStatsJson,
+    })
+    mockDb.orderBy.mockResolvedValue([
+      { date: '2024-01-01', slot: 'morning', builtAt, feedStats: feedStatsJson },
+    ])
+    mockDb.groupBy.mockResolvedValue([])
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.edition.adminStatus()
+    expect(result![0]!.feedStats).toEqual({
+      'https://feed.example': 'ok',
+      'https://bad.example': 'error',
+    })
+  })
+
+  it('includes categoryBreakdown from category query results', async () => {
+    const builtAt = new Date('2024-01-01T04:00:00Z')
+    mockDb.query.editions.findFirst.mockResolvedValue({
+      date: '2024-01-01',
+      slot: 'morning',
+      builtAt,
+      feedStats: null,
+    })
+    mockDb.orderBy.mockResolvedValue([
+      { date: '2024-01-01', slot: 'morning', builtAt, feedStats: null },
+    ])
+    mockDb.groupBy.mockResolvedValue([
+      { category: 'Technology', storyCount: 3 },
+      { category: 'World', storyCount: 4 },
+    ])
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.edition.adminStatus()
+    expect(result![0]!.categoryBreakdown).toEqual({ Technology: 3, World: 4 })
+  })
+})
+
+describe('story.byId', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns a story when found by UUID', async () => {
+    mockDb.limit.mockResolvedValue([mockStories[0]])
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.story.byId('550e8400-e29b-41d4-a716-446655440000')
+    expect(result).not.toBeNull()
+    expect(result?.id).toBe('1')
+    expect(result?.title).toBe('Test Story')
+  })
+
+  it('returns null when no story is found', async () => {
+    mockDb.limit.mockResolvedValue([])
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.story.byId('550e8400-e29b-41d4-a716-446655440000')
+    expect(result).toBeNull()
+  })
+
+  it('throws BAD_REQUEST for a non-UUID string', async () => {
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    await expect(caller.story.byId('not-a-uuid')).rejects.toThrow()
+  })
+
+  it('maps all story fields correctly', async () => {
+    const row = {
+      id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
+      editionDate: '2024-01-01',
+      editionSlot: 'morning',
+      title: 'Mapped Title',
+      description: 'A byline.',
+      summary: 'Summary here.',
+      category: 'Science',
+      link: 'https://nature.com/article',
+      pubDate: '2024-01-01T10:00:00Z',
+      source: 'nature.com',
+      position: 5,
+    }
+    mockDb.limit.mockResolvedValue([row])
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.story.byId('aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa')
+    expect(result).toMatchObject({
+      id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
+      title: 'Mapped Title',
+      description: 'A byline.',
+      summary: 'Summary here.',
+      category: 'Science',
+      source: 'nature.com',
+      position: 5,
+    })
   })
 })

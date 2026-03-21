@@ -66,7 +66,7 @@ const slotLinkClass = css({
   '&:hover': { color: 'textPrimary', borderColor: 'textMuted' },
 })
 
-function formatArchiveDate(dateStr: string): string {
+export function formatArchiveDate(dateStr: string): string {
   const d = new Date(`${dateStr}T12:00:00Z`)
   return d.toLocaleDateString('en-GB', {
     weekday: 'long',
@@ -84,7 +84,7 @@ const fetchEditionList = createServerFn({ method: 'GET' }).handler(
   },
 )
 
-function groupByDate(editions: EditionEntry[]): Map<string, EditionEntry[]> {
+export function groupByDate(editions: EditionEntry[]): Map<string, EditionEntry[]> {
   const map = new Map<string, EditionEntry[]>()
   for (const ed of editions) {
     const group = map.get(ed.date) ?? []
