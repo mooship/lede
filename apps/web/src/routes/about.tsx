@@ -221,16 +221,10 @@ function AboutPage() {
               </tr>
               <tr>
                 <td>
-                  SGT / PHT
-                  <span className={tzSubClass}>Singapore &amp; Philippines · UTC+8, no DST</span>
-                </td>
-                <td>14:00</td>
-                <td>23:00</td>
-              </tr>
-              <tr>
-                <td>
-                  AWST
-                  <span className={tzSubClass}>Perth, Australia · UTC+8, no DST</span>
+                  SGT / PHT / AWST
+                  <span className={tzSubClass}>
+                    Singapore, Philippines &amp; Perth · UTC+8, no DST
+                  </span>
                 </td>
                 <td>14:00</td>
                 <td>23:00</td>
