@@ -215,7 +215,9 @@ export async function curateWithClaude(
     return result
   }
 
-  if (!env.ANTHROPIC_API_KEY) return fallbackResult()
+  if (!env.ANTHROPIC_API_KEY) {
+    return fallbackResult()
+  }
 
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
 

@@ -106,7 +106,9 @@ export function Modal({
         onCancel()
         return
       }
-      if (e.key !== 'Tab') return
+      if (e.key !== 'Tab') {
+        return
+      }
       if (e.shiftKey) {
         if (document.activeElement === cancelRef.current) {
           e.preventDefault()

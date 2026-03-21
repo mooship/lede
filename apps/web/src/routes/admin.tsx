@@ -351,8 +351,12 @@ function formatBuiltAt(iso: string): string {
 }
 
 function StatusBadge({ status }: { status: FeedStatus }) {
-  if (status === 'ok') return <span className={statusOkClass}>OK</span>
-  if (status === 'timeout') return <span className={statusTimeoutClass}>Timeout</span>
+  if (status === 'ok') {
+    return <span className={statusOkClass}>OK</span>
+  }
+  if (status === 'timeout') {
+    return <span className={statusTimeoutClass}>Timeout</span>
+  }
   return <span className={statusErrClass}>Error</span>
 }
 

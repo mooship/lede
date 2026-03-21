@@ -28,8 +28,12 @@ const NAMED_ENTITIES: Record<string, string> = {
 
 function decodeHtmlEntities(text: string): string {
   return text.replace(/&(?:#x[0-9a-fA-F]+|#\d+|[a-z]+);/gi, (match) => {
-    if (match.startsWith('&#x')) return String.fromCharCode(Number.parseInt(match.slice(3, -1), 16))
-    if (match.startsWith('&#')) return String.fromCharCode(Number(match.slice(2, -1)))
+    if (match.startsWith('&#x')) {
+      return String.fromCharCode(Number.parseInt(match.slice(3, -1), 16))
+    }
+    if (match.startsWith('&#')) {
+      return String.fromCharCode(Number(match.slice(2, -1)))
+    }
     return NAMED_ENTITIES[match] ?? match
   })
 }

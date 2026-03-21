@@ -17,8 +17,8 @@ export function StoryList({ stories }: Props) {
   return (
     <div className={wrapClass}>
       <div className={gridClass}>
-        {stories.map((story, index) => (
-          <StoryCard key={story.id} story={story} position={index + 1} />
+        {stories.map((story) => (
+          <StoryCard key={story.id} story={story} position={story.position + 1} />
         ))}
       </div>
     </div>

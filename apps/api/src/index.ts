@@ -10,7 +10,7 @@ import { parseWebOrigins, resolveCorsOrigin } from './cors.js'
 import type { Env } from './env.js'
 import { validateEnv } from './env.js'
 import { buildEdition, todayUTC } from './pipeline.js'
-import { appRouter } from './router.js'
+import { appRouter, mapStoryRow } from './router.js'
 
 const app = new Hono<{ Bindings: Env }>()
 
@@ -140,22 +140,6 @@ ${items}
 </rss>`
 }
 
-function rowsToStories(rows: (typeof schema.stories.$inferSelect)[]): Story[] {
-  return rows.map((r) => ({
-    id: r.id,
-    editionDate: r.editionDate,
-    editionSlot: r.editionSlot,
-    title: r.title,
-    description: r.description ?? null,
-    summary: r.summary,
-    category: r.category as Story['category'],
-    link: r.link,
-    pubDate: r.pubDate ?? null,
-    source: r.source,
-    position: r.position,
-  }))
-}
-
 async function fetchFeedData(
   db: ReturnType<typeof createDb>,
   slotParam: string | undefined,
@@ -171,7 +155,9 @@ async function fetchFeedData(
         orderBy: desc(schema.editions.date),
       })
     }
-    if (!edition) return null
+    if (!edition) {
+      return null
+    }
     const rows = await db
       .select()
       .from(schema.stories)
@@ -183,7 +169,7 @@ async function fetchFeedData(
       )
       .orderBy(schema.stories.position)
     const slotLabel = slotParam === 'afternoon' ? 'Afternoon' : 'Morning'
-    const stories: FeedStory[] = rowsToStories(rows).map((s) => ({
+    const stories: FeedStory[] = rows.map(mapStoryRow).map((s) => ({
       ...s,
       builtAt: edition.builtAt,
     }))
@@ -199,7 +185,9 @@ async function fetchFeedData(
       orderBy: desc(schema.editions.date),
     })
   }
-  if (!morningEdition) return null
+  if (!morningEdition) {
+    return null
+  }
 
   const afternoonEdition = await db.query.editions.findFirst({
     where: and(
@@ -219,12 +207,12 @@ async function fetchFeedData(
     fetchRows(morningEdition),
     afternoonEdition ? fetchRows(afternoonEdition) : Promise.resolve([]),
   ])
-  const morning: FeedStory[] = rowsToStories(morningRows).map((s) => ({
+  const morning: FeedStory[] = morningRows.map(mapStoryRow).map((s) => ({
     ...s,
     builtAt: morningEdition.builtAt,
   }))
   const afternoon: FeedStory[] = afternoonEdition
-    ? rowsToStories(afternoonRows).map((s) => ({ ...s, builtAt: afternoonEdition.builtAt }))
+    ? afternoonRows.map(mapStoryRow).map((s) => ({ ...s, builtAt: afternoonEdition.builtAt }))
     : []
   return { stories: [...morning, ...afternoon], title: 'Tidel' }
 }
@@ -237,7 +225,9 @@ async function handleFeedRequest(
   const db = createDb(c.env.DATABASE_URL)
   const appUrl = parseWebOrigins(c.env.WEB_ORIGIN)[0] ?? ''
   const data = await fetchFeedData(db, slotParam, todayUTC())
-  if (!data) return c.text('No edition available', 404)
+  if (!data) {
+    return c.text('No edition available', 404)
+  }
   const filename = `${format}.xml`
   const selfUrl =
     slotParam === 'morning' || slotParam === 'afternoon'

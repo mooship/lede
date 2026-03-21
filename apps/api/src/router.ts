@@ -19,7 +19,7 @@ const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 
 const slotSchema = z.enum(['morning', 'afternoon'])
 
-function mapStoryRow(r: {
+export function mapStoryRow(r: {
   id: string
   editionDate: string
   editionSlot: string
@@ -171,15 +171,6 @@ const editionRouter = router({
 
       const results = await Promise.all(
         editionRows.map(async (edition) => {
-          const [countRow] = await db
-            .select({ storyCount: count(schema.stories.id) })
-            .from(schema.stories)
-            .where(
-              and(
-                eq(schema.stories.editionDate, edition.date),
-                eq(schema.stories.editionSlot, edition.slot),
-              ),
-            )
           const categoryRows = await db
             .select({ category: schema.stories.category, storyCount: count(schema.stories.id) })
             .from(schema.stories)
@@ -190,6 +181,7 @@ const editionRouter = router({
               ),
             )
             .groupBy(schema.stories.category)
+          const storyCount = categoryRows.reduce((sum, r) => sum + r.storyCount, 0)
           const feedStats = edition.feedStats
             ? (JSON.parse(edition.feedStats) as Record<string, 'ok' | 'timeout' | 'error'>)
             : null
@@ -197,7 +189,7 @@ const editionRouter = router({
             date: edition.date,
             slot: edition.slot,
             builtAt: edition.builtAt.toISOString(),
-            storyCount: countRow?.storyCount ?? 0,
+            storyCount,
             feedStats,
             categoryBreakdown: Object.fromEntries(
               categoryRows.map((r) => [r.category, r.storyCount]),

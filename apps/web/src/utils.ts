@@ -2,6 +2,12 @@ export function isAfternoonAvailable(): boolean {
   return new Date().getUTCHours() >= 15
 }
 
+export function afternoonLocalTime(): string {
+  const d = new Date()
+  d.setUTCHours(15, 0, 0, 0)
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+}
+
 /**
  * Returns the reference date for the current edition.
  * Before 06:00 UTC (the morning build time) the previous day's edition is current.

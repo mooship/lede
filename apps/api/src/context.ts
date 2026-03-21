@@ -7,6 +7,8 @@ export type Context = {
   executionCtx: ExecutionContext
 }
 
+const enc = new TextEncoder()
+
 /**
  * Extracts the Bearer token and compares it to `ADMIN_SECRET` using a
  * timing-safe equality check to prevent timing-based secret enumeration.
@@ -24,7 +26,6 @@ export async function createContext(
   }
 
   const token = authHeader.slice(7)
-  const enc = new TextEncoder()
   const a = enc.encode(token)
   const b = enc.encode(env.ADMIN_SECRET)
   const isAdmin =

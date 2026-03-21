@@ -1,10 +1,5 @@
 import { css } from '../../styled-system/css'
-
-function afternoonLocalTime(): string {
-  const d = new Date()
-  d.setUTCHours(15, 0, 0, 0)
-  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-}
+import { afternoonLocalTime } from '../utils.js'
 
 const wrapperClass = css({
   width: '100%',
@@ -66,36 +61,36 @@ export function SlotSwitcher({
 }: SlotSwitcherProps) {
   return (
     <div className={wrapperClass}>
-      <fieldset style={{ border: 'none', padding: 0, margin: 0, width: '100%' }}>
-        <div className={innerClass}>
-          <button
-            type="button"
-            className={`${pillBase} ${activeSlot === 'morning' ? pillActiveClass : pillInactiveClass}`}
-            onClick={() => onSlotChange('morning')}
-            aria-pressed={activeSlot === 'morning'}
-          >
-            Morning
-          </button>
-          <button
-            type="button"
-            className={`${pillBase} ${
-              !afternoonAvailable
-                ? pillDisabledClass
-                : activeSlot === 'afternoon'
-                  ? pillActiveClass
-                  : pillInactiveClass
-            }`}
-            onClick={() => {
-              if (afternoonAvailable) onSlotChange('afternoon')
-            }}
-            aria-pressed={activeSlot === 'afternoon'}
-            aria-disabled={!afternoonAvailable}
-            title={!afternoonAvailable ? `Available at ${afternoonLocalTime()}` : undefined}
-          >
-            Afternoon
-          </button>
-        </div>
-      </fieldset>
+      <div className={innerClass}>
+        <button
+          type="button"
+          className={`${pillBase} ${activeSlot === 'morning' ? pillActiveClass : pillInactiveClass}`}
+          onClick={() => onSlotChange('morning')}
+          aria-pressed={activeSlot === 'morning'}
+        >
+          Morning
+        </button>
+        <button
+          type="button"
+          className={`${pillBase} ${
+            !afternoonAvailable
+              ? pillDisabledClass
+              : activeSlot === 'afternoon'
+                ? pillActiveClass
+                : pillInactiveClass
+          }`}
+          onClick={() => {
+            if (afternoonAvailable) {
+              onSlotChange('afternoon')
+            }
+          }}
+          aria-pressed={activeSlot === 'afternoon'}
+          aria-disabled={!afternoonAvailable}
+          title={!afternoonAvailable ? `Available at ${afternoonLocalTime()}` : undefined}
+        >
+          Afternoon
+        </button>
+      </div>
     </div>
   )
 }

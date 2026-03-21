@@ -11,7 +11,9 @@ export default {
 
     if (cacheable) {
       const cached = await cfCaches.default.match(request)
-      if (cached) return cached
+      if (cached) {
+        return cached
+      }
     }
 
     const response = await handler.fetch(request)
