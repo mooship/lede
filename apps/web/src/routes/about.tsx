@@ -45,6 +45,8 @@ const bodyClass = css({
   marginBottom: '4',
 })
 
+const tableWrapperClass = css({ overflowX: 'auto' })
+
 const editionTableClass = css({
   fontFamily: 'body',
   fontSize: '0.95rem',
@@ -63,6 +65,7 @@ const editionTableClass = css({
     paddingBottom: '2',
     borderBottom: '1px solid',
     borderColor: 'border',
+    whiteSpace: 'nowrap',
   },
   '& td': {
     paddingTop: '2',
@@ -72,17 +75,28 @@ const editionTableClass = css({
     verticalAlign: 'middle',
   },
   '& td:first-child': {
-    fontFamily: 'display',
-    fontWeight: '700',
-    fontSize: '0.8rem',
-    letterSpacing: '0.05em',
-    color: 'textMuted',
-    paddingRight: '8',
+    paddingRight: '6',
     whiteSpace: 'nowrap',
   },
   '& tr:last-child td': {
     borderBottom: 'none',
   },
+})
+
+const tzNameClass = css({
+  fontFamily: 'display',
+  fontWeight: '700',
+  fontSize: '0.8rem',
+  letterSpacing: '0.05em',
+  color: 'textMuted',
+})
+
+const tzOffsetClass = css({
+  fontFamily: 'body',
+  fontWeight: '400',
+  fontSize: '0.75rem',
+  color: 'textDim',
+  marginLeft: '1.5',
 })
 
 const tableNoteClass = css({
@@ -91,17 +105,6 @@ const tableNoteClass = css({
   color: 'textMuted',
   marginTop: '3',
   fontStyle: 'italic',
-})
-
-const tzSubClass = css({
-  display: 'block',
-  fontFamily: 'body',
-  fontWeight: '400',
-  fontSize: '0.7rem',
-  letterSpacing: '0',
-  textTransform: 'none',
-  color: 'textDim',
-  marginTop: '0.5',
 })
 
 function AboutPage() {
@@ -125,130 +128,61 @@ function AboutPage() {
 
         <div className={sectionClass}>
           <h2 className={headingClass}>When do editions appear?</h2>
-          <table className={editionTableClass}>
-            <thead>
-              <tr>
-                <th>Zone</th>
-                <th>Morning</th>
-                <th>Afternoon</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  PT
-                  <span className={tzSubClass}>US &amp; Canada West · UTC−8/−7</span>
-                </td>
-                <td>22:00* / 23:00*</td>
-                <td>07:00 / 08:00</td>
-              </tr>
-              <tr>
-                <td>
-                  MT
-                  <span className={tzSubClass}>US &amp; Canada Mountain · UTC−7/−6</span>
-                </td>
-                <td>23:00* / midnight</td>
-                <td>08:00 / 09:00</td>
-              </tr>
-              <tr>
-                <td>
-                  CT
-                  <span className={tzSubClass}>US &amp; Canada Central · UTC−6/−5</span>
-                </td>
-                <td>00:00 / 01:00</td>
-                <td>09:00 / 10:00</td>
-              </tr>
-              <tr>
-                <td>
-                  ET
-                  <span className={tzSubClass}>US &amp; Canada East · UTC−5/−4</span>
-                </td>
-                <td>01:00 / 02:00</td>
-                <td>10:00 / 11:00</td>
-              </tr>
-              <tr>
-                <td>UTC</td>
-                <td>06:00</td>
-                <td>15:00</td>
-              </tr>
-              <tr>
-                <td>
-                  GMT / BST
-                  <span className={tzSubClass}>UK &amp; Ireland · UTC+0/+1</span>
-                </td>
-                <td>06:00 / 07:00</td>
-                <td>15:00 / 16:00</td>
-              </tr>
-              <tr>
-                <td>
-                  CET / CEST
-                  <span className={tzSubClass}>Central Europe · UTC+1/+2</span>
-                </td>
-                <td>07:00 / 08:00</td>
-                <td>16:00 / 17:00</td>
-              </tr>
-              <tr>
-                <td>
-                  WAT
-                  <span className={tzSubClass}>West Africa · UTC+1, no DST</span>
-                </td>
-                <td>07:00</td>
-                <td>16:00</td>
-              </tr>
-              <tr>
-                <td>
-                  SAST
-                  <span className={tzSubClass}>South Africa · UTC+2, no DST</span>
-                </td>
-                <td>08:00</td>
-                <td>17:00</td>
-              </tr>
-              <tr>
-                <td>
-                  EAT
-                  <span className={tzSubClass}>East Africa · UTC+3, no DST</span>
-                </td>
-                <td>09:00</td>
-                <td>18:00</td>
-              </tr>
-              <tr>
-                <td>
-                  IST
-                  <span className={tzSubClass}>India · UTC+5:30, no DST</span>
-                </td>
-                <td>11:30</td>
-                <td>20:30</td>
-              </tr>
-              <tr>
-                <td>
-                  SGT / PHT / AWST
-                  <span className={tzSubClass}>
-                    Singapore, Philippines &amp; Perth · UTC+8, no DST
-                  </span>
-                </td>
-                <td>14:00</td>
-                <td>23:00</td>
-              </tr>
-              <tr>
-                <td>
-                  AEST / AEDT
-                  <span className={tzSubClass}>Eastern Australia · UTC+10/+11</span>
-                </td>
-                <td>16:00 / 17:00</td>
-                <td>01:00† / 02:00†</td>
-              </tr>
-              <tr>
-                <td>
-                  NZST / NZDT
-                  <span className={tzSubClass}>New Zealand · UTC+12/+13</span>
-                </td>
-                <td>18:00 / 19:00</td>
-                <td>03:00† / 04:00†</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className={tableWrapperClass}>
+            <table className={editionTableClass}>
+              <thead>
+                <tr>
+                  <th>Zone</th>
+                  <th>Morning</th>
+                  <th>Afternoon</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <span className={tzNameClass}>UTC</span>
+                  </td>
+                  <td>06:00</td>
+                  <td>15:00</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span className={tzNameClass}>Eastern US</span>
+                    <span className={tzOffsetClass}>UTC−5</span>
+                  </td>
+                  <td>01:00*</td>
+                  <td>10:00</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span className={tzNameClass}>UK / Ireland</span>
+                    <span className={tzOffsetClass}>UTC±0</span>
+                  </td>
+                  <td>06:00</td>
+                  <td>15:00</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span className={tzNameClass}>South Africa</span>
+                    <span className={tzOffsetClass}>UTC+2</span>
+                  </td>
+                  <td>08:00</td>
+                  <td>17:00</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span className={tzNameClass}>Singapore</span>
+                    <span className={tzOffsetClass}>UTC+8</span>
+                  </td>
+                  <td>14:00</td>
+                  <td>23:00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <p className={tableNoteClass}>
-            Two values = standard / daylight saving time. * Previous evening. † Following day.
+            UTC offsets shown. Local times shift by 1 hour during daylight saving time. * Previous
+            evening.
           </p>
         </div>
 
