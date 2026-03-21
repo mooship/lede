@@ -21,8 +21,9 @@ Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`
 > **Before running any command**, ensure dependencies are installed: `npm install`
 
 > **Moon requires internet to cache its WASM plugins on first run** — there is no offline mode. In this environment `npm run build/test/lint/typecheck` will fail. Run the underlying commands directly per project instead:
-> - **Lint**: `./node_modules/.bin/biome check .`
-> - **Typecheck**: `cd apps/api && npx tsc --noEmit` and `cd apps/web && npx panda codegen --silent && npx tsc --noEmit`
+> - **Lint**: `./node_modules/.bin/biome check .` (run from repo root)
+> - **Typecheck / build** (`apps/api`): `cd apps/api && npx tsc --noEmit`
+> - **Typecheck / build** (`apps/web`): `cd apps/web && npx panda codegen --silent && npx tsc --noEmit`
 > - **Test**: `cd apps/api && npx vitest run` and `cd apps/web && npx vitest run`
 
 ```bash
