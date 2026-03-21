@@ -2,10 +2,11 @@ import { trpcServer } from '@hono/trpc-server'
 import type { Story } from '@tidel/api'
 import { createDb, schema } from '@tidel/db'
 import { and, desc, eq } from 'drizzle-orm'
+import type { Context } from 'hono'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { createContext } from './context.js'
-import { resolveCorsOrigin } from './cors.js'
+import { parseWebOrigins, resolveCorsOrigin } from './cors.js'
 import type { Env } from './env.js'
 import { validateEnv } from './env.js'
 import { buildEdition, todayUTC } from './pipeline.js'
@@ -55,17 +56,25 @@ app.use(
   }),
 )
 
-function buildAtomFeed(stories: Story[], title: string, selfUrl: string, appUrl: string): string {
-  const updated = stories[0]?.pubDate ?? new Date().toISOString()
+type FeedStory = Story & { builtAt: Date }
+
+function escapeXml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+function buildAtomFeed(
+  stories: FeedStory[],
+  title: string,
+  selfUrl: string,
+  appUrl: string,
+): string {
+  const updated = stories[0]?.builtAt.toISOString() ?? new Date().toISOString()
 
   const entries = stories
     .map((s) => {
-      const pubDate = s.pubDate ? new Date(s.pubDate).toISOString() : new Date().toISOString()
-      const content = (s.summary ?? s.description ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-      const storyTitle = s.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const pubDate = s.builtAt.toISOString()
+      const content = escapeXml(s.summary ?? s.description ?? '')
+      const storyTitle = escapeXml(s.title)
       const storyUrl = `${appUrl}/story/${s.id}`
       return `  <entry>
     <id>${storyUrl}</id>
@@ -92,6 +101,45 @@ ${entries}
 </feed>`
 }
 
+function buildRssFeed(
+  stories: FeedStory[],
+  title: string,
+  selfUrl: string,
+  appUrl: string,
+): string {
+  const lastBuildDate = stories[0]?.builtAt.toUTCString() ?? new Date().toUTCString()
+
+  const items = stories
+    .map((s) => {
+      const pubDate = s.builtAt.toUTCString()
+      const description = escapeXml(s.summary ?? s.description ?? '')
+      const storyTitle = escapeXml(s.title)
+      const storyUrl = `${appUrl}/story/${s.id}`
+      return `    <item>
+      <title>${storyTitle}</title>
+      <link>${storyUrl}</link>
+      <guid isPermaLink="true">${storyUrl}</guid>
+      <pubDate>${pubDate}</pubDate>
+      <category>${s.category}</category>
+      <description>${description}</description>
+    </item>`
+    })
+    .join('\n')
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${title}</title>
+    <link>${appUrl}</link>
+    <description>Daily news digest curated by AI</description>
+    <language>en-gb</language>
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
+    <atom:link href="${selfUrl}" rel="self" type="application/rss+xml" />
+${items}
+  </channel>
+</rss>`
+}
+
 function rowsToStories(rows: (typeof schema.stories.$inferSelect)[]): Story[] {
   return rows.map((r) => ({
     id: r.id,
@@ -108,12 +156,11 @@ function rowsToStories(rows: (typeof schema.stories.$inferSelect)[]): Story[] {
   }))
 }
 
-app.get('/feed.xml', async (c) => {
-  const slotParam = c.req.query('slot')
-  const db = createDb(c.env.DATABASE_URL)
-  const date = todayUTC()
-  const appUrl = c.env.WEB_ORIGIN.split(',')[0]?.trim() ?? ''
-
+async function fetchFeedData(
+  db: ReturnType<typeof createDb>,
+  slotParam: string | undefined,
+  date: string,
+): Promise<{ stories: FeedStory[]; title: string } | null> {
   if (slotParam === 'morning' || slotParam === 'afternoon') {
     let edition = await db.query.editions.findFirst({
       where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slotParam)),
@@ -124,9 +171,7 @@ app.get('/feed.xml', async (c) => {
         orderBy: desc(schema.editions.date),
       })
     }
-    if (!edition) {
-      return c.text('No edition available', 404)
-    }
+    if (!edition) return null
     const rows = await db
       .select()
       .from(schema.stories)
@@ -138,12 +183,11 @@ app.get('/feed.xml', async (c) => {
       )
       .orderBy(schema.stories.position)
     const slotLabel = slotParam === 'afternoon' ? 'Afternoon' : 'Morning'
-    const selfUrl = `${appUrl}/feed.xml?slot=${slotParam}`
-    const xml = buildAtomFeed(rowsToStories(rows), `Tidel — ${slotLabel} Edition`, selfUrl, appUrl)
-    return c.text(xml, 200, {
-      'Content-Type': 'application/atom+xml; charset=utf-8',
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
-    })
+    const stories: FeedStory[] = rowsToStories(rows).map((s) => ({
+      ...s,
+      builtAt: edition.builtAt,
+    }))
+    return { stories, title: `Tidel — ${slotLabel} Edition` }
   }
 
   let morningEdition = await db.query.editions.findFirst({
@@ -155,9 +199,7 @@ app.get('/feed.xml', async (c) => {
       orderBy: desc(schema.editions.date),
     })
   }
-  if (!morningEdition) {
-    return c.text('No edition available', 404)
-  }
+  if (!morningEdition) return null
 
   const afternoonEdition = await db.query.editions.findFirst({
     where: and(
@@ -173,16 +215,48 @@ app.get('/feed.xml', async (c) => {
       .where(and(eq(schema.stories.editionDate, ed.date), eq(schema.stories.editionSlot, ed.slot)))
       .orderBy(schema.stories.position)
 
-  const morningRows = await fetchRows(morningEdition)
-  const afternoonRows = afternoonEdition ? await fetchRows(afternoonEdition) : []
-  const stories = [...rowsToStories(morningRows), ...rowsToStories(afternoonRows)]
+  const [morningRows, afternoonRows] = await Promise.all([
+    fetchRows(morningEdition),
+    afternoonEdition ? fetchRows(afternoonEdition) : Promise.resolve([]),
+  ])
+  const morning: FeedStory[] = rowsToStories(morningRows).map((s) => ({
+    ...s,
+    builtAt: morningEdition.builtAt,
+  }))
+  const afternoon: FeedStory[] = afternoonEdition
+    ? rowsToStories(afternoonRows).map((s) => ({ ...s, builtAt: afternoonEdition.builtAt }))
+    : []
+  return { stories: [...morning, ...afternoon], title: 'Tidel' }
+}
 
-  const xml = buildAtomFeed(stories, 'Tidel', `${appUrl}/feed.xml`, appUrl)
+async function handleFeedRequest(
+  c: Context<{ Bindings: Env }>,
+  format: 'atom' | 'rss',
+): Promise<Response> {
+  const slotParam = c.req.query('slot')
+  const db = createDb(c.env.DATABASE_URL)
+  const appUrl = parseWebOrigins(c.env.WEB_ORIGIN)[0] ?? ''
+  const data = await fetchFeedData(db, slotParam, todayUTC())
+  if (!data) return c.text('No edition available', 404)
+  const filename = `${format}.xml`
+  const selfUrl =
+    slotParam === 'morning' || slotParam === 'afternoon'
+      ? `${appUrl}/${filename}?slot=${slotParam}`
+      : `${appUrl}/${filename}`
+  const xml =
+    format === 'atom'
+      ? buildAtomFeed(data.stories, data.title, selfUrl, appUrl)
+      : buildRssFeed(data.stories, data.title, selfUrl, appUrl)
+  const contentType =
+    format === 'atom' ? 'application/atom+xml; charset=utf-8' : 'application/rss+xml; charset=utf-8'
   return c.text(xml, 200, {
-    'Content-Type': 'application/atom+xml; charset=utf-8',
+    'Content-Type': contentType,
     'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
   })
-})
+}
+
+app.get('/atom.xml', (c) => handleFeedRequest(c, 'atom'))
+app.get('/rss.xml', (c) => handleFeedRequest(c, 'rss'))
 
 async function handleCron(event: ScheduledEvent, env: Env): Promise<void> {
   if (event.cron === '0 6 * * *') {

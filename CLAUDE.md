@@ -20,9 +20,10 @@ Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`
 
 > **Before running any command**, ensure dependencies are installed: `npm install`
 
-> **Moon requires internet to cache its WASM plugins on first run** — there is no offline mode. In this environment `npm run build/test/lint/typecheck` will fail. Run the underlying commands directly per project instead:
-> - **Lint**: `./node_modules/.bin/biome check .`
-> - **Typecheck**: `cd apps/api && npx tsc --noEmit` and `cd apps/web && npx panda codegen --silent && npx tsc --noEmit`
+> **Moon requires internet on first run** to cache its WASM plugins. In restrictive environments where Moon fails, use the per-project commands directly:
+> - **Lint**: `./node_modules/.bin/biome check .` (from repo root)
+> - **Typecheck** (`apps/api`): `cd apps/api && npx tsc --noEmit`
+> - **Typecheck** (`apps/web`): `cd apps/web && npx panda codegen --silent && npx tsc --noEmit`
 > - **Test**: `cd apps/api && npx vitest run` and `cd apps/web && npx vitest run`
 
 ```bash
@@ -32,10 +33,6 @@ npm run build        # moon run :build
 npm run test         # moon run :test
 npm run lint         # moon run :lint (Biome --write)
 npm run typecheck    # moon run :typecheck
-
-# Single project (moon run <project>:<task>)
-npx moon run api-worker:test
-npx moon run web:test
 
 # Single test file
 cd apps/api && npx vitest run src/pipeline.test.ts
@@ -121,6 +118,13 @@ curl -X POST https://api.tidel.app/trpc/edition.build \
   -H "Authorization: Bearer <ADMIN_SECRET>" \
   -d '{"slot":"morning"}'
 ```
+
+### Feed endpoints (`apps/api/src/index.ts`)
+
+- `GET /atom.xml` — Atom 1.0 feed
+- `GET /rss.xml` — RSS 2.0 feed
+
+Both support a `?slot=morning` or `?slot=afternoon` query parameter. Without a slot, the combined daily feed is returned (morning + afternoon stories). Entry dates use `edition.built_at` — the time Tidel published the edition — not the source article's `pubDate`. Cache-Control: `s-maxage=300, stale-while-revalidate=3600`.
 
 ### Web client (`apps/web`)
 
