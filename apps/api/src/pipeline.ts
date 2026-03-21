@@ -528,10 +528,24 @@ export async function buildEdition(
       })),
     )
   } catch (err) {
-    console.error('[buildEdition] Failed to insert stories, rolling back edition:', err)
-    await db
-      .delete(schema.editions)
-      .where(and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)))
+    const e = err as Record<string, unknown>
+    console.error('[buildEdition] Failed to insert stories, rolling back edition:', {
+      message: e.message,
+      code: e.code,
+      detail: e.detail,
+      constraint: e.constraint,
+      table: e.table,
+    })
+    try {
+      await db
+        .delete(schema.editions)
+        .where(and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)))
+    } catch (deleteErr) {
+      console.error(
+        '[buildEdition] Rollback delete also failed:',
+        (deleteErr as Record<string, unknown>).message,
+      )
+    }
     throw err
   }
 
