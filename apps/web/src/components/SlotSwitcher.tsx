@@ -2,7 +2,7 @@ import { css } from '../../styled-system/css'
 
 function afternoonLocalTime(): string {
   const d = new Date()
-  d.setUTCHours(12, 0, 0, 0)
+  d.setUTCHours(15, 0, 0, 0)
   return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 }
 

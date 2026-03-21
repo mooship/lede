@@ -45,6 +45,65 @@ const bodyClass = css({
   margin: '0 0 4 0',
 })
 
+const editionTableClass = css({
+  fontFamily: 'body',
+  fontSize: '0.95rem',
+  color: 'textSecondary',
+  borderCollapse: 'collapse',
+  width: '100%',
+  marginTop: '4',
+  '& th': {
+    fontFamily: 'display',
+    fontWeight: '700',
+    fontSize: '0.65rem',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    color: 'textMuted',
+    textAlign: 'left',
+    paddingBottom: '2',
+    borderBottom: '1px solid',
+    borderColor: 'border',
+  },
+  '& td': {
+    paddingTop: '2',
+    paddingBottom: '2',
+    borderBottom: '1px solid',
+    borderColor: 'border',
+    verticalAlign: 'middle',
+  },
+  '& td:first-child': {
+    fontFamily: 'display',
+    fontWeight: '700',
+    fontSize: '0.8rem',
+    letterSpacing: '0.05em',
+    color: 'textMuted',
+    paddingRight: '8',
+    whiteSpace: 'nowrap',
+  },
+  '& tr:last-child td': {
+    borderBottom: 'none',
+  },
+})
+
+const tableNoteClass = css({
+  fontFamily: 'body',
+  fontSize: '0.8rem',
+  color: 'textMuted',
+  marginTop: '3',
+  fontStyle: 'italic',
+})
+
+const tzSubClass = css({
+  display: 'block',
+  fontFamily: 'body',
+  fontWeight: '400',
+  fontSize: '0.7rem',
+  letterSpacing: '0',
+  textTransform: 'none',
+  color: 'textDim',
+  marginTop: '0.5',
+})
+
 function AboutPage() {
   return (
     <div className={pageClass}>
@@ -57,10 +116,139 @@ function AboutPage() {
         <div className={sectionClass}>
           <h2 className={headingClass}>What is it?</h2>
           <p className={bodyClass}>
-            A free, ad-free daily digest of the day's most significant stories. Every morning at
-            04:00 UTC, Tidel pulls from trusted RSS feeds, uses Claude (Anthropic's AI) to pick the
+            A free, ad-free daily digest of the day's most significant stories. Every morning and
+            afternoon, Tidel pulls from trusted RSS feeds, uses Claude (Anthropic's AI) to pick the
             most newsworthy stories and summarise each one, then publishes a clean edition — no
             noise, no notifications, no sponsored content.
+          </p>
+        </div>
+
+        <div className={sectionClass}>
+          <h2 className={headingClass}>When do editions appear?</h2>
+          <table className={editionTableClass}>
+            <thead>
+              <tr>
+                <th>Zone</th>
+                <th>Morning</th>
+                <th>Afternoon</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>UTC</td>
+                <td>06:00</td>
+                <td>15:00</td>
+              </tr>
+              <tr>
+                <td>
+                  GMT / BST
+                  <span className={tzSubClass}>UK &amp; Ireland · UTC+0/+1</span>
+                </td>
+                <td>06:00 / 07:00</td>
+                <td>15:00 / 16:00</td>
+              </tr>
+              <tr>
+                <td>
+                  CET / CEST
+                  <span className={tzSubClass}>Central Europe · UTC+1/+2</span>
+                </td>
+                <td>07:00 / 08:00</td>
+                <td>16:00 / 17:00</td>
+              </tr>
+              <tr>
+                <td>
+                  WAT
+                  <span className={tzSubClass}>West Africa · UTC+1, no DST</span>
+                </td>
+                <td>07:00</td>
+                <td>16:00</td>
+              </tr>
+              <tr>
+                <td>
+                  SAST
+                  <span className={tzSubClass}>South Africa · UTC+2, no DST</span>
+                </td>
+                <td>08:00</td>
+                <td>17:00</td>
+              </tr>
+              <tr>
+                <td>
+                  EAT
+                  <span className={tzSubClass}>East Africa · UTC+3, no DST</span>
+                </td>
+                <td>09:00</td>
+                <td>18:00</td>
+              </tr>
+              <tr>
+                <td>
+                  ET
+                  <span className={tzSubClass}>US &amp; Canada East · UTC−5/−4</span>
+                </td>
+                <td>01:00 / 02:00</td>
+                <td>10:00 / 11:00</td>
+              </tr>
+              <tr>
+                <td>
+                  CT
+                  <span className={tzSubClass}>US &amp; Canada Central · UTC−6/−5</span>
+                </td>
+                <td>00:00 / 01:00</td>
+                <td>09:00 / 10:00</td>
+              </tr>
+              <tr>
+                <td>
+                  MT
+                  <span className={tzSubClass}>US &amp; Canada Mountain · UTC−7/−6</span>
+                </td>
+                <td>23:00* / midnight</td>
+                <td>08:00 / 09:00</td>
+              </tr>
+              <tr>
+                <td>
+                  PT
+                  <span className={tzSubClass}>US &amp; Canada West · UTC−8/−7</span>
+                </td>
+                <td>22:00* / 23:00*</td>
+                <td>07:00 / 08:00</td>
+              </tr>
+              <tr>
+                <td>
+                  IST
+                  <span className={tzSubClass}>India · UTC+5:30, no DST</span>
+                </td>
+                <td>11:30</td>
+                <td>20:30</td>
+              </tr>
+              <tr>
+                <td>
+                  SGT / PHT / AWST
+                  <span className={tzSubClass}>
+                    Singapore, Philippines &amp; Perth · UTC+8, no DST
+                  </span>
+                </td>
+                <td>14:00</td>
+                <td>23:00</td>
+              </tr>
+              <tr>
+                <td>
+                  AEST / AEDT
+                  <span className={tzSubClass}>Eastern Australia · UTC+10/+11</span>
+                </td>
+                <td>16:00 / 17:00</td>
+                <td>01:00† / 02:00†</td>
+              </tr>
+              <tr>
+                <td>
+                  NZST / NZDT
+                  <span className={tzSubClass}>New Zealand · UTC+12/+13</span>
+                </td>
+                <td>18:00 / 19:00</td>
+                <td>03:00† / 04:00†</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className={tableNoteClass}>
+            Two values = standard / daylight saving time. * Previous evening. † Following day.
           </p>
         </div>
 

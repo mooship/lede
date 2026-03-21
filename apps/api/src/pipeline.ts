@@ -48,9 +48,9 @@ export function todayUTC(): string {
   return UTC_DATE_FORMAT.format(new Date())
 }
 
-/** Returns 'afternoon' after 12:00 UTC (when the afternoon cron runs), otherwise 'morning'. */
+/** Returns 'afternoon' after 15:00 UTC (when the afternoon cron runs), otherwise 'morning'. */
 export function currentSlot(): 'morning' | 'afternoon' {
-  return new Date().getUTCHours() >= 12 ? 'afternoon' : 'morning'
+  return new Date().getUTCHours() >= 15 ? 'afternoon' : 'morning'
 }
 
 const JUNK_PATTERNS = [
