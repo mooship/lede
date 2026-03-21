@@ -1,3 +1,7 @@
+import { msUntilNextEdition } from '@tidel/api'
+
+export { msUntilNextEdition }
+
 export function isAfternoonAvailable(): boolean {
   return new Date().getUTCHours() >= 15
 }
@@ -20,22 +24,6 @@ export function getEditionDate(): Date {
     ref.setUTCDate(ref.getUTCDate() - 1) // before today's build → use yesterday's
   }
   return ref
-}
-
-export function msUntilNextEdition(): number {
-  const now = new Date()
-  const morning = new Date()
-  morning.setUTCHours(6, 0, 0, 0)
-  if (morning > now) {
-    return morning.getTime() - now.getTime()
-  }
-  const afternoon = new Date()
-  afternoon.setUTCHours(15, 0, 0, 0)
-  if (afternoon > now) {
-    return afternoon.getTime() - now.getTime()
-  }
-  morning.setUTCDate(morning.getUTCDate() + 1)
-  return morning.getTime() - now.getTime()
 }
 
 /**

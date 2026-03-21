@@ -1,5 +1,6 @@
 import { trpcServer } from '@hono/trpc-server'
 import type { Story } from '@tidel/api'
+import { secondsUntilNextEdition } from '@tidel/api'
 import { createDb, schema } from '@tidel/db'
 import { and, desc, eq } from 'drizzle-orm'
 import type { Context } from 'hono'
@@ -12,6 +13,24 @@ import { validateEnv } from './env.js'
 import { buildEdition, todayUTC } from './pipeline.js'
 import { appRouter, mapStoryRow } from './router.js'
 
+const IMMUTABLE_TTL = 7 * 24 * 3600
+
+function trpcCacheMiddleware(getSecs: () => number) {
+  return async (c: Context<{ Bindings: Env }>, next: () => Promise<void>) => {
+    await next()
+    try {
+      const parsed = JSON.parse(await c.res.clone().text())
+      const data = Array.isArray(parsed) ? parsed[0]?.result?.data : parsed?.result?.data
+      const hasData =
+        data !== null && data !== undefined && !(Array.isArray(data) && data.length === 0)
+      if (hasData) {
+        const secs = getSecs()
+        c.res.headers.set('Cache-Control', `public, s-maxage=${secs}, stale-while-revalidate=86400`)
+      }
+    } catch {}
+  }
+}
+
 const app = new Hono<{ Bindings: Env }>()
 
 app.use('*', (c, next) => {
@@ -21,20 +40,16 @@ app.use('*', (c, next) => {
 
 app.use('*', cors({ origin: (origin, c) => resolveCorsOrigin(origin, c.env.WEB_ORIGIN) }))
 
-app.use('/trpc/edition.today', async (c, next) => {
-  await next()
-  try {
-    const body = await c.res.clone().text()
-    const parsed = JSON.parse(body)
-    const data = Array.isArray(parsed) ? parsed[0]?.result?.data : parsed?.result?.data
-    if (data !== null && data !== undefined) {
-      c.res.headers.set(
-        'Cache-Control',
-        'public, s-maxage=60, stale-while-revalidate=86400, max-age=3600',
-      )
-    }
-  } catch {}
-})
+app.use('/trpc/edition.today', trpcCacheMiddleware(secondsUntilNextEdition))
+app.use('/trpc/edition.list', trpcCacheMiddleware(secondsUntilNextEdition))
+app.use(
+  '/trpc/edition.byDate',
+  trpcCacheMiddleware(() => IMMUTABLE_TTL),
+)
+app.use(
+  '/trpc/story.byId',
+  trpcCacheMiddleware(() => IMMUTABLE_TTL),
+)
 
 app.use('/trpc/*', async (c, next) => {
   const ip = c.req.header('CF-Connecting-IP') ?? 'unknown'
@@ -241,7 +256,7 @@ async function handleFeedRequest(
     format === 'atom' ? 'application/atom+xml; charset=utf-8' : 'application/rss+xml; charset=utf-8'
   return c.text(xml, 200, {
     'Content-Type': contentType,
-    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
+    'Cache-Control': `public, s-maxage=${secondsUntilNextEdition()}, stale-while-revalidate=86400`,
   })
 }
 

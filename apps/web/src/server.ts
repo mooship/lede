@@ -1,6 +1,6 @@
 import type { ExecutionContext } from '@cloudflare/workers-types'
 import handler from '@tanstack/react-start/server-entry'
-import { msUntilNextEdition } from './utils.js'
+import { msUntilNextEdition } from '@tidel/api'
 
 const cfCaches = caches as unknown as { default: Cache }
 
