@@ -1,6 +1,6 @@
 import type { Category } from '@tidel/api'
 import { createDb } from '@tidel/db'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   AFTERNOON_MAX_STORIES_PER_CATEGORY,
   AFTERNOON_TARGET_STORY_COUNT,
@@ -15,6 +15,7 @@ import {
   isRecentEnough,
   normaliseTitle,
   scoreBySourceOverlap,
+  withRetry,
 } from './pipeline.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
@@ -507,7 +508,7 @@ describe('buildEdition', () => {
       },
     ])
     mockCreate
-      .mockResolvedValueOnce({ content: [{ type: 'text', text: '[1]' }] }) // curate
+      .mockResolvedValueOnce({ content: [{ type: 'text', text: '[1]' }] })
       .mockResolvedValueOnce({
         content: [
           {
@@ -515,10 +516,94 @@ describe('buildEdition', () => {
             text: 'TITLE: Climate summit ends in agreement\nBYLINE: World leaders reached a historic climate deal.\nSUMMARY: Leaders agreed on targets.',
           },
         ],
-      }) // summarise
+      })
     await buildEdition(envWithKey)
     const storiesInsertCall = mockInsertValues.mock.calls[1]
     const insertedStories = storiesInsertCall?.[0] as Array<{ title: string }>
     expect(insertedStories[0]?.title).toBe('Climate summit ends in agreement')
+  })
+
+  it('deletes existing edition and rebuilds when force=true', async () => {
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    mockFindFirst.mockResolvedValue({ date: '2024-01-01', slot: 'morning', builtAt: new Date() })
+    await buildEdition(mockEnv, true, 'morning')
+    expect(mockDb.delete).toHaveBeenCalled()
+    expect(mockDb.insert).toHaveBeenCalled()
+  })
+
+  it('purges Cloudflare cache after a successful build', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(null, { status: 200 }))
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    const envWithCf: Env = {
+      ...mockEnv,
+      CLOUDFLARE_ZONE_ID: 'zone-abc',
+      CLOUDFLARE_API_TOKEN: 'tok-xyz',
+    }
+    await buildEdition(envWithCf)
+    const cfCall = fetchSpy.mock.calls.find(([url]) => String(url).includes('cloudflare.com'))
+    expect(cfCall).toBeDefined()
+    expect(String(cfCall![0])).toContain('zone-abc')
+    expect((cfCall![1] as RequestInit)?.method).toBe('DELETE')
+    expect((cfCall![1] as RequestInit)?.headers).toMatchObject({
+      Authorization: 'Bearer tok-xyz',
+    })
+    fetchSpy.mockRestore()
+  })
+
+  it('does not purge Cloudflare cache when zone credentials are absent', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(null, { status: 200 }))
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    await buildEdition(mockEnv)
+    const cfCall = fetchSpy.mock.calls.find(([url]) => String(url).includes('cloudflare.com'))
+    expect(cfCall).toBeUndefined()
+    fetchSpy.mockRestore()
+  })
+})
+
+describe('withRetry', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('returns the result immediately on first success', async () => {
+    const fn = vi.fn().mockResolvedValue('ok')
+    const result = await withRetry(fn, { maxAttempts: 3, baseDelayMs: 0 })
+    expect(result).toBe('ok')
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
+
+  it('retries after failure and succeeds on second attempt', async () => {
+    const fn = vi.fn().mockRejectedValueOnce(new Error('fail')).mockResolvedValue('success')
+    const promise = withRetry(fn, { maxAttempts: 3, baseDelayMs: 100 })
+    await vi.runAllTimersAsync()
+    const result = await promise
+    expect(result).toBe('success')
+    expect(fn).toHaveBeenCalledTimes(2)
+  })
+
+  it('throws the last error after exhausting all attempts', async () => {
+    const fn = vi.fn().mockRejectedValue(new Error('always fails'))
+    const promise = withRetry(fn, { maxAttempts: 3, baseDelayMs: 100 })
+    const assertion = expect(promise).rejects.toThrow('always fails')
+    await vi.runAllTimersAsync()
+    await assertion
+    expect(fn).toHaveBeenCalledTimes(3)
+  })
+
+  it('respects the maxAttempts option', async () => {
+    const fn = vi.fn().mockRejectedValue(new Error('nope'))
+    const promise = withRetry(fn, { maxAttempts: 2, baseDelayMs: 100 })
+    const assertion = expect(promise).rejects.toThrow()
+    await vi.runAllTimersAsync()
+    await assertion
+    expect(fn).toHaveBeenCalledTimes(2)
   })
 })

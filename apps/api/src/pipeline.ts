@@ -19,7 +19,7 @@ import { fetchFeed } from './rss.js'
 
 const UTC_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' })
 
-async function withRetry<T>(
+export async function withRetry<T>(
   fn: () => Promise<T>,
   { maxAttempts = 3, baseDelayMs = 1000 }: { maxAttempts?: number; baseDelayMs?: number } = {},
 ): Promise<T> {
