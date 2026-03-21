@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { z } from 'zod'
 import { css } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
+import { Footer } from '../components/Footer.js'
 import { PageHeader } from '../components/PageHeader.js'
 import { PageMessage } from '../components/PageMessage.js'
 import { readingTimeMinutes } from '../components/StoryCard.js'
@@ -141,7 +142,12 @@ function StoryPage() {
   const story: Story | null = Route.useLoaderData()
 
   if (!story) {
-    return <PageMessage message="Story not found." />
+    return (
+      <div className={pageClass}>
+        <PageHeader backTo="/" />
+        <PageMessage message="Story not found." />
+      </div>
+    )
   }
 
   const accentVar = CATEGORY_CSS_VAR[story.category] ?? 'var(--colors-text-primary)'
@@ -200,6 +206,7 @@ function StoryPage() {
           </button>
         </div>
       </main>
+      <Footer />
     </div>
   )
 }

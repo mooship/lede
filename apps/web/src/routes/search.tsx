@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { css } from '../../styled-system/css'
+import { Footer } from '../components/Footer.js'
 import { PageHeader } from '../components/PageHeader.js'
 import { StoryCard } from '../components/StoryCard.js'
 import { trpc } from '../trpc.js'
@@ -126,6 +127,7 @@ function SearchPage() {
           </>
         )}
       </main>
+      <Footer />
     </div>
   )
 }

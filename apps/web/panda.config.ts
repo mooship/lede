@@ -55,7 +55,7 @@ export default defineConfig({
             value: { base: '#666666', _dark: '#888888' },
           },
           textDim: {
-            value: { base: '#aaaaaa', _dark: '#444444' },
+            value: { base: '#aaaaaa', _dark: '#666666' },
           },
           textLight: {
             value: { base: '#555555', _dark: '#c0c0c0' },
