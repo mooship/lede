@@ -58,7 +58,6 @@ const metaChipClass = css({
   color: 'textMuted',
 })
 
-
 const storyTitleClass = css({
   fontFamily: 'display',
   fontWeight: '800',

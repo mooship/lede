@@ -44,7 +44,6 @@ const mockStories: Story[] = [
     pubDate: null,
     source: 'example.com',
     position: 0,
-    sourceCount: 1,
   },
 ]
 
