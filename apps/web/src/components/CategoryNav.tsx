@@ -5,7 +5,15 @@ import { CATEGORY_CSS_VAR } from '../categories.js'
 
 type Tab = Category | 'All'
 
-const TABS: Tab[] = ['All', 'World', 'Technology', 'Science', 'Business / Economy', 'Sport']
+const TABS: Tab[] = [
+  'All',
+  'World',
+  'Technology',
+  'Science',
+  'Business / Economy',
+  'Culture',
+  'Sport',
+]
 
 const LABELS: Record<Tab, string> = {
   All: 'All',
@@ -13,6 +21,7 @@ const LABELS: Record<Tab, string> = {
   Technology: 'Technology',
   Science: 'Science',
   'Business / Economy': 'Business',
+  Culture: 'Culture',
   Sport: 'Sport',
 }
 
