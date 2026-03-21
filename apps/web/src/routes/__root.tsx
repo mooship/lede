@@ -31,19 +31,19 @@ export const Route = createRootRoute({
         rel: 'alternate',
         type: 'application/atom+xml',
         title: 'Tidel',
-        href: `${API_URL}/feed.xml`,
+        href: `${API_URL}/atom.xml`,
       },
       {
         rel: 'alternate',
         type: 'application/atom+xml',
         title: 'Tidel — Morning Edition',
-        href: `${API_URL}/feed.xml?slot=morning`,
+        href: `${API_URL}/atom.xml?slot=morning`,
       },
       {
         rel: 'alternate',
         type: 'application/atom+xml',
         title: 'Tidel — Afternoon Edition',
-        href: `${API_URL}/feed.xml?slot=afternoon`,
+        href: `${API_URL}/atom.xml?slot=afternoon`,
       },
       {
         rel: 'alternate',

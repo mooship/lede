@@ -228,7 +228,7 @@ async function fetchFeedData(
   return { stories: [...morning, ...afternoon], title: 'Tidel' }
 }
 
-app.get('/feed.xml', async (c) => {
+app.get('/atom.xml', async (c) => {
   const slotParam = c.req.query('slot')
   const db = createDb(c.env.DATABASE_URL)
   const appUrl = c.env.WEB_ORIGIN.split(',')[0]?.trim() ?? ''
@@ -236,8 +236,8 @@ app.get('/feed.xml', async (c) => {
   if (!data) return c.text('No edition available', 404)
   const selfUrl =
     slotParam === 'morning' || slotParam === 'afternoon'
-      ? `${appUrl}/feed.xml?slot=${slotParam}`
-      : `${appUrl}/feed.xml`
+      ? `${appUrl}/atom.xml?slot=${slotParam}`
+      : `${appUrl}/atom.xml`
   const xml = buildAtomFeed(data.stories, data.title, selfUrl, appUrl)
   return c.text(xml, 200, {
     'Content-Type': 'application/atom+xml; charset=utf-8',

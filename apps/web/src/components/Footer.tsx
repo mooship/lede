@@ -64,7 +64,7 @@ const ALL_LINKS = [
     href: 'https://opensource.org/license/agpl-3-0-only',
     ariaLabel: 'AGPL-3.0 licence (opens in new tab)',
   },
-  { label: 'Atom', href: `${API_URL}/feed.xml`, ariaLabel: 'Subscribe via Atom feed' },
+  { label: 'Atom', href: `${API_URL}/atom.xml`, ariaLabel: 'Subscribe via Atom feed' },
   { label: 'RSS', href: `${API_URL}/rss.xml`, ariaLabel: 'Subscribe via RSS feed' },
   { label: 'Feedback', href: 'mailto:contact@tidel.app', ariaLabel: 'Send feedback by email' },
   {
