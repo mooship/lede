@@ -37,7 +37,6 @@ const mockStory: Story = {
   pubDate: null,
   source: 'example.com',
   position: 0,
-  sourceCount: 1,
 }
 
 async function renderIndex(loaderData: Story[] | null | undefined) {

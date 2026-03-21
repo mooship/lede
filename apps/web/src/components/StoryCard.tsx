@@ -93,11 +93,6 @@ export function StoryCard({ story, position }: Props) {
         <div className={footerClass}>
           <p className={sourceClass}>{story.source}</p>
           <span className={metaClass}>
-            {story.sourceCount > 1 && (
-              <span title={`Covered by ${story.sourceCount} sources`}>
-                {story.sourceCount} sources
-              </span>
-            )}
             <span>{mins} min read</span>
           </span>
         </div>

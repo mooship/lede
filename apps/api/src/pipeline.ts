@@ -154,36 +154,7 @@ export function deduplicateByTitle(
   return result
 }
 
-export type ScoredItem = RssItem & { category: Category; sourceScore: number }
-
-/**
- * Scores each unique item by how many distinct source hostnames covered the same story
- * across the full (pre-dedup) pool. Minimum score is 1.
- */
-export function scoreBySourceOverlap(
-  pool: Array<RssItem & { category: Category }>,
-  unique: Array<RssItem & { category: Category }>,
-): ScoredItem[] {
-  const poolNorm = pool.map((p) => ({
-    norm: normaliseTitle(p.title),
-    hostname: hostnameFromUrl(p.link),
-  }))
-
-  return unique.map((u) => {
-    const normU = normaliseTitle(u.title)
-    const hostnames = new Set<string>()
-
-    for (const p of poolNorm) {
-      if (p.norm.includes(normU) || normU.includes(p.norm)) {
-        if (p.hostname) {
-          hostnames.add(p.hostname)
-        }
-      }
-    }
-
-    return { ...u, sourceScore: Math.max(hostnames.size, 1) }
-  })
-}
+export type ScoredItem = RssItem & { category: Category }
 
 type CurationConfig = {
   target: number
@@ -231,7 +202,6 @@ export async function curateWithClaude(
 
   const fallbackSort = (items: ScoredItem[]): ScoredItem[] =>
     [...items].sort((a, b) => {
-      if (b.sourceScore !== a.sourceScore) return b.sourceScore - a.sourceScore
       const da = a.pubDate ? new Date(a.pubDate).getTime() : 0
       const db = b.pubDate ? new Date(b.pubDate).getTime() : 0
       return db - da
@@ -254,9 +224,7 @@ export async function curateWithClaude(
   for (const [category, bucket] of byCategory) {
     const startIdx = allStories.length + 1
     allStories.push(...bucket)
-    const lines = bucket.map(
-      (item, i) => `${startIdx + i}. [sources: ${item.sourceScore}] ${item.title}`,
-    )
+    const lines = bucket.map((item, i) => `${startIdx + i}. ${item.title}`)
     categoryBlocks.push(`${category}:\n${lines.join('\n')}`)
   }
 
@@ -486,8 +454,7 @@ export async function buildEdition(
       isRecentEnough(item.pubDate, date) &&
       !excludeLinks.has(item.link),
   )
-  const unique = deduplicateByTitle(filtered)
-  const scored = scoreBySourceOverlap(filtered, unique)
+  const scored: ScoredItem[] = deduplicateByTitle(filtered)
   const selected: ScoredItem[] = await curateWithClaude(scored, env, slot)
 
   const summariser = createSummariser(env)
@@ -519,7 +486,6 @@ export async function buildEdition(
         pubDate: story.pubDate || null,
         source: hostnameFromUrl(story.link),
         position: i,
-        sourceCount: story.sourceScore,
       })),
     )
   } catch (err) {

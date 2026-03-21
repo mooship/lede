@@ -31,7 +31,6 @@ function mapStoryRow(r: {
   pubDate: string | null
   source: string
   position: number
-  sourceCount: number
 }): Story {
   return {
     id: r.id,
@@ -45,7 +44,6 @@ function mapStoryRow(r: {
     pubDate: r.pubDate ?? null,
     source: r.source,
     position: r.position,
-    sourceCount: r.sourceCount,
   }
 }
 

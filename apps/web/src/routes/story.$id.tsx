@@ -58,17 +58,6 @@ const metaChipClass = css({
   color: 'textMuted',
 })
 
-const whyClass = css({
-  fontFamily: 'body',
-  fontSize: '0.82rem',
-  color: 'textDim',
-  fontStyle: 'italic',
-  marginBottom: '2rem',
-  paddingLeft: '5',
-  borderLeft: '2px solid',
-  borderColor: 'border',
-})
-
 const storyTitleClass = css({
   fontFamily: 'display',
   fontWeight: '800',
@@ -152,9 +141,6 @@ function StoryPage() {
 
   const accentVar = CATEGORY_CSS_VAR[story.category] ?? 'var(--colors-text-primary)'
   const mins = readingTimeMinutes(story.summary)
-  const sourceWord = story.sourceCount === 1 ? 'source' : 'sources'
-  const whyText = `Selected because it was covered by ${story.sourceCount} ${sourceWord} in ${story.category}.`
-
   return (
     <div className={pageClass}>
       <PageHeader backTo="/" />
@@ -175,8 +161,6 @@ function StoryPage() {
         {story.description && <p className={bylineClass}>{story.description}</p>}
 
         <p className={summaryClass}>{story.summary}</p>
-
-        <p className={whyClass}>{whyText}</p>
 
         <div className={actionsClass}>
           <a

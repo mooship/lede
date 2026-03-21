@@ -105,7 +105,6 @@ function rowsToStories(rows: (typeof schema.stories.$inferSelect)[]): Story[] {
     pubDate: r.pubDate ?? null,
     source: r.source,
     position: r.position,
-    sourceCount: r.sourceCount,
   }))
 }
 
