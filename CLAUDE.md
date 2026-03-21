@@ -109,19 +109,12 @@ cd apps/web && npm run deploy
 
 Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified in `context.ts` using `crypto.subtle.timingSafeEqual`.
 
-To trigger a build via curl, send the input as a plain JSON object (no tRPC `json` wrapper):
+Builds run automatically via cron (04:00 UTC morning, 12:00 UTC afternoon). The build endpoint is idempotent — it skips if an edition already exists for that date and slot. To trigger manually via curl, send the input as a plain JSON object (no tRPC `json` wrapper):
 ```bash
-# Trigger build
 curl -X POST https://api.tidel.app/trpc/edition.build \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <ADMIN_SECRET>" \
   -d '{"slot":"morning"}'
-
-# Force rebuild (overwrites existing edition)
-curl -X POST https://api.tidel.app/trpc/edition.build \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <ADMIN_SECRET>" \
-  -d '{"force":true,"slot":"morning"}'
 ```
 
 ### Web client (`apps/web`)

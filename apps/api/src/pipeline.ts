@@ -430,7 +430,6 @@ async function purgeEditionCache(zoneId: string, apiToken: string): Promise<void
  */
 export async function buildEdition(
   env: Env,
-  force = false,
   slot: 'morning' | 'afternoon' = 'morning',
 ): Promise<void> {
   const db = createDb(env.DATABASE_URL)
@@ -440,12 +439,7 @@ export async function buildEdition(
     where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)),
   })
   if (existing) {
-    if (!force) {
-      return
-    }
-    await db
-      .delete(schema.editions)
-      .where(and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)))
+    return
   }
 
   let excludeLinks = new Set<string>()

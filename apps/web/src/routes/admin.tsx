@@ -5,7 +5,6 @@ import { useState } from 'react'
 import { css, cx } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 import { Footer } from '../components/Footer.js'
-import { Modal } from '../components/Modal.js'
 import { PageHeader } from '../components/PageHeader.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
@@ -323,12 +322,12 @@ async function fetchEditionList(): Promise<
   return json.result?.data ?? []
 }
 
-async function triggerBuild(secret: string, slot: Slot, force = false): Promise<void> {
+async function triggerBuild(secret: string, slot: Slot): Promise<void> {
   const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
   const res = await fetch(`${apiUrl}/trpc/edition.build`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
-    body: JSON.stringify({ force, slot }),
+    body: JSON.stringify({ slot }),
   })
   const json = (await res.json()) as {
     result?: { data?: { ok: boolean } }
@@ -452,19 +451,15 @@ function AdminStatus({ secret }: { secret: string }) {
     queryFn: fetchEditionList,
   })
 
-  const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [buildSlot, setBuildSlot] = useState<Slot>('morning')
 
-  const buildMutation = useMutation<void, Error, { slot: Slot; force: boolean }>({
-    mutationFn: ({ slot, force }) => triggerBuild(secret, slot, force),
+  const buildMutation = useMutation<void, Error, { slot: Slot }>({
+    mutationFn: ({ slot }) => triggerBuild(secret, slot),
     onSuccess: () => {
       void refetch()
       queryClient.invalidateQueries({ queryKey: ['editionList'] })
     },
   })
-
-  const todayUTC = new Date().toLocaleDateString('en-CA', { timeZone: 'UTC' })
-  const todaySlotExists = data?.some((s) => s.date === todayUTC && s.slot === buildSlot) ?? false
 
   if (isLoading) {
     return (
@@ -503,19 +498,6 @@ function AdminStatus({ secret }: { secret: string }) {
         </>
       )}
 
-      {showConfirmModal && (
-        <Modal
-          title={`Replace today's ${buildSlot} edition?`}
-          message="This will delete all current articles for this slot and rebuild from scratch."
-          confirmLabel="Rebuild"
-          onConfirm={() => {
-            setShowConfirmModal(false)
-            buildMutation.mutate({ slot: buildSlot, force: true })
-          }}
-          onCancel={() => setShowConfirmModal(false)}
-        />
-      )}
-
       <h2 className={cx(sectionHeadingClass, sectionMtClass)}>Build Edition</h2>
       <div className={slotSelectorClass}>
         {(['morning', 'afternoon'] as const).map((s) => (
@@ -542,27 +524,16 @@ function AdminStatus({ secret }: { secret: string }) {
         <button
           type="button"
           className={buttonClass}
-          onClick={() => {
-            if (todaySlotExists) {
-              setShowConfirmModal(true)
-            } else {
-              buildMutation.mutate({ slot: buildSlot, force: false })
-            }
-          }}
+          onClick={() => buildMutation.mutate({ slot: buildSlot })}
           disabled={buildMutation.isPending}
         >
           {buildMutation.isPending
             ? 'Building…'
             : `Build ${buildSlot === 'morning' ? 'Morning' : 'Afternoon'} Edition`}
         </button>
-        {todaySlotExists && !buildMutation.isPending && !buildMutation.isSuccess && (
-          <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'business' })}>
-            Warning: today&apos;s {buildSlot} edition exists — clicking will replace all articles.
-          </span>
-        )}
         {buildMutation.isSuccess && (
           <span className={css({ fontFamily: 'display', fontSize: '0.8rem', color: 'science' })}>
-            Build complete.
+            Build triggered.
           </span>
         )}
         {buildMutation.isError && (

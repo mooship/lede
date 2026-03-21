@@ -213,30 +213,29 @@ const editionRouter = router({
   build: protectedProcedure
     .input(
       z.object({
-        force: z.boolean().optional(),
         slot: slotSchema.optional().default(() => currentSlot()),
       }),
     )
     .mutation(async ({ ctx, input }): Promise<{ ok: true; message: string }> => {
       const db = createDb(ctx.env.DATABASE_URL)
       const date = todayUTC()
-      const { slot, force } = input
+      const { slot } = input
 
       const existing = await db.query.editions.findFirst({
         where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)),
       })
 
-      if (existing && !force) {
+      if (existing) {
         return {
           ok: true,
-          message: `${slot} edition for ${date} already exists — skipping (pass force: true to rebuild)`,
+          message: `${slot} edition for ${date} already exists — skipping`,
         }
       }
 
-      ctx.executionCtx.waitUntil(buildEdition(ctx.env, force ?? false, slot))
+      ctx.executionCtx.waitUntil(buildEdition(ctx.env, slot))
       return {
         ok: true,
-        message: `${force ? 'Force-rebuilding' : 'Building'} ${slot} edition for ${date}`,
+        message: `Building ${slot} edition for ${date}`,
       }
     }),
 })
