@@ -93,6 +93,17 @@ const tableNoteClass = css({
   fontStyle: 'italic',
 })
 
+const tzSubClass = css({
+  display: 'block',
+  fontFamily: 'body',
+  fontWeight: '400',
+  fontSize: '0.7rem',
+  letterSpacing: '0',
+  textTransform: 'none',
+  color: 'textDim',
+  marginTop: '0.5',
+})
+
 function AboutPage() {
   return (
     <div className={pageClass}>
@@ -129,79 +140,121 @@ function AboutPage() {
                 <td>15:00</td>
               </tr>
               <tr>
-                <td>GMT / BST</td>
+                <td>
+                  GMT / BST
+                  <span className={tzSubClass}>UK &amp; Ireland · UTC+0/+1</span>
+                </td>
                 <td>06:00 / 07:00</td>
                 <td>15:00 / 16:00</td>
               </tr>
               <tr>
-                <td>CET / CEST</td>
+                <td>
+                  CET / CEST
+                  <span className={tzSubClass}>Central Europe · UTC+1/+2</span>
+                </td>
                 <td>07:00 / 08:00</td>
                 <td>16:00 / 17:00</td>
               </tr>
               <tr>
-                <td>WAT</td>
+                <td>
+                  WAT
+                  <span className={tzSubClass}>West Africa · UTC+1, no DST</span>
+                </td>
                 <td>07:00</td>
                 <td>16:00</td>
               </tr>
               <tr>
-                <td>SAST</td>
+                <td>
+                  SAST
+                  <span className={tzSubClass}>South Africa · UTC+2, no DST</span>
+                </td>
                 <td>08:00</td>
                 <td>17:00</td>
               </tr>
               <tr>
-                <td>EAT</td>
+                <td>
+                  EAT
+                  <span className={tzSubClass}>East Africa · UTC+3, no DST</span>
+                </td>
                 <td>09:00</td>
                 <td>18:00</td>
               </tr>
               <tr>
-                <td>ET</td>
+                <td>
+                  ET
+                  <span className={tzSubClass}>US &amp; Canada East · UTC−5/−4</span>
+                </td>
                 <td>01:00 / 02:00</td>
                 <td>10:00 / 11:00</td>
               </tr>
               <tr>
-                <td>CT</td>
+                <td>
+                  CT
+                  <span className={tzSubClass}>US &amp; Canada Central · UTC−6/−5</span>
+                </td>
                 <td>00:00 / 01:00</td>
                 <td>09:00 / 10:00</td>
               </tr>
               <tr>
-                <td>MT</td>
-                <td>23:00* / 00:00</td>
+                <td>
+                  MT
+                  <span className={tzSubClass}>US &amp; Canada Mountain · UTC−7/−6</span>
+                </td>
+                <td>23:00* / midnight</td>
                 <td>08:00 / 09:00</td>
               </tr>
               <tr>
-                <td>PT</td>
+                <td>
+                  PT
+                  <span className={tzSubClass}>US &amp; Canada West · UTC−8/−7</span>
+                </td>
                 <td>22:00* / 23:00*</td>
                 <td>07:00 / 08:00</td>
               </tr>
               <tr>
-                <td>IST</td>
+                <td>
+                  IST
+                  <span className={tzSubClass}>India · UTC+5:30, no DST</span>
+                </td>
                 <td>11:30</td>
                 <td>20:30</td>
               </tr>
               <tr>
-                <td>SGT / PHT / AWST</td>
+                <td>
+                  SGT / PHT
+                  <span className={tzSubClass}>Singapore &amp; Philippines · UTC+8, no DST</span>
+                </td>
                 <td>14:00</td>
                 <td>23:00</td>
               </tr>
               <tr>
-                <td>AEST / AEDT</td>
+                <td>
+                  AWST
+                  <span className={tzSubClass}>Perth, Australia · UTC+8, no DST</span>
+                </td>
+                <td>14:00</td>
+                <td>23:00</td>
+              </tr>
+              <tr>
+                <td>
+                  AEST / AEDT
+                  <span className={tzSubClass}>Eastern Australia · UTC+10/+11</span>
+                </td>
                 <td>16:00 / 17:00</td>
                 <td>01:00† / 02:00†</td>
               </tr>
               <tr>
-                <td>NZST / NZDT</td>
+                <td>
+                  NZST / NZDT
+                  <span className={tzSubClass}>New Zealand · UTC+12/+13</span>
+                </td>
                 <td>18:00 / 19:00</td>
                 <td>03:00† / 04:00†</td>
               </tr>
             </tbody>
           </table>
           <p className={tableNoteClass}>
-            Two values = standard / daylight saving time. GMT=UTC+0, BST=UTC+1; CET=UTC+1,
-            CEST=UTC+2; WAT=UTC+1 (West Africa, no DST); SAST=UTC+2 (South Africa, no DST);
-            EAT=UTC+3 (East Africa, no DST); ET=UTC−5/−4; CT=UTC−6/−5; MT=UTC−7/−6; PT=UTC−8/−7;
-            IST=UTC+5:30 (India, no DST); SGT/PHT/AWST=UTC+8 (Singapore, Philippines, Perth — no
-            DST); AEST=UTC+10, AEDT=UTC+11; NZST=UTC+12, NZDT=UTC+13. * Previous evening. †
-            Following day.
+            Two values = standard / daylight saving time. * Previous evening. † Following day.
           </p>
         </div>
 
