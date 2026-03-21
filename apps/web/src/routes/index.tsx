@@ -1,4 +1,10 @@
-import { createFileRoute, redirect, useNavigate, useSearch } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  redirect,
+  useNavigate,
+  useRouter,
+  useSearch,
+} from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import type { Category, Slot, Story } from '@tidel/api'
 import { useEffect, useRef, useState } from 'react'
@@ -12,7 +18,7 @@ import { SkeletonCard } from '../components/SkeletonCard.js'
 import { SlotSwitcher } from '../components/SlotSwitcher.js'
 import { StoryList } from '../components/StoryList.js'
 import { createServerTrpcCaller } from '../trpc.js'
-import { isAfternoonAvailable } from '../utils.js'
+import { isAfternoonAvailable, msUntilNextEdition } from '../utils.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 const contentClass = css({ maxWidth: '1400px', mx: 'auto', px: '8', py: '12' })
@@ -91,27 +97,46 @@ const fetchTodaysEdition = createServerFn({ method: 'GET' })
 
 function IndexPage() {
   const navigate = useNavigate({ from: '/' })
+  const router = useRouter()
   const { category: activeCategory, slot: activeSlot } = useSearch({ from: '/' })
   const data: Story[] | null = Route.useLoaderData()
 
   const seenEditionDate = useRef<string | null>(null)
+  const seenSlot = useRef<string | null>(null)
   const [showBanner, setShowBanner] = useState(false)
+
+  // Poll for new editions: invalidate the loader at the next scheduled build time
+  useEffect(() => {
+    const ms = msUntilNextEdition()
+    const timer = setTimeout(() => {
+      void router.invalidate()
+    }, ms)
+    return () => clearTimeout(timer)
+  }, [router])
 
   useEffect(() => {
     if (!data || data.length === 0) {
       return
     }
     const firstId = data[0]?.id ?? ''
+    // Slot changed — reset tracking without showing the banner
+    if (seenSlot.current !== null && seenSlot.current !== activeSlot) {
+      seenEditionDate.current = firstId
+      seenSlot.current = activeSlot
+      setShowBanner(false)
+      return
+    }
+    seenSlot.current = activeSlot
     if (seenEditionDate.current === null) {
       seenEditionDate.current = firstId
     } else if (seenEditionDate.current !== firstId) {
       setShowBanner(true)
     }
-  }, [data])
+  }, [data, activeSlot])
 
   function handleBannerRefresh() {
     setShowBanner(false)
-    seenEditionDate.current = null
+    seenEditionDate.current = data?.[0]?.id ?? null
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 

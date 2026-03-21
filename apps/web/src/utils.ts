@@ -18,12 +18,18 @@ export function getEditionDate(): Date {
 
 export function msUntilNextEdition(): number {
   const now = new Date()
-  const next = new Date()
-  next.setUTCHours(6, 0, 0, 0)
-  if (next <= now) {
-    next.setUTCDate(next.getUTCDate() + 1)
+  const morning = new Date()
+  morning.setUTCHours(6, 0, 0, 0)
+  if (morning > now) {
+    return morning.getTime() - now.getTime()
   }
-  return next.getTime() - now.getTime()
+  const afternoon = new Date()
+  afternoon.setUTCHours(15, 0, 0, 0)
+  if (afternoon > now) {
+    return afternoon.getTime() - now.getTime()
+  }
+  morning.setUTCDate(morning.getUTCDate() + 1)
+  return morning.getTime() - now.getTime()
 }
 
 /**
