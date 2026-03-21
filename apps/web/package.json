@@ -39,7 +39,7 @@
     "@vitejs/plugin-react": "6.0.1",
     "fontaine": "0.8.0",
     "happy-dom": "20.8.4",
-    "vite": "8.0.0",
+    "vite": "8.0.1",
     "vitest": "4.1.0"
   }
 }
