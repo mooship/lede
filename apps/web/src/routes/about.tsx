@@ -14,7 +14,7 @@ const pageTitleClass = css({
   color: 'textPrimary',
   letterSpacing: '-0.03em',
   lineHeight: '1.1',
-  margin: '0 0 0.5rem 0',
+  marginBottom: '4',
 })
 
 const subtitleClass = css({
@@ -22,10 +22,10 @@ const subtitleClass = css({
   fontSize: '1rem',
   fontStyle: 'italic',
   color: 'textMuted',
-  margin: '0 0 14 0',
+  marginBottom: '12',
 })
 
-const sectionClass = css({ marginBottom: '12' })
+const sectionClass = css({ marginBottom: '14' })
 
 const headingClass = css({
   fontFamily: 'display',
@@ -34,7 +34,7 @@ const headingClass = css({
   letterSpacing: '0.15em',
   textTransform: 'uppercase',
   color: 'textMuted',
-  margin: '0 0 4 0',
+  marginBottom: '4',
 })
 
 const bodyClass = css({
@@ -42,7 +42,7 @@ const bodyClass = css({
   fontSize: '1.1rem',
   color: 'textSecondary',
   lineHeight: '1.85',
-  margin: '0 0 4 0',
+  marginBottom: '4',
 })
 
 const editionTableClass = css({
@@ -135,6 +135,38 @@ function AboutPage() {
             </thead>
             <tbody>
               <tr>
+                <td>
+                  PT
+                  <span className={tzSubClass}>US &amp; Canada West · UTC−8/−7</span>
+                </td>
+                <td>22:00* / 23:00*</td>
+                <td>07:00 / 08:00</td>
+              </tr>
+              <tr>
+                <td>
+                  MT
+                  <span className={tzSubClass}>US &amp; Canada Mountain · UTC−7/−6</span>
+                </td>
+                <td>23:00* / midnight</td>
+                <td>08:00 / 09:00</td>
+              </tr>
+              <tr>
+                <td>
+                  CT
+                  <span className={tzSubClass}>US &amp; Canada Central · UTC−6/−5</span>
+                </td>
+                <td>00:00 / 01:00</td>
+                <td>09:00 / 10:00</td>
+              </tr>
+              <tr>
+                <td>
+                  ET
+                  <span className={tzSubClass}>US &amp; Canada East · UTC−5/−4</span>
+                </td>
+                <td>01:00 / 02:00</td>
+                <td>10:00 / 11:00</td>
+              </tr>
+              <tr>
                 <td>UTC</td>
                 <td>06:00</td>
                 <td>15:00</td>
@@ -178,38 +210,6 @@ function AboutPage() {
                 </td>
                 <td>09:00</td>
                 <td>18:00</td>
-              </tr>
-              <tr>
-                <td>
-                  ET
-                  <span className={tzSubClass}>US &amp; Canada East · UTC−5/−4</span>
-                </td>
-                <td>01:00 / 02:00</td>
-                <td>10:00 / 11:00</td>
-              </tr>
-              <tr>
-                <td>
-                  CT
-                  <span className={tzSubClass}>US &amp; Canada Central · UTC−6/−5</span>
-                </td>
-                <td>00:00 / 01:00</td>
-                <td>09:00 / 10:00</td>
-              </tr>
-              <tr>
-                <td>
-                  MT
-                  <span className={tzSubClass}>US &amp; Canada Mountain · UTC−7/−6</span>
-                </td>
-                <td>23:00* / midnight</td>
-                <td>08:00 / 09:00</td>
-              </tr>
-              <tr>
-                <td>
-                  PT
-                  <span className={tzSubClass}>US &amp; Canada West · UTC−8/−7</span>
-                </td>
-                <td>22:00* / 23:00*</td>
-                <td>07:00 / 08:00</td>
               </tr>
               <tr>
                 <td>
