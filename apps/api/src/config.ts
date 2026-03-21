@@ -31,6 +31,7 @@ export const FEEDS: Record<Category, string[]> = {
   ],
   Sport: [
     'https://feeds.bbci.co.uk/sport/rss.xml',
+    'https://www.espn.com/espn/rss/news',
     'https://www.lemonde.fr/en/sports/rss_full.xml',
   ],
 }
