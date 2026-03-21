@@ -6,6 +6,7 @@ export const FEEDS: Record<Category, string[]> = {
     'https://rss.dw.com/rdf/rss-en-world',
     'https://feeds.npr.org/1004/rss.xml',
     'https://www.lemonde.fr/en/international/rss_full.xml',
+    'https://www.sbs.com.au/news/topic/world/feed',
   ],
   Technology: [
     'https://feeds.arstechnica.com/arstechnica/index',
@@ -22,7 +23,8 @@ export const FEEDS: Record<Category, string[]> = {
   ],
   'Business / Economy': [
     'https://feeds.bbci.co.uk/news/business/rss.xml',
-    'https://www.independent.co.uk/news/business/rss',
+    'https://feeds.npr.org/1006/rss.xml',
+    'https://rss.dw.com/rdf/rss-en-bus',
     'https://www.lemonde.fr/en/economy/rss_full.xml',
   ],
   Sport: [
@@ -30,6 +32,7 @@ export const FEEDS: Record<Category, string[]> = {
     'https://www.france24.com/en/sport/rss',
     'https://www.lemonde.fr/en/sports/rss_full.xml',
     'https://www.espn.com/espn/rss/news',
+    'https://rss.dw.com/rdf/rss-en-sports',
   ],
   Culture: [
     'https://hyperallergic.com/feed/',
@@ -37,6 +40,7 @@ export const FEEDS: Record<Category, string[]> = {
     'https://www.avclub.com/rss',
     'https://www.france24.com/en/culture/rss',
     'https://www.lemonde.fr/en/culture/rss_full.xml',
+    'https://rss.dw.com/rdf/rss-en-cul',
   ],
 }
 
