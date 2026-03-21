@@ -20,22 +20,19 @@ Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`
 
 > **Before running any command**, ensure dependencies are installed: `npm install`
 
-> **Moon requires internet on first run** to cache its WASM plugins. Run the workspace commands below when online, or use the per-project commands directly as a fallback.
+> **Moon requires internet on first run** to cache its WASM plugins. In restrictive environments where Moon fails, use the per-project commands directly:
+> - **Lint**: `./node_modules/.bin/biome check .` (from repo root)
+> - **Typecheck** (`apps/api`): `cd apps/api && npx tsc --noEmit`
+> - **Typecheck** (`apps/web`): `cd apps/web && npx panda codegen --silent && npx tsc --noEmit`
+> - **Test**: `cd apps/api && npx vitest run` and `cd apps/web && npx vitest run`
 
 ```bash
-# All workspaces (Moon — preferred when online)
+# All workspaces
 npm run dev          # moon run :dev (starts wrangler dev + vite concurrently)
 npm run build        # moon run :build
 npm run test         # moon run :test
 npm run lint         # moon run :lint (Biome --write)
 npm run typecheck    # moon run :typecheck
-
-# Per-project — always work, no Moon required
-./node_modules/.bin/biome check .                                        # lint (from repo root)
-cd apps/api && npx tsc --noEmit                                          # typecheck API
-cd apps/web && npx panda codegen --silent && npx tsc --noEmit            # typecheck web
-cd apps/api && npx vitest run                                            # test API
-cd apps/web && npx vitest run                                            # test web
 
 # Single test file
 cd apps/api && npx vitest run src/pipeline.test.ts
