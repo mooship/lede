@@ -191,6 +191,9 @@ export const Route = createFileRoute('/edition/$date')({
         { property: 'og:title', content: `${formattedDate} — Tidel` },
         { property: 'og:description', content: `Tidel news digest for ${formattedDate}.` },
         { property: 'og:url', content: editionUrl },
+        { name: 'twitter:card', content: 'summary' },
+        { name: 'twitter:title', content: `${formattedDate} — Tidel` },
+        { name: 'twitter:description', content: `Tidel news digest for ${formattedDate}.` },
       ],
       links: [{ rel: 'canonical', href: editionUrl }],
     }

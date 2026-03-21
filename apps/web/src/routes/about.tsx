@@ -117,8 +117,28 @@ export const Route = createFileRoute('/about')({
           "How Tidel works: a free, ad-free daily news digest built in South Africa that curates and summarises the day's most significant stories.",
       },
       { property: 'og:url', content: `${import.meta.env.VITE_APP_URL ?? ''}/about` },
+      { name: 'twitter:card', content: 'summary' },
+      { name: 'twitter:title', content: 'About — Tidel' },
+      {
+        name: 'twitter:description',
+        content:
+          "How Tidel works: a free, ad-free daily news digest built in South Africa that curates and summarises the day's most significant stories.",
+      },
     ],
     links: [{ rel: 'canonical', href: `${import.meta.env.VITE_APP_URL ?? ''}/about` }],
+    scripts: [
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'Tidel',
+          url: import.meta.env.VITE_APP_URL ?? '',
+          description:
+            'A free, ad-free daily news digest that curates and summarises the most significant stories every morning and afternoon.',
+        }),
+      },
+    ],
   }),
   component: AboutPage,
 })

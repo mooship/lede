@@ -7,6 +7,8 @@ import { createTrpcClient, trpc } from '../trpc.js'
 const DESCRIPTION =
   'A free, ad-free daily news digest. Every morning, Tidel curates the most significant stories across world news, technology, science, business, and sport.'
 
+const APP_URL = import.meta.env.VITE_APP_URL ?? ''
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -20,6 +22,18 @@ export const Route = createRootRoute({
       { name: 'twitter:card', content: 'summary' },
       { name: 'twitter:title', content: 'Tidel — Daily News Digest' },
       { name: 'twitter:description', content: DESCRIPTION },
+    ],
+    scripts: [
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Tidel',
+          url: APP_URL,
+          description: DESCRIPTION,
+        }),
+      },
     ],
   }),
   component: Root,

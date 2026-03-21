@@ -218,6 +218,13 @@ export const Route = createFileRoute('/')({
           "Today's most significant stories across world news, technology, science, business, and sport — curated and summarised every morning and afternoon.",
       },
       { property: 'og:url', content: import.meta.env.VITE_APP_URL ?? '' },
+      { name: 'twitter:card', content: 'summary' },
+      { name: 'twitter:title', content: "Tidel — Today's News Digest" },
+      {
+        name: 'twitter:description',
+        content:
+          "Today's most significant stories across world news, technology, science, business, and sport — curated and summarised every morning and afternoon.",
+      },
     ],
     links: [{ rel: 'canonical', href: import.meta.env.VITE_APP_URL ?? '' }],
   }),

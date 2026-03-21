@@ -205,11 +205,31 @@ export const Route = createFileRoute('/story/$id')({
         { property: 'og:type', content: 'article' },
         { property: 'og:url', content: storyUrl },
         ...(story.pubDate ? [{ property: 'article:published_time', content: story.pubDate }] : []),
+        { property: 'article:section', content: story.category },
         { name: 'twitter:card', content: 'summary' },
         { name: 'twitter:title', content: title },
         { name: 'twitter:description', content: description },
       ],
       links: [{ rel: 'canonical', href: storyUrl }],
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'NewsArticle',
+            headline: story.title,
+            description: story.description ?? story.summary ?? '',
+            url: storyUrl,
+            ...(story.pubDate ? { datePublished: story.pubDate } : {}),
+            articleSection: story.category,
+            publisher: {
+              '@type': 'Organization',
+              name: 'Tidel',
+              url: import.meta.env.VITE_APP_URL ?? '',
+            },
+          }),
+        },
+      ],
     }
   },
   component: StoryPage,

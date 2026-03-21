@@ -156,6 +156,12 @@ export const Route = createFileRoute('/archive')({
         content: 'Browse past daily editions of the Tidel news digest.',
       },
       { property: 'og:url', content: `${import.meta.env.VITE_APP_URL ?? ''}/archive` },
+      { name: 'twitter:card', content: 'summary' },
+      { name: 'twitter:title', content: 'Archive — Tidel' },
+      {
+        name: 'twitter:description',
+        content: 'Browse past daily editions of the Tidel news digest.',
+      },
     ],
     links: [{ rel: 'canonical', href: `${import.meta.env.VITE_APP_URL ?? ''}/archive` }],
   }),
