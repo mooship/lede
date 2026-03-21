@@ -92,7 +92,7 @@ ${entries}
 </feed>`
 }
 
-function rowsToStories(rows: typeof schema.stories.$inferSelect[]): Story[] {
+function rowsToStories(rows: (typeof schema.stories.$inferSelect)[]): Story[] {
   return rows.map((r) => ({
     id: r.id,
     editionDate: r.editionDate,
@@ -171,12 +171,7 @@ app.get('/feed.xml', async (c) => {
     db
       .select()
       .from(schema.stories)
-      .where(
-        and(
-          eq(schema.stories.editionDate, ed.date),
-          eq(schema.stories.editionSlot, ed.slot),
-        ),
-      )
+      .where(and(eq(schema.stories.editionDate, ed.date), eq(schema.stories.editionSlot, ed.slot)))
       .orderBy(schema.stories.position)
 
   const morningRows = await fetchRows(morningEdition)
