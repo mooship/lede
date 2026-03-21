@@ -95,7 +95,7 @@ describe('editionStaleTime', () => {
   it('returns time until next edition when data is present', () => {
     vi.setSystemTime(new Date('2024-03-06T10:00:00Z'))
     const result = editionStaleTime({ state: { data: [{ id: '1' }] } })
-    const expected = 5 * 60 * 60 * 1000 // next is afternoon at 15:00 UTC
+    const expected = 5 * 60 * 60 * 1000
     expect(Math.abs(result - expected)).toBeLessThan(1000)
   })
 })

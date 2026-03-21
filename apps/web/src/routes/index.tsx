@@ -105,7 +105,6 @@ function IndexPage() {
   const seenSlot = useRef<string | null>(null)
   const [showBanner, setShowBanner] = useState(false)
 
-  // Poll for new editions: invalidate the loader at the next scheduled build time
   useEffect(() => {
     const ms = msUntilNextEdition()
     const timer = setTimeout(() => {
@@ -119,7 +118,6 @@ function IndexPage() {
       return
     }
     const firstId = data[0]?.id ?? ''
-    // Slot changed — reset tracking without showing the banner
     if (seenSlot.current !== null && seenSlot.current !== activeSlot) {
       seenEditionDate.current = firstId
       seenSlot.current = activeSlot
