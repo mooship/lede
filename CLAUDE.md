@@ -99,7 +99,7 @@ cd apps/web && npm run deploy
 3. Filter junk — regex patterns for promo codes, coupons, sponsored content
 4. Deduplicate — normalise titles (lowercase, strip punctuation), drop substring matches
 5. Select — single cross-category Claude prompt picks ~15 stories total (min 2, max 5 per category); Claude decides the split based on newsworthiness. Fallback (no API key): top stories per category by source score then `pubDate`
-6. Summarise — `Promise.all` → Anthropic `claude-haiku-4-5-20251001` if `ANTHROPIC_API_KEY` set, else raw RSS description. ~150 words, British English. Curation uses `claude-sonnet-4-6`.
+6. Summarise — `Promise.all` → Anthropic `claude-haiku-4-5-20251001` if `ANTHROPIC_API_KEY` set, else raw RSS description. ~200 words, British English. Curation uses `claude-sonnet-4-6`.
 7. Persist — sequential `db.insert` for `editions` then `stories` (neon-http has no transaction support)
 
 ### tRPC router (`apps/api/src/router.ts`)
