@@ -2,7 +2,7 @@
 
 ## What is Tidel
 
-A daily news digest that fetches RSS feeds across five categories, summarises each story with Claude Sonnet, and publishes a ~12-story morning edition and ~9-story afternoon edition per day. Morning builds at 04:00 UTC, afternoon at 12:00 UTC via Cloudflare Worker cron triggers.
+A daily news digest that fetches RSS feeds across six categories, summarises each story with Claude Haiku, and publishes a ~15-story morning edition and ~12-story afternoon edition per day. Morning builds at 04:00 UTC, afternoon at 12:00 UTC via Cloudflare Worker cron triggers.
 
 ## Monorepo structure
 
@@ -109,6 +109,21 @@ cd apps/web && npm run deploy
 
 Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified in `context.ts` using `crypto.subtle.timingSafeEqual`.
 
+To trigger a build via curl, send the input as a plain JSON object (no tRPC `json` wrapper):
+```bash
+# Trigger build
+curl -X POST https://api.tidel.app/trpc/edition.build \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <ADMIN_SECRET>" \
+  -d '{"slot":"morning"}'
+
+# Force rebuild (overwrites existing edition)
+curl -X POST https://api.tidel.app/trpc/edition.build \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <ADMIN_SECRET>" \
+  -d '{"force":true,"slot":"morning"}'
+```
+
 ### Web client (`apps/web`)
 
 - **TanStack Start** (SSR) with `@cloudflare/vite-plugin` — renders server-side on a Cloudflare Worker, not a static SPA
@@ -124,14 +139,14 @@ Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified
 
 ### DB schema (`packages/db/src/schema.ts`)
 
-- `editions(date PK, built_at)`
-- `stories(id uuid PK, edition_date FK, title, description, summary, category, link, pub_date, source, position)` — indexes on `edition_date` and `category`; unique constraint on `link`
+- `editions(date, slot PK, built_at, feed_stats)`
+- `stories(id uuid PK, edition_date+edition_slot FK, title, description, summary, category, link, pub_date, source, position)` — indexes on `(edition_date, edition_slot)` and `category`; unique constraint on `(link, edition_date)`
 
 `createDb(connectionString)` uses `drizzle-orm/neon-http` — no transactions, no connection pooling.
 
 ## RSS feeds (`apps/api/src/config.ts`)
 
-Five categories: World, Technology, Science, Business/Economy, Sport. Feed count is deliberately capped to stay within Cloudflare Workers' free-plan subrequest limit (50 per invocation). The budget is roughly: 26 feeds + 15 Claude summarisation calls + 1 curation call + 3 Neon HTTP calls = ~45 subrequests. Do not add feeds without checking the budget.
+Six categories: World, Technology, Science, Business/Economy, Sport, Culture. Feed count is deliberately capped to stay within Cloudflare Workers' free-plan subrequest limit (50 per invocation). The budget is roughly: 27 feeds + 15 Claude summarisation calls + 1 curation call + 3 Neon HTTP calls = ~46 subrequests. Do not add feeds without checking the budget.
 
 ## Testing
 
@@ -149,6 +164,7 @@ Web tests (`apps/web`) use vitest + happy-dom with `@testing-library/react`. No 
 - **PandaCSS `styled-system/`** is gitignored and generated at build time — `panda codegen --silent` runs before `tsc` and `vite` in every script. The `prepare` hook also runs it on `npm install`.
 - **CORS** origin callback in Hono uses `resolveCorsOrigin(origin, c.env.WEB_ORIGIN)` from `src/cors.ts`; `WEB_ORIGIN` supports comma-separated URLs
 - **`ADMIN_SECRET`** must be at least 32 characters — enforced by Zod (`validateEnv`) on every request
+- **After resetting the DB** (drop/recreate tables), migrations must be re-run with `drizzle-kit migrate` before the pipeline will work again
 - **routeTree.gen.ts** is regenerated on every `vite dev` start — commit it after adding new routes
 
 ## Library docs
