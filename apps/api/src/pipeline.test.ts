@@ -410,11 +410,9 @@ describe('buildEdition', () => {
   })
 
   it('idempotency is slot-specific: morning edition does not prevent afternoon build', async () => {
-    // First call to findFirst (afternoon idempotency check) returns undefined
     mockFindFirst.mockResolvedValue(undefined)
     vi.mocked(fetchFeed).mockResolvedValue([goodStory])
     await buildEdition(mockEnv, 'afternoon')
-    // Should proceed to fetch feeds
     expect(fetchFeed).toHaveBeenCalled()
   })
 
@@ -455,7 +453,7 @@ describe('buildEdition', () => {
   it('afternoon build excludes links present in morning stories', async () => {
     const morningLink = 'https://bbc.com/climate'
     mockSelectWhere.mockResolvedValueOnce([{ link: morningLink }])
-    vi.mocked(fetchFeed).mockResolvedValue([goodStory]) // goodStory.link === morningLink
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
     await buildEdition(mockEnv, 'afternoon')
     expect(mockDb.insert).not.toHaveBeenCalled()
   })
