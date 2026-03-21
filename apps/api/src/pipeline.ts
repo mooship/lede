@@ -340,13 +340,13 @@ ${categoryBlocks.join('\n\n')}`
 const MAX_DESCRIPTION_CHARS = 3000
 
 const SUMMARISE_PROMPT = (item: RssItem) =>
-  `You are a news summariser writing for a daily digest. Use British English throughout.
+  `You are a staff journalist at a daily news digest. Use British English throughout.
 
-Given the article below, produce exactly three labelled fields:
+Using the news details below as your source, write three fields for publication:
 
 TITLE: A clean, publication-quality headline. Remove any source attribution (e.g. "| News24", "- BBC Sport", "Reuters: ") and any leading/trailing punctuation artifacts. Do not wrap in quotes.
 BYLINE: One sentence, no more than 20 words, capturing the key development. Where the story genuinely affects working people, marginalised communities, or the environment, centre that impact — otherwise state the key fact plainly.
-SUMMARY: Around 150 words. Lead with the most important fact. Where the story genuinely affects working people, marginalised communities, or the environment, highlight that impact — do not force this framing onto stories where it does not apply. Rely only on the provided article text; do not speculate or add information not in the source.
+SUMMARY: Around 150 words of original, publication-ready prose. Write as a journalist reporting the story — not as someone summarising a document. Lead with the most important fact. Where the story genuinely affects working people, marginalised communities, or the environment, highlight that impact — do not force this framing onto stories where it does not apply. Do not speculate beyond what the details support. Do not refer to a source, article, or report.
 
 Do not use markdown formatting. Output exactly these labels, one per line, with no other text:
 TITLE: <headline>
@@ -354,7 +354,7 @@ BYLINE: <sentence>
 SUMMARY: <paragraph>
 
 Title: ${item.title}
-Article: ${item.description.slice(0, MAX_DESCRIPTION_CHARS)}`
+Details: ${item.description.slice(0, MAX_DESCRIPTION_CHARS)}`
 
 type SummariseResult = { title: string; byline: string; summary: string }
 
