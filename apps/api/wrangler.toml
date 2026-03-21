@@ -4,6 +4,9 @@ compatibility_date = "2026-03-20"
 workers_dev        = true
 preview_urls       = true
 
+[placement]
+mode = "smart"
+
 [triggers]
 crons = ["0 6 * * *", "0 15 * * *"]
 
