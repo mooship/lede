@@ -1,6 +1,6 @@
 # Tidel
 
-A daily news digest. Cloudflare Worker crons build a morning edition at 06:00 UTC and an afternoon edition at 15:00 UTC, fetching RSS feeds across five categories and summarising each story with Claude. The frontend presents each edition as a newspaper-style grid with full story detail pages.
+A daily news digest. Cloudflare Worker crons build a morning edition at 06:00 UTC and an afternoon edition at 15:00 UTC, fetching RSS feeds across six categories and summarising each story with Claude. The frontend presents each edition as a newspaper-style grid with full story detail pages.
 
 ## Stack
 
