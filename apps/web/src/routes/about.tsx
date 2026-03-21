@@ -99,6 +99,12 @@ const tzOffsetClass = css({
   marginLeft: '1.5',
 })
 
+const inlineLinkClass = css({
+  color: 'textSecondary',
+  textDecoration: 'underline',
+  textUnderlineOffset: '2px',
+})
+
 const tableNoteClass = css({
   fontFamily: 'body',
   fontSize: '0.8rem',
@@ -233,7 +239,12 @@ function AboutPage() {
             No cookies, no personal data, no tracking. The only analytics are Cloudflare Web
             Analytics — cookieless and privacy-respecting. Requests are processed by Cloudflare's
             infrastructure; see{' '}
-            <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noreferrer">
+            <a
+              href="https://www.cloudflare.com/privacypolicy/"
+              target="_blank"
+              rel="noreferrer"
+              className={inlineLinkClass}
+            >
               Cloudflare's privacy policy
             </a>{' '}
             for details.

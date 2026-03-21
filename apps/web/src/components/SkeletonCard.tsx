@@ -1,19 +1,16 @@
 import { css } from '../../styled-system/css'
 
 const cardClass = css({
-  borderBottom: '1px solid',
-  borderColor: 'border',
-  borderLeft: '3px solid',
-  borderLeftColor: 'border',
-  padding: '6 8',
+  bg: 'surface',
+  padding: '6',
   display: 'flex',
   flexDirection: 'column',
   gap: '3',
-  bg: 'bg',
+  minHeight: '120px',
 })
 
 const shimmerBase = css({
-  bg: 'surface',
+  bg: 'surfaceHigh',
   borderRadius: '2px',
 })
 
@@ -28,14 +25,11 @@ const pulseStyle: React.CSSProperties = {
 
 export function SkeletonCard() {
   return (
-    <>
-      <style>{`@keyframes tidel-pulse{0%,100%{opacity:1}50%{opacity:.35}}`}</style>
-      <div className={cardClass} aria-hidden="true">
-        <div className={`${shimmerBase} ${badge}`} style={pulseStyle} />
-        <div className={`${shimmerBase} ${line1}`} style={pulseStyle} />
-        <div className={`${shimmerBase} ${line2}`} style={pulseStyle} />
-        <div className={`${shimmerBase} ${source}`} style={pulseStyle} />
-      </div>
-    </>
+    <div className={cardClass} aria-hidden="true">
+      <div className={`${shimmerBase} ${badge}`} style={pulseStyle} />
+      <div className={`${shimmerBase} ${line1}`} style={pulseStyle} />
+      <div className={`${shimmerBase} ${line2}`} style={pulseStyle} />
+      <div className={`${shimmerBase} ${source}`} style={pulseStyle} />
+    </div>
   )
 }

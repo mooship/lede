@@ -16,7 +16,8 @@ const pageTitleClass = css({
   color: 'textPrimary',
   letterSpacing: '-0.03em',
   lineHeight: '1.1',
-  margin: '0 0 8 0',
+  margin: '0',
+  marginBottom: '8',
 })
 
 const listClass = css({ listStyle: 'none', padding: '0', margin: '0' })

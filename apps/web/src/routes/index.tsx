@@ -231,6 +231,7 @@ export const Route = createFileRoute('/')({
   pendingComponent: () => (
     <div className={pageClass}>
       <Masthead />
+      <SlotSwitcher activeSlot="morning" onSlotChange={() => {}} afternoonAvailable={false} />
       <main>
         <div className={skeletonGridClass} data-testid="loading-skeleton">
           {skeletonKeys.map((id) => (
