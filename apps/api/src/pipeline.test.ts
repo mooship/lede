@@ -410,11 +410,9 @@ describe('buildEdition', () => {
   })
 
   it('idempotency is slot-specific: morning edition does not prevent afternoon build', async () => {
-    // First call to findFirst (afternoon idempotency check) returns undefined
     mockFindFirst.mockResolvedValue(undefined)
     vi.mocked(fetchFeed).mockResolvedValue([goodStory])
-    await buildEdition(mockEnv, false, 'afternoon')
-    // Should proceed to fetch feeds
+    await buildEdition(mockEnv, 'afternoon')
     expect(fetchFeed).toHaveBeenCalled()
   })
 
@@ -427,7 +425,7 @@ describe('buildEdition', () => {
 
   it('inserts slot field in edition and stories for morning', async () => {
     vi.mocked(fetchFeed).mockResolvedValue([goodStory])
-    await buildEdition(mockEnv, false, 'morning')
+    await buildEdition(mockEnv, 'morning')
     const editionInsertCall = mockInsertValues.mock.calls[0]
     expect(editionInsertCall?.[0]).toMatchObject({ slot: 'morning' })
     const storiesInsertCall = mockInsertValues.mock.calls[1]
@@ -437,7 +435,7 @@ describe('buildEdition', () => {
 
   it('inserts slot field as afternoon for afternoon build', async () => {
     vi.mocked(fetchFeed).mockResolvedValue([goodStory])
-    await buildEdition(mockEnv, false, 'afternoon')
+    await buildEdition(mockEnv, 'afternoon')
     const editionInsertCall = mockInsertValues.mock.calls[0]
     expect(editionInsertCall?.[0]).toMatchObject({ slot: 'afternoon' })
     const storiesInsertCall = mockInsertValues.mock.calls[1]
@@ -447,7 +445,7 @@ describe('buildEdition', () => {
 
   it('afternoon build queries morning stories for cross-slot dedup', async () => {
     vi.mocked(fetchFeed).mockResolvedValue([goodStory])
-    await buildEdition(mockEnv, false, 'afternoon')
+    await buildEdition(mockEnv, 'afternoon')
     expect(mockDb.select).toHaveBeenCalled()
     expect(mockSelectWhere).toHaveBeenCalled()
   })
@@ -455,15 +453,14 @@ describe('buildEdition', () => {
   it('afternoon build excludes links present in morning stories', async () => {
     const morningLink = 'https://bbc.com/climate'
     mockSelectWhere.mockResolvedValueOnce([{ link: morningLink }])
-    vi.mocked(fetchFeed).mockResolvedValue([goodStory]) // goodStory.link === morningLink
-    await buildEdition(mockEnv, false, 'afternoon')
-    // The only story was in morning, so nothing to insert
+    vi.mocked(fetchFeed).mockResolvedValue([goodStory])
+    await buildEdition(mockEnv, 'afternoon')
     expect(mockDb.insert).not.toHaveBeenCalled()
   })
 
   it('morning build does not query morning stories for dedup', async () => {
     vi.mocked(fetchFeed).mockResolvedValue([goodStory])
-    await buildEdition(mockEnv, false, 'morning')
+    await buildEdition(mockEnv, 'morning')
     expect(mockDb.select).not.toHaveBeenCalled()
   })
 
@@ -523,12 +520,12 @@ describe('buildEdition', () => {
     expect(insertedStories[0]?.title).toBe('Climate summit ends in agreement')
   })
 
-  it('deletes existing edition and rebuilds when force=true', async () => {
+  it('returns early without rebuilding when edition already exists', async () => {
     vi.mocked(fetchFeed).mockResolvedValue([goodStory])
     mockFindFirst.mockResolvedValue({ date: '2024-01-01', slot: 'morning', builtAt: new Date() })
-    await buildEdition(mockEnv, true, 'morning')
-    expect(mockDb.delete).toHaveBeenCalled()
-    expect(mockDb.insert).toHaveBeenCalled()
+    await buildEdition(mockEnv, 'morning')
+    expect(mockDb.delete).not.toHaveBeenCalled()
+    expect(mockDb.insert).not.toHaveBeenCalled()
   })
 
   it('purges Cloudflare cache after a successful build', async () => {
