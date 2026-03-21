@@ -21,7 +21,7 @@ type EditionEntry = { date: string; slot: string; storyCount: number }
 
 async function renderArchive(loaderData: EditionEntry[]) {
   vi.spyOn(Route, 'useLoaderData').mockReturnValue(loaderData)
-  const ArchivePage = (Route as any).component as React.ComponentType
+  const ArchivePage = (Route as unknown as { component: React.ComponentType }).component
   render(<ArchivePage />)
 }
 
