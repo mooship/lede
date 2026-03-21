@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@trpc/server": "latest"
+    "@trpc/server": "11.13.4"
   },
   "scripts": {
     "lint": "biome check --write ."

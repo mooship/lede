@@ -12,22 +12,22 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "latest",
+    "@anthropic-ai/sdk": "0.79.0",
     "@tidel/api": "*",
     "@tidel/db": "*",
-    "@hono/trpc-server": "latest",
-    "@neondatabase/serverless": "latest",
-    "@trpc/server": "latest",
-    "drizzle-orm": "latest",
+    "@hono/trpc-server": "0.4.2",
+    "@neondatabase/serverless": "1.0.2",
+    "@trpc/server": "11.13.4",
+    "drizzle-orm": "0.45.1",
     "fast-xml-parser": "^5.5.7",
-    "hono": "latest",
-    "ofetch": "latest",
+    "hono": "4.12.8",
+    "ofetch": "1.5.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "latest",
+    "@cloudflare/workers-types": "4.20260317.1",
     "@tidel/tsconfig": "*",
-    "vitest": "latest",
-    "wrangler": "latest"
+    "vitest": "4.1.0",
+    "wrangler": "4.75.0"
   }
 }
