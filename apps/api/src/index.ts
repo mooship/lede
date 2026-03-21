@@ -61,7 +61,7 @@ function buildAtomFeed(stories: Story[], title: string, selfUrl: string, appUrl:
   const entries = stories
     .map((s) => {
       const pubDate = s.pubDate ? new Date(s.pubDate).toISOString() : new Date().toISOString()
-      const summary = (s.description ?? s.summary)
+      const content = (s.summary ?? s.description ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -74,7 +74,7 @@ function buildAtomFeed(stories: Story[], title: string, selfUrl: string, appUrl:
     <published>${pubDate}</published>
     <updated>${pubDate}</updated>
     <category term="${s.category}" />
-    <summary>${summary}</summary>
+    <content type="text">${content}</content>
   </entry>`
     })
     .join('\n')
