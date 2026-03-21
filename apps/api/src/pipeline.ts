@@ -314,7 +314,7 @@ Using the news details below as your source, write three fields for publication:
 
 TITLE: A clean, publication-quality headline. Remove any source attribution (e.g. "| News24", "- BBC Sport", "Reuters: ") and any leading/trailing punctuation artifacts. Do not wrap in quotes.
 BYLINE: One sentence, no more than 20 words, capturing the key development. Where the story genuinely affects working people, marginalised communities, or the environment, centre that impact — otherwise state the key fact plainly.
-SUMMARY: 150–250 words of original, publication-ready prose. Write as a journalist reporting the story — not as someone summarising a document. Lead with the most important fact. Where the story genuinely affects working people, marginalised communities, or the environment, highlight that impact — do not force this framing onto stories where it does not apply. Do not speculate beyond what the details support. Do not refer to a source, article, or report.
+SUMMARY: Original, publication-ready prose — as long as the story warrants, no longer. Write as a journalist reporting the story — not as someone summarising a document. Lead with the most important fact. Cover what matters; omit filler, padding, and repetition. Where the story genuinely affects working people, marginalised communities, or the environment, highlight that impact — do not force this framing onto stories where it does not apply. Do not speculate beyond what the details support. Do not refer to a source, article, or report.
 
 Do not use markdown formatting. Output exactly these labels, one per line, with no other text:
 TITLE: <headline>
