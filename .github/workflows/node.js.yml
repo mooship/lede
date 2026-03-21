@@ -14,19 +14,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24.x
           cache: "npm"
       - run: npm ci
-      - name: Cache Turbo
-        uses: actions/cache@v5
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
-      - run: npm run build --if-present
-      - run: npm test --if-present
+      - run: npx moon ci :build :test
