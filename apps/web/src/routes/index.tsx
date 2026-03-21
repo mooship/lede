@@ -74,7 +74,7 @@ const skeletonGridClass = css({
 
 const searchSchema = z.object({
   category: z
-    .enum(['All', 'World', 'Technology', 'Science', 'Business / Economy', 'Sport'])
+    .enum(['All', 'World', 'Technology', 'Science', 'Business / Economy', 'Sport', 'Culture'])
     .optional()
     .default('All'),
   slot: z
