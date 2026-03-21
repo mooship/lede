@@ -44,6 +44,7 @@ const coffeeClass = css({
   alignItems: 'center',
   minHeight: '44px',
   px: '1',
+  ml: '3',
   opacity: '0.85',
   _hover: { opacity: '1' },
 })
@@ -82,7 +83,7 @@ export function Footer() {
       <div className={linksClass}>
         {ALL_LINKS.map(({ label, ...link }, i) => (
           <React.Fragment key={label}>
-            {i > 0 && (
+            {i > 0 && !('highlight' in link && link.highlight) && (
               <span className={separatorClass} aria-hidden="true">
                 ·
               </span>
