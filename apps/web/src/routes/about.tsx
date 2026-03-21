@@ -129,19 +129,29 @@ function AboutPage() {
                 <td>15:00</td>
               </tr>
               <tr>
-                <td>CET / CEST</td>
-                <td>07:00 / 08:00</td>
-                <td>16:00 / 17:00</td>
-              </tr>
-              <tr>
                 <td>GMT / BST</td>
                 <td>06:00 / 07:00</td>
                 <td>15:00 / 16:00</td>
               </tr>
               <tr>
+                <td>CET / CEST</td>
+                <td>07:00 / 08:00</td>
+                <td>16:00 / 17:00</td>
+              </tr>
+              <tr>
+                <td>WAT</td>
+                <td>07:00</td>
+                <td>16:00</td>
+              </tr>
+              <tr>
                 <td>SAST</td>
                 <td>08:00</td>
                 <td>17:00</td>
+              </tr>
+              <tr>
+                <td>EAT</td>
+                <td>09:00</td>
+                <td>18:00</td>
               </tr>
               <tr>
                 <td>ET</td>
@@ -154,16 +164,44 @@ function AboutPage() {
                 <td>09:00 / 10:00</td>
               </tr>
               <tr>
+                <td>MT</td>
+                <td>23:00* / 00:00</td>
+                <td>08:00 / 09:00</td>
+              </tr>
+              <tr>
                 <td>PT</td>
                 <td>22:00* / 23:00*</td>
                 <td>07:00 / 08:00</td>
               </tr>
+              <tr>
+                <td>IST</td>
+                <td>11:30</td>
+                <td>20:30</td>
+              </tr>
+              <tr>
+                <td>SGT / PHT / AWST</td>
+                <td>14:00</td>
+                <td>23:00</td>
+              </tr>
+              <tr>
+                <td>AEST / AEDT</td>
+                <td>16:00 / 17:00</td>
+                <td>01:00† / 02:00†</td>
+              </tr>
+              <tr>
+                <td>NZST / NZDT</td>
+                <td>18:00 / 19:00</td>
+                <td>03:00† / 04:00†</td>
+              </tr>
             </tbody>
           </table>
           <p className={tableNoteClass}>
-            Times with two values show winter / summer (DST). CET = UTC+1, CEST = UTC+2; GMT =
-            UTC+0, BST = UTC+1; SAST = UTC+2 (no DST); ET = UTC−5/−4; CT = UTC−6/−5; PT = UTC−8/−7.
-            *PT morning is the previous evening.
+            Two values = standard / daylight saving time. GMT=UTC+0, BST=UTC+1; CET=UTC+1,
+            CEST=UTC+2; WAT=UTC+1 (West Africa, no DST); SAST=UTC+2 (South Africa, no DST);
+            EAT=UTC+3 (East Africa, no DST); ET=UTC−5/−4; CT=UTC−6/−5; MT=UTC−7/−6; PT=UTC−8/−7;
+            IST=UTC+5:30 (India, no DST); SGT/PHT/AWST=UTC+8 (Singapore, Philippines, Perth — no
+            DST); AEST=UTC+10, AEDT=UTC+11; NZST=UTC+12, NZDT=UTC+13. * Previous evening. †
+            Following day.
           </p>
         </div>
 
