@@ -25,18 +25,21 @@ export const FEEDS: Record<Category, string[]> = {
   ],
   'Business / Economy': [
     'https://feeds.bbci.co.uk/news/business/rss.xml',
-    'https://www.thenation.com/subject/economy/feed/',
-    'https://tribunemag.co.uk/feed',
+    'https://www.cnbc.com/id/10001147/device/rss/rss.html',
+    'https://feeds.propublica.org/propublica/main',
     'https://www.lemonde.fr/en/economy/rss_full.xml',
   ],
   Sport: [
     'https://feeds.bbci.co.uk/sport/rss.xml',
     'https://www.france24.com/en/sport/rss',
     'https://www.lemonde.fr/en/sports/rss_full.xml',
+    'https://www.skysports.com/rss/12040',
+    'https://www.espn.com/espn/rss/news',
   ],
   Culture: [
     'https://hyperallergic.com/feed/',
     'https://pitchfork.com/rss/news/',
+    'https://www.avclub.com/rss',
     'https://www.france24.com/en/culture/rss',
     'https://www.lemonde.fr/en/culture/rss_full.xml',
   ],
