@@ -45,6 +45,54 @@ const bodyClass = css({
   margin: '0 0 4 0',
 })
 
+const editionTableClass = css({
+  fontFamily: 'body',
+  fontSize: '0.95rem',
+  color: 'textSecondary',
+  borderCollapse: 'collapse',
+  width: '100%',
+  marginTop: '4',
+  '& th': {
+    fontFamily: 'display',
+    fontWeight: '700',
+    fontSize: '0.65rem',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    color: 'textMuted',
+    textAlign: 'left',
+    paddingBottom: '2',
+    borderBottom: '1px solid',
+    borderColor: 'border',
+  },
+  '& td': {
+    paddingTop: '2',
+    paddingBottom: '2',
+    borderBottom: '1px solid',
+    borderColor: 'border',
+    verticalAlign: 'middle',
+  },
+  '& td:first-child': {
+    fontFamily: 'display',
+    fontWeight: '700',
+    fontSize: '0.8rem',
+    letterSpacing: '0.05em',
+    color: 'textMuted',
+    paddingRight: '8',
+    whiteSpace: 'nowrap',
+  },
+  '& tr:last-child td': {
+    borderBottom: 'none',
+  },
+})
+
+const tableNoteClass = css({
+  fontFamily: 'body',
+  fontSize: '0.8rem',
+  color: 'textMuted',
+  marginTop: '3',
+  fontStyle: 'italic',
+})
+
 function AboutPage() {
   return (
     <div className={pageClass}>
@@ -66,12 +114,56 @@ function AboutPage() {
 
         <div className={sectionClass}>
           <h2 className={headingClass}>When do editions appear?</h2>
-          <p className={bodyClass}>Two editions go live each day:</p>
-          <p className={bodyClass}>
-            <strong>Morning</strong> — 06:00 UTC · 07:00 CET / 08:00 CEST · 06:00 GMT / 07:00 BST
-          </p>
-          <p className={bodyClass}>
-            <strong>Afternoon</strong> — 15:00 UTC · 16:00 CET / 17:00 CEST · 15:00 GMT / 16:00 BST
+          <table className={editionTableClass}>
+            <thead>
+              <tr>
+                <th>Zone</th>
+                <th>Morning</th>
+                <th>Afternoon</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>UTC</td>
+                <td>06:00</td>
+                <td>15:00</td>
+              </tr>
+              <tr>
+                <td>CET / CEST</td>
+                <td>07:00 / 08:00</td>
+                <td>16:00 / 17:00</td>
+              </tr>
+              <tr>
+                <td>GMT / BST</td>
+                <td>06:00 / 07:00</td>
+                <td>15:00 / 16:00</td>
+              </tr>
+              <tr>
+                <td>SAST</td>
+                <td>08:00</td>
+                <td>17:00</td>
+              </tr>
+              <tr>
+                <td>ET</td>
+                <td>01:00 / 02:00</td>
+                <td>10:00 / 11:00</td>
+              </tr>
+              <tr>
+                <td>CT</td>
+                <td>00:00 / 01:00</td>
+                <td>09:00 / 10:00</td>
+              </tr>
+              <tr>
+                <td>PT</td>
+                <td>22:00* / 23:00*</td>
+                <td>07:00 / 08:00</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className={tableNoteClass}>
+            Times with two values show winter / summer (DST). CET = UTC+1, CEST = UTC+2; GMT =
+            UTC+0, BST = UTC+1; SAST = UTC+2 (no DST); ET = UTC−5/−4; CT = UTC−6/−5; PT = UTC−8/−7.
+            *PT morning is the previous evening.
           </p>
         </div>
 
