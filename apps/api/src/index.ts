@@ -55,12 +55,19 @@ app.use(
   }),
 )
 
-function buildAtomFeed(stories: Story[], title: string, selfUrl: string, appUrl: string): string {
-  const updated = stories[0]?.pubDate ?? new Date().toISOString()
+type FeedStory = Story & { builtAt: Date }
+
+function buildAtomFeed(
+  stories: FeedStory[],
+  title: string,
+  selfUrl: string,
+  appUrl: string,
+): string {
+  const updated = stories[0]?.builtAt.toISOString() ?? new Date().toISOString()
 
   const entries = stories
     .map((s) => {
-      const pubDate = s.pubDate ? new Date(s.pubDate).toISOString() : new Date().toISOString()
+      const pubDate = s.builtAt.toISOString()
       const content = (s.summary ?? s.description ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -139,7 +146,11 @@ app.get('/feed.xml', async (c) => {
       .orderBy(schema.stories.position)
     const slotLabel = slotParam === 'afternoon' ? 'Afternoon' : 'Morning'
     const selfUrl = `${appUrl}/feed.xml?slot=${slotParam}`
-    const xml = buildAtomFeed(rowsToStories(rows), `Tidel — ${slotLabel} Edition`, selfUrl, appUrl)
+    const feedStories: FeedStory[] = rowsToStories(rows).map((s) => ({
+      ...s,
+      builtAt: edition.builtAt,
+    }))
+    const xml = buildAtomFeed(feedStories, `Tidel — ${slotLabel} Edition`, selfUrl, appUrl)
     return c.text(xml, 200, {
       'Content-Type': 'application/atom+xml; charset=utf-8',
       'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
@@ -175,9 +186,15 @@ app.get('/feed.xml', async (c) => {
 
   const morningRows = await fetchRows(morningEdition)
   const afternoonRows = afternoonEdition ? await fetchRows(afternoonEdition) : []
-  const stories = [...rowsToStories(morningRows), ...rowsToStories(afternoonRows)]
+  const morning: FeedStory[] = rowsToStories(morningRows).map((s) => ({
+    ...s,
+    builtAt: morningEdition.builtAt,
+  }))
+  const afternoon: FeedStory[] = afternoonEdition
+    ? rowsToStories(afternoonRows).map((s) => ({ ...s, builtAt: afternoonEdition.builtAt }))
+    : []
 
-  const xml = buildAtomFeed(stories, 'Tidel', `${appUrl}/feed.xml`, appUrl)
+  const xml = buildAtomFeed([...morning, ...afternoon], 'Tidel', `${appUrl}/feed.xml`, appUrl)
   return c.text(xml, 200, {
     'Content-Type': 'application/atom+xml; charset=utf-8',
     'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
