@@ -207,7 +207,7 @@ function getCurationConfig(slot: 'morning' | 'afternoon'): CurationConfig {
   }
   return {
     target: TARGET_STORY_COUNT,
-    min: MIN_STORIES_PER_CATEGORY * 5,
+    min: MIN_STORIES_PER_CATEGORY * Object.keys(FEEDS).length,
     max: TARGET_STORY_COUNT,
     maxPerCat: MAX_STORIES_PER_CATEGORY,
     minPerCat: MIN_STORIES_PER_CATEGORY,
@@ -282,8 +282,9 @@ Editorial criteria by category:
 - Science: Select discoveries, studies, and space/climate developments with broad significance.
 - Business / Economy: Select macroeconomic policy, central bank decisions, major corporate news, and market-moving events. Skip personal finance tips and stock picks.
 - Sport: Only select results from major international competitions (World Cup, Olympics, Grand Slams, Champions League, major league finals) or significant breaking news. Skip routine match results, transfer rumours, and roundup articles that merely list results without a specific story.
+- Culture: Select significant events in art, music, film, literature, and media — major releases, awards, institutional news, censorship, and cultural policy. Prefer stories with political or social significance. Skip celebrity gossip, reality TV, and commercial entertainment news.
 
-Exclude across all categories: food, lifestyle, travel, entertainment, opinion columns, human-interest stories, promotional content, and roundup/recap articles that aggregate multiple events without a clear central news development (e.g. "Day One results", "weekly roundup", "all the winners").
+Exclude across all categories: food, lifestyle, travel, celebrity gossip, opinion columns, human-interest stories, promotional content, and roundup/recap articles that aggregate multiple events without a clear central news development (e.g. "Day One results", "weekly roundup", "all the winners").
 
 Respond with ONLY a JSON array of story numbers, e.g. [1, 3, 5, 7]. No explanation, no markdown fences, no preamble.
 
