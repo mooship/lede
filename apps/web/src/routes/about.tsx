@@ -86,7 +86,12 @@ function AboutPage() {
           <h2 className={headingClass}>Privacy</h2>
           <p className={bodyClass}>
             No cookies, no personal data, no tracking. The only analytics are Cloudflare Web
-            Analytics — cookieless and privacy-respecting.
+            Analytics — cookieless and privacy-respecting. Requests are processed by Cloudflare's
+            infrastructure; see{' '}
+            <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noreferrer">
+              Cloudflare's privacy policy
+            </a>{' '}
+            for details.
           </p>
         </div>
       </main>
