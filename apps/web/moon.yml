@@ -1,0 +1,45 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+tasks:
+  codegen:
+    command: 'panda codegen --silent'
+    inputs:
+      - 'panda.config.ts'
+      - 'src/**/*.{ts,tsx}'
+    outputs:
+      - 'styled-system/**'
+
+  build:
+    command: 'vite build'
+    deps:
+      - '~:codegen'
+    inputs:
+      - 'src/**/*.{ts,tsx}'
+      - 'index.html'
+      - 'vite.config.ts'
+    outputs:
+      - 'dist/**'
+
+  dev:
+    command: 'vite dev'
+    deps:
+      - '~:codegen'
+    preset: 'server'
+
+  test:
+    command: 'vitest run'
+    inputs:
+      - 'src/**/*.{ts,tsx}'
+
+  lint:
+    command: 'biome check --write .'
+    inputs:
+      - 'src/**/*.{ts,tsx}'
+      - 'biome.json'
+      - '/*.json'
+
+  typecheck:
+    command: 'tsc --noEmit'
+    inputs:
+      - 'src/**/*.{ts,tsx}'
+      - 'tsconfig.json'

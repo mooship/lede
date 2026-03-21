@@ -13,7 +13,7 @@ A daily news digest. Cloudflare Worker crons build a morning edition at 04:00 UT
 | Curation | Anthropic Claude Sonnet |
 | Auth | Static `ADMIN_SECRET` bearer token |
 | Frontend | React + TanStack Start (SSR) + TanStack Router |
-| Monorepo | Turborepo + npm workspaces |
+| Monorepo | Moon + npm workspaces |
 | Linter | Biome |
 
 ## Workspaces

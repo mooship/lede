@@ -1,0 +1,30 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+tasks:
+  build:
+    command: 'tsc --noEmit'
+    inputs:
+      - 'src/**/*.ts'
+      - 'tsconfig.json'
+
+  dev:
+    command: 'wrangler dev --test-scheduled'
+    preset: 'server'
+
+  test:
+    command: 'vitest run'
+    inputs:
+      - 'src/**/*.ts'
+
+  lint:
+    command: 'biome check --write .'
+    inputs:
+      - 'src/**/*.ts'
+      - 'biome.json'
+      - '/*.json'
+
+  typecheck:
+    command: 'tsc --noEmit'
+    inputs:
+      - 'src/**/*.ts'
+      - 'tsconfig.json'

@@ -24,15 +24,15 @@ Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`
 
 ```bash
 # All workspaces
-npm run dev          # turbo dev (starts wrangler dev + vite concurrently)
-npm run build        # turbo build
-npm run test         # turbo test
-npm run lint         # turbo lint (Biome --write)
-npm run typecheck    # turbo typecheck
+npm run dev          # moon run :dev (starts wrangler dev + vite concurrently)
+npm run build        # moon run :build
+npm run test         # moon run :test
+npm run lint         # moon run :lint (Biome --write)
+npm run typecheck    # moon run :typecheck
 
-# Single workspace
-npm run test --workspace=apps/api
-npm run test --workspace=apps/web
+# Single project (moon run <project>:<task>)
+npx moon run api-worker:test
+npx moon run web:test
 
 # Single test file
 cd apps/api && npx vitest run src/pipeline.test.ts
@@ -147,7 +147,7 @@ Web tests (`apps/web`) use vitest + happy-dom with `@testing-library/react`. No 
 
 ## Key gotchas
 
-- **Turbo v2** uses `tasks` in `turbo.json`, not `pipeline`
+- **Moon** task runner replaces Turbo — config lives in `.moon/workspace.yml`, `.moon/toolchain.yml`, and per-project `moon.yml` files. Run tasks with `moon run <project>:<task>` or `moon run :<task>` for all projects.
 - **Neon HTTP driver** does not support transactions — use sequential inserts
 - **Wrangler local dev** does not have `DOMParser` — XML parsing uses `fast-xml-parser`
 - **Fontaine** is the `fontaine` npm package (unjs), not `vite-plugin-fontaine` (doesn't exist)

@@ -7,17 +7,17 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "test": "turbo test",
-    "lint": "turbo lint",
-    "typecheck": "turbo typecheck",
+    "dev": "moon run :dev",
+    "build": "moon run :build",
+    "test": "moon run :test",
+    "lint": "moon run :lint",
+    "typecheck": "moon run :typecheck",
     "prepare": "lefthook install || true"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
+    "@moonrepo/cli": "^2.1.1",
     "lefthook": "^2.1.4",
-    "turbo": "latest",
     "typescript": "latest"
   }
 }

@@ -1,0 +1,11 @@
+$schema: 'https://moonrepo.dev/schemas/workspace.json'
+
+projects:
+  tsconfig: 'packages/tsconfig'
+  api: 'packages/api'
+  db: 'packages/db'
+  api-worker: 'apps/api'
+  web: 'apps/web'
+
+vcs:
+  defaultBranch: main
