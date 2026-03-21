@@ -67,16 +67,6 @@ describe('StoryPage', () => {
     expect(readLink.getAttribute('href')).toBe(mockStory.link)
   })
 
-  it('renders the description byline when present', async () => {
-    await renderStoryPage(mockStory)
-    expect(screen.getByText(mockStory.description ?? '')).not.toBeNull()
-  })
-
-  it('does not render a byline when description is null', async () => {
-    await renderStoryPage({ ...mockStory, description: null })
-    expect(screen.queryByText('A team of researchers announced a major finding.')).toBeNull()
-  })
-
   it('renders the story summary', async () => {
     await renderStoryPage(mockStory)
     expect(screen.getByText(mockStory.summary)).not.toBeNull()

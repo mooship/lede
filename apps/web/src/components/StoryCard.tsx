@@ -37,6 +37,15 @@ const titleClass = css({
   margin: '0',
 })
 
+const bylineClass = css({
+  fontFamily: 'body',
+  fontSize: '0.8rem',
+  color: 'textMuted',
+  lineHeight: '1.5',
+  margin: '0',
+  flexGrow: '1',
+})
+
 const footerClass = css({
   display: 'flex',
   alignItems: 'center',
@@ -74,6 +83,8 @@ export function StoryCard({ story, position }: Props) {
         </div>
 
         <h2 className={titleClass}>{story.title}</h2>
+
+        {story.description && <p className={bylineClass}>{story.description}</p>}
 
         <div className={footerClass}>
           <p className={sourceClass}>{story.source}</p>
