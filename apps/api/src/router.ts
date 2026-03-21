@@ -217,9 +217,27 @@ const editionRouter = router({
         slot: slotSchema.optional().default(() => currentSlot()),
       }),
     )
-    .mutation(({ ctx, input }): { ok: true } => {
-      ctx.executionCtx.waitUntil(buildEdition(ctx.env, input.force ?? false, input.slot))
-      return { ok: true }
+    .mutation(async ({ ctx, input }): Promise<{ ok: true; message: string }> => {
+      const db = createDb(ctx.env.DATABASE_URL)
+      const date = todayUTC()
+      const { slot, force } = input
+
+      const existing = await db.query.editions.findFirst({
+        where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)),
+      })
+
+      if (existing && !force) {
+        return {
+          ok: true,
+          message: `${slot} edition for ${date} already exists — skipping (pass force: true to rebuild)`,
+        }
+      }
+
+      ctx.executionCtx.waitUntil(buildEdition(ctx.env, force ?? false, slot))
+      return {
+        ok: true,
+        message: `${force ? 'Force-rebuilding' : 'Building'} ${slot} edition for ${date}`,
+      }
     }),
 })
 

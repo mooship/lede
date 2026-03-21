@@ -173,7 +173,7 @@ describe('edition.build', () => {
     const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.build({ slot: 'afternoon' })
     expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), false, 'afternoon')
-    expect(result).toEqual({ ok: true })
+    expect(result).toMatchObject({ ok: true, message: expect.any(String) })
   })
 
   it('defaults to morning slot when not specified', async () => {
