@@ -57,19 +57,10 @@ const storyTitleClass = css({
   fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
   color: 'textPrimary',
   lineHeight: '1.2',
-  margin: '0 0 2rem 0',
+  margin: '0 0 1.5rem 0',
   letterSpacing: '-0.02em',
   borderLeft: '4px solid',
   paddingLeft: '5',
-})
-
-const bylineClass = css({
-  fontFamily: 'body',
-  fontSize: '1.1rem',
-  fontStyle: 'italic',
-  color: 'textMuted',
-  lineHeight: '1.7',
-  margin: '0 0 1.5rem 0',
 })
 
 const summaryClass = css({
@@ -148,8 +139,6 @@ function StoryPage() {
         <h1 className={storyTitleClass} style={{ borderLeftColor: accentVar }}>
           {story.title}
         </h1>
-
-        {story.description && <p className={bylineClass}>{story.description}</p>}
 
         <p className={summaryClass}>{story.summary}</p>
 
