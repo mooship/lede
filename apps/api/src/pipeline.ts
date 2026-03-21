@@ -340,15 +340,15 @@ ${categoryBlocks.join('\n\n')}`
 const MAX_DESCRIPTION_CHARS = 3000
 
 const SUMMARISE_PROMPT = (item: RssItem) =>
-  `You are a news summariser writing for a daily digest. Use British English throughout. Use past tense throughout.
+  `You are a news summariser writing for a daily digest. Use British English throughout.
 
 Given the article below, produce exactly three labelled fields:
 
 TITLE: A clean, publication-quality headline. Remove any source attribution (e.g. "| News24", "- BBC Sport", "Reuters: ") and any leading/trailing punctuation artifacts. Do not wrap in quotes.
-BYLINE: A single factual sentence of around 20 words that captures the key development from a progressive perspective, centring impacts on working people, marginalised communities, or the environment where relevant. Do not repeat the title or the opening sentence of the summary.
-SUMMARY: A summary of 100–200 words from a progressive perspective. Lead with the most important fact. Centre impacts on working people, marginalised communities, and the environment. Do not speculate.
+BYLINE: One sentence, no more than 20 words, capturing the key development. Where the story genuinely affects working people, marginalised communities, or the environment, centre that impact — otherwise state the key fact plainly.
+SUMMARY: Around 150 words. Lead with the most important fact. Where the story genuinely affects working people, marginalised communities, or the environment, highlight that impact — do not force this framing onto stories where it does not apply. Rely only on the provided article text; do not speculate or add information not in the source.
 
-Output format — use exactly these labels, one per line, with no other text:
+Do not use markdown formatting. Output exactly these labels, one per line, with no other text:
 TITLE: <headline>
 BYLINE: <sentence>
 SUMMARY: <paragraph>
