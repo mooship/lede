@@ -53,10 +53,17 @@ describe('msUntilNextEdition', () => {
     expect(msUntilNextEdition()).toBeGreaterThan(0)
   })
 
-  it('returns ~20 hours when current time is 10:00 UTC', () => {
+  it('returns ~5 hours when current time is 10:00 UTC (next is afternoon at 15:00)', () => {
     vi.setSystemTime(new Date('2024-03-06T10:00:00Z'))
     const ms = msUntilNextEdition()
-    const expected = 20 * 60 * 60 * 1000
+    const expected = 5 * 60 * 60 * 1000
+    expect(Math.abs(ms - expected)).toBeLessThan(1000)
+  })
+
+  it('returns ~15 hours when current time is 15:00 UTC (next is morning next day at 06:00)', () => {
+    vi.setSystemTime(new Date('2024-03-06T15:00:00Z'))
+    const ms = msUntilNextEdition()
+    const expected = 15 * 60 * 60 * 1000
     expect(Math.abs(ms - expected)).toBeLessThan(1000)
   })
 
@@ -88,7 +95,7 @@ describe('editionStaleTime', () => {
   it('returns time until next edition when data is present', () => {
     vi.setSystemTime(new Date('2024-03-06T10:00:00Z'))
     const result = editionStaleTime({ state: { data: [{ id: '1' }] } })
-    const expected = 20 * 60 * 60 * 1000
+    const expected = 5 * 60 * 60 * 1000
     expect(Math.abs(result - expected)).toBeLessThan(1000)
   })
 })
