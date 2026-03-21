@@ -45,6 +45,24 @@ export const Route = createRootRoute({
         title: 'Tidel — Afternoon Edition',
         href: `${API_URL}/feed.xml?slot=afternoon`,
       },
+      {
+        rel: 'alternate',
+        type: 'application/rss+xml',
+        title: 'Tidel',
+        href: `${API_URL}/rss.xml`,
+      },
+      {
+        rel: 'alternate',
+        type: 'application/rss+xml',
+        title: 'Tidel — Morning Edition',
+        href: `${API_URL}/rss.xml?slot=morning`,
+      },
+      {
+        rel: 'alternate',
+        type: 'application/rss+xml',
+        title: 'Tidel — Afternoon Edition',
+        href: `${API_URL}/rss.xml?slot=afternoon`,
+      },
     ],
     scripts: [
       {
