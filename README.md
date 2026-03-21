@@ -20,7 +20,7 @@ A daily news digest. Cloudflare Worker crons build a morning edition at 04:00 UT
 
 ```
 apps/api      — Cloudflare Worker (RSS pipeline + tRPC API)
-apps/web      — React frontend
+apps/web      — TanStack Start SSR app (Cloudflare Worker)
 packages/db   — Drizzle schema and db factory
 packages/api  — Shared types (Story, Category)
 packages/tsconfig — Shared TypeScript configs
@@ -28,12 +28,12 @@ packages/tsconfig — Shared TypeScript configs
 
 ## Local development
 
+See [CONTRIBUTING](.github/CONTRIBUTING.md) for full setup instructions. The short version:
+
 ```bash
 npm install
 npm run dev   # wrangler dev on :8787 + vite on :5173
 ```
-
-`apps/api/.dev.vars` and `apps/web/.env.development` are already configured for local dev. Use `apps/api/.dev.vars.example` as a reference if you need to recreate `.dev.vars`. Add an `ANTHROPIC_API_KEY` to `apps/api/.dev.vars` to enable Claude Sonnet summaries. Without it, the raw RSS description is used as the summary.
 
 ## Database migrations
 
@@ -74,9 +74,9 @@ WEB_ORIGIN=https://tidel.app
 
 This uploads the secrets to Cloudflare and deploys the worker in one step. The worker runs at `https://api.tidel.app` and is configured to build editions at 04:00 UTC (morning) and 12:00 UTC (afternoon) via cron triggers.
 
-### Frontend (Cloudflare Pages)
+### Web (Cloudflare Workers — SSR)
 
-Fill in `apps/web/.env.production`:
+The web app is a TanStack Start SSR application deployed as a Cloudflare Worker, not a static site. Set `VITE_API_URL` and `VITE_APP_URL` as Cloudflare Worker environment variables in the dashboard, or add them to `apps/web/.env.production` before building:
 
 ```
 VITE_API_URL=https://api.tidel.app
@@ -86,20 +86,10 @@ VITE_APP_URL=https://tidel.app
 Then build and deploy:
 
 ```bash
-cd apps/web && npm run build
-# upload dist/ to Cloudflare Pages
+cd apps/web && npm run deploy
 ```
 
-If you connect the Pages project to this git repository, set `VITE_API_URL` and `VITE_APP_URL` as environment variables in the Cloudflare Pages dashboard instead — the local `.env.production` file is not accessible during CI builds.
-
-## Other commands
-
-```bash
-npm run build       # full monorepo build
-npm run test        # vitest across all packages
-npm run lint        # biome check --write
-npm run typecheck   # tsc --noEmit across all packages
-```
+`API_URL` (used server-side) is already set in `wrangler.deploy.jsonc`. `VITE_API_URL` and `VITE_APP_URL` are embedded into the client bundle at build time.
 
 ## License
 
