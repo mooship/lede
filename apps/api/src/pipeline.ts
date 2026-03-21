@@ -381,12 +381,12 @@ function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult>
 
   if (env.ANTHROPIC_API_KEY) {
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
-    console.log('[summariser] Claude Sonnet')
+    console.log('[summariser] Claude Haiku')
     return async (item) => {
       try {
         return await withRetry(async () => {
           const msg = await client.messages.create({
-            model: 'claude-sonnet-4-6',
+            model: 'claude-haiku-4-5-20251001',
             max_tokens: 500,
             messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
           })
