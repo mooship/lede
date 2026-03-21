@@ -3,6 +3,8 @@
   "compatibility_date": "2026-03-20",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  "workers_dev": true,
+  "preview_urls": true,
   "vars": {
     "API_URL": "http://localhost:8787"
   }

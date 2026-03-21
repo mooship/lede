@@ -4,6 +4,8 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "dist/server/index.js",
   "assets": { "directory": "dist/client" },
+  "workers_dev": true,
+  "preview_urls": true,
   "vars": {
     "API_URL": "https://api.tidel.app"
   },
