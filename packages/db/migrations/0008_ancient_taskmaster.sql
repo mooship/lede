@@ -1,0 +1,1 @@
+ALTER TABLE "stories" DROP COLUMN "source_count";

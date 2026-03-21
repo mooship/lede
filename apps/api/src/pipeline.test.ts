@@ -14,7 +14,6 @@ import {
   isJunk,
   isRecentEnough,
   normaliseTitle,
-  scoreBySourceOverlap,
   withRetry,
 } from './pipeline.js'
 import type { RssItem } from './rss.js'
@@ -53,15 +52,13 @@ vi.mock('@tidel/db', () => ({
   schema: { editions: {}, stories: {} },
 }))
 
-type CategorisedItem = RssItem & { category: Category }
-
 function makeItem(
   title: string,
   category: Category = 'Technology',
   pubDate = '2024-01-01T00:00:00Z',
   description = 'some description',
   link = 'https://example.com',
-): CategorisedItem {
+): RssItem & { category: Category } {
   return { title, category, pubDate, description, link }
 }
 
@@ -127,117 +124,17 @@ describe('deduplicateByTitle', () => {
   })
 })
 
-describe('scoreBySourceOverlap', () => {
-  it('gives score 1 for a single-source story', () => {
-    const item = makeItem(
-      'AI safety breakthrough',
-      'Technology',
-      '2024-01-01T00:00:00Z',
-      'desc',
-      'https://ars.technica.com/article',
-    )
-    const scored = scoreBySourceOverlap([item], [item])
-    expect(scored[0]?.sourceScore).toBe(1)
-  })
-
-  it('gives score 3 for story matched by 3 distinct hostnames', () => {
-    const unique = makeItem(
-      'AI safety breakthrough',
-      'Technology',
-      '2024-01-01T00:00:00Z',
-      'desc',
-      'https://ars.technica.com/article',
-    )
-    const pool: CategorisedItem[] = [
-      makeItem(
-        'AI safety breakthrough',
-        'Technology',
-        '2024-01-01T00:00:00Z',
-        'desc',
-        'https://ars.technica.com/article',
-      ),
-      makeItem(
-        'AI safety breakthrough news',
-        'Technology',
-        '2024-01-01T00:00:00Z',
-        'desc',
-        'https://wired.com/article',
-      ),
-      makeItem(
-        'AI safety breakthrough report',
-        'Technology',
-        '2024-01-01T00:00:00Z',
-        'desc',
-        'https://theverge.com/article',
-      ),
-    ]
-    const scored = scoreBySourceOverlap(pool, [unique])
-    expect(scored[0]?.sourceScore).toBe(3)
-  })
-
-  it('gives score 1 when 2 pool items share the same hostname', () => {
-    const unique = makeItem(
-      'Major data breach',
-      'Technology',
-      '2024-01-01T00:00:00Z',
-      'desc',
-      'https://wired.com/a',
-    )
-    const pool: CategorisedItem[] = [
-      makeItem(
-        'Major data breach',
-        'Technology',
-        '2024-01-01T00:00:00Z',
-        'desc',
-        'https://wired.com/a',
-      ),
-      makeItem(
-        'Major data breach details',
-        'Technology',
-        '2024-01-01T00:00:00Z',
-        'desc',
-        'https://wired.com/b',
-      ),
-    ]
-    const scored = scoreBySourceOverlap(pool, [unique])
-    expect(scored[0]?.sourceScore).toBe(1)
-  })
-
-  it('skips pool items with unparseable links gracefully', () => {
-    const unique = makeItem(
-      'Story title',
-      'Technology',
-      '2024-01-01T00:00:00Z',
-      'desc',
-      'https://example.com/a',
-    )
-    const pool: CategorisedItem[] = [
-      makeItem('Story title', 'Technology', '2024-01-01T00:00:00Z', 'desc', 'not-a-valid-url'),
-      makeItem(
-        'Story title',
-        'Technology',
-        '2024-01-01T00:00:00Z',
-        'desc',
-        'https://example.com/a',
-      ),
-    ]
-    const scored = scoreBySourceOverlap(pool, [unique])
-    expect(scored[0]?.sourceScore).toBe(1)
-  })
-})
-
 describe('curateWithClaude', () => {
   function makeScoredItems(count: number, category: Category = 'Technology') {
-    return Array.from({ length: count }, (_, i) => ({
-      ...makeItem(
+    return Array.from({ length: count }, (_, i) =>
+      makeItem(
         `Story ${i + 1}`,
         category,
         `2024-01-0${i + 1}T00:00:00Z`,
         'desc',
         `https://source${i}.com`,
       ),
-      sourceScore: 1,
-    }))
+    )
   }
 
   it('returns Claude-selected items for happy path [1, 3, 5, 7]', async () => {
@@ -261,14 +158,14 @@ describe('curateWithClaude', () => {
     expect(result.filter((s) => s.category === 'Technology')).toHaveLength(4)
   })
 
-  it('falls back to score-sort when no JSON array in response', async () => {
+  it('falls back to date-sort when no JSON array in response', async () => {
     mockCreate.mockResolvedValueOnce({ content: [{ type: 'text', text: 'I cannot decide.' }] })
-    const scored = makeScoredItems(8).map((s, i) => ({ ...s, sourceScore: 8 - i }))
+    const scored = makeScoredItems(8)
     const env = { ANTHROPIC_API_KEY: 'test-key' } as Parameters<typeof curateWithClaude>[1]
     const result = await curateWithClaude(scored, env)
     const techResults = result.filter((s) => s.category === 'Technology')
     expect(techResults.length).toBeLessThanOrEqual(MAX_STORIES_PER_CATEGORY)
-    expect(techResults[0]?.title).toBe('Story 1')
+    expect(techResults[0]?.title).toBe('Story 8')
   })
 
   it('filters out-of-range indices and returns only valid selections', async () => {
@@ -295,15 +192,15 @@ describe('curateWithClaude', () => {
     expect(titles).toContain('Story 3')
   })
 
-  it('returns score-sorted fallback and makes no Anthropic call when no API key', async () => {
+  it('returns date-sorted fallback and makes no Anthropic call when no API key', async () => {
     mockCreate.mockClear()
-    const scored = makeScoredItems(8).map((s, i) => ({ ...s, sourceScore: 8 - i }))
+    const scored = makeScoredItems(8)
     const env = {} as Parameters<typeof curateWithClaude>[1]
     const result = await curateWithClaude(scored, env)
     expect(mockCreate).not.toHaveBeenCalled()
     const techResults = result.filter((s) => s.category === 'Technology')
     expect(techResults.length).toBeLessThanOrEqual(MAX_STORIES_PER_CATEGORY)
-    expect(techResults[0]?.title).toBe('Story 1')
+    expect(techResults[0]?.title).toBe('Story 8')
   })
 
   it('afternoon slot uses afternoon max per category', async () => {

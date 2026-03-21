@@ -32,7 +32,6 @@ const mockStory: Story = {
   pubDate: '2024-01-01T09:00:00Z',
   source: 'nature.com',
   position: 2,
-  sourceCount: 3,
 }
 
 async function renderStoryPage(story: Story | null) {
