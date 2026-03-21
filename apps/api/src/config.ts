@@ -5,7 +5,7 @@ export const FEEDS: Record<Category, string[]> = {
     'https://feeds.bbci.co.uk/news/world/rss.xml',
     'https://rss.dw.com/rdf/rss-en-world',
     'https://www.aljazeera.com/xml/rss/all.xml',
-    'https://www.pbs.org/newshour/feeds/rss/headlines',
+    'https://feeds.npr.org/1004/rss.xml',
     'https://www.independent.co.uk/news/world/rss',
     'https://www.lemonde.fr/en/international/rss_full.xml',
   ],
@@ -27,6 +27,7 @@ export const FEEDS: Record<Category, string[]> = {
     'https://feeds.bbci.co.uk/news/business/rss.xml',
     'https://www.cnbc.com/id/10001147/device/rss/rss.html',
     'https://feeds.propublica.org/propublica/main',
+    'https://www.independent.co.uk/news/business/rss',
     'https://www.lemonde.fr/en/economy/rss_full.xml',
   ],
   Sport: [

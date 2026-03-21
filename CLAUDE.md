@@ -139,7 +139,7 @@ curl -X POST https://api.tidel.app/trpc/edition.build \
 
 ## RSS feeds (`apps/api/src/config.ts`)
 
-Six categories: World, Technology, Science, Business/Economy, Sport, Culture. Feed count is deliberately capped to stay within Cloudflare Workers' free-plan subrequest limit (50 per invocation). The budget is roughly: 30 feeds + 15 Claude summarisation calls + 1 curation call + 3 Neon HTTP calls = ~49 subrequests. Do not add feeds without checking the budget.
+Six categories: World, Technology, Science, Business/Economy, Sport, Culture. Feed count is deliberately capped to stay within Cloudflare Workers' free-plan subrequest limit (50 per invocation). The budget is roughly: 31 feeds + 15 Claude summarisation calls + 1 curation call + 3 Neon HTTP calls = ~50 subrequests. Do not add feeds without checking the budget.
 
 ## Testing
 
