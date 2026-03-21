@@ -20,6 +20,7 @@ export const FEEDS: Record<Category, string[]> = {
     'https://www.nature.com/nature.rss',
     'https://www.france24.com/en/earth/rss',
     'https://www.lemonde.fr/en/science/rss_full.xml',
+    'https://rss.dw.com/xml/rss_en_science',
   ],
   'Business / Economy': [
     'https://feeds.bbci.co.uk/news/business/rss.xml',
