@@ -267,13 +267,13 @@ export async function curateWithClaude(
 
   const prompt = `You are a senior news editor curating a ${cfg.slotLabel} digest for an international audience.
 ${afternoonNote}
-You MUST select between ${cfg.min} and ${cfg.max} stories. Aim for exactly ${cfg.target}.
+You MUST select between ${cfg.min} and ${cfg.max} stories. Aim for exactly ${cfg.target}. Reaching the minimum of ${cfg.min} is a hard requirement — if you are struggling to reach it, relax your quality threshold and pick the best available stories from each category rather than selecting nothing.
 
 Source count is a strong signal of significance — a story covered by multiple outlets is more important than one covered by a single source. Prefer higher source counts when choosing between stories of similar newsworthiness.
 
 Rules:
 - At most ${cfg.maxPerCat} stories from any single category.
-- Include at least 1 story from each category, provided something newsworthy exists.
+- Include at least ${cfg.minPerCat} stories from each category, provided enough newsworthy stories exist.
 - Never select more than one story about the same event or topic. If multiple stories cover the same event, pick the one with the highest source count and skip the rest.
 
 Editorial criteria by category:
@@ -281,8 +281,8 @@ Editorial criteria by category:
 - Technology: Select significant product launches, regulatory actions, cybersecurity incidents, and industry shifts. Skip gadget reviews, app updates, and listicles.
 - Science: Select discoveries, studies, and space/climate developments with broad significance.
 - Business / Economy: Select macroeconomic policy, central bank decisions, major corporate news, and market-moving events. Skip personal finance tips and stock picks.
-- Sport: Only select results from major international competitions (World Cup, Olympics, Grand Slams, Champions League, major league finals) or significant breaking news. Skip routine match results, transfer rumours, and roundup articles that merely list results without a specific story.
-- Culture: Select significant events in art, music, film, literature, and media — major releases, awards, institutional news, censorship, and cultural policy. Prefer stories with political or social significance. Skip celebrity gossip, reality TV, and commercial entertainment news.
+- Sport: Select results from major competitions, world records, historically significant individual achievements, and significant breaking news (injuries, retirements, controversies). Skip routine match results, transfer rumours, and roundup articles that merely list results without a specific story.
+- Culture: Select significant events in art, music, film, literature, and media — major releases, awards, institutional news, notable deaths, censorship, and cultural policy. Skip celebrity gossip, reality TV, and commercial entertainment news.
 
 Exclude across all categories: food, lifestyle, travel, celebrity gossip, opinion columns, human-interest stories, promotional content, and roundup/recap articles that aggregate multiple events without a clear central news development (e.g. "Day One results", "weekly roundup", "all the winners").
 
