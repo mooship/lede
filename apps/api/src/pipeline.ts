@@ -346,7 +346,7 @@ Given the article below, produce exactly three labelled fields:
 
 TITLE: A clean, publication-quality headline. Remove any source attribution (e.g. "| News24", "- BBC Sport", "Reuters: ") and any leading/trailing punctuation artifacts. Do not wrap in quotes.
 BYLINE: A single factual sentence of around 20 words that captures the key development from a progressive perspective, centring impacts on working people, marginalised communities, or the environment where relevant. Do not repeat the title or the opening sentence of the summary.
-SUMMARY: A summary of 100–150 words from a progressive perspective. Lead with the most important fact. Centre impacts on working people, marginalised communities, and the environment. Do not speculate.
+SUMMARY: A summary of 100–200 words from a progressive perspective. Lead with the most important fact. Centre impacts on working people, marginalised communities, and the environment. Do not speculate.
 
 Output format — use exactly these labels, one per line, with no other text:
 TITLE: <headline>
