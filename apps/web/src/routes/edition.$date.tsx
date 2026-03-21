@@ -10,6 +10,7 @@ import { PageMessage } from '../components/PageMessage.js'
 import { SlotSwitcher } from '../components/SlotSwitcher.js'
 import { StoryList } from '../components/StoryList.js'
 import { createServerTrpcCaller } from '../trpc.js'
+import { isAfternoonAvailable } from '../utils.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 const storyWrapClass = css({ maxWidth: '1400px', mx: 'auto' })
@@ -70,10 +71,6 @@ function formatEditionDate(dateStr: string): string {
   })
 }
 
-function isAfternoonAvailable(): boolean {
-  return new Date().getUTCHours() >= 12
-}
-
 const fetchEditionByDate = createServerFn({ method: 'GET' })
   .inputValidator(z.object({ date: z.string(), slot: z.enum(['morning', 'afternoon']) }))
   .handler(async ({ data }): Promise<Story[] | null> => {
@@ -95,7 +92,7 @@ function EditionPage() {
     void navigate({ search: (prev) => ({ ...prev, slot }), replace: true })
   }
 
-  const afternoonAvailable = isAfternoonAvailable() || (activeSlot === 'afternoon' && data !== null)
+  const afternoonAvailable = isAfternoonAvailable()
 
   if (data == null) {
     return (

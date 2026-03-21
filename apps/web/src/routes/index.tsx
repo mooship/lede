@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate, useSearch } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import type { Category, Slot, Story } from '@tidel/api'
 import { useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { SkeletonCard } from '../components/SkeletonCard.js'
 import { SlotSwitcher } from '../components/SlotSwitcher.js'
 import { StoryList } from '../components/StoryList.js'
 import { createServerTrpcCaller } from '../trpc.js'
+import { isAfternoonAvailable } from '../utils.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 const contentClass = css({ maxWidth: '1400px', mx: 'auto', px: '8', py: '12' })
@@ -63,6 +64,8 @@ const bannerButtonClass = css({
   py: '1',
 })
 
+const skeletonKeys = [0, 1, 2, 3, 4, 5, 6, 7]
+
 const skeletonGridClass = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
@@ -79,10 +82,6 @@ const searchSchema = z.object({
     .optional()
     .default(() => (isAfternoonAvailable() ? 'afternoon' : 'morning')),
 })
-
-function isAfternoonAvailable(): boolean {
-  return new Date().getUTCHours() >= 12
-}
 
 const fetchTodaysEdition = createServerFn({ method: 'GET' })
   .inputValidator(z.object({ slot: z.enum(['morning', 'afternoon']) }))
@@ -124,7 +123,7 @@ function IndexPage() {
     void navigate({ search: (prev) => ({ ...prev, slot }), replace: true })
   }
 
-  const afternoonAvailable = isAfternoonAvailable() || (activeSlot === 'afternoon' && data !== null)
+  const afternoonAvailable = isAfternoonAvailable()
 
   if (data == null && activeSlot === 'afternoon') {
     return (
@@ -198,6 +197,11 @@ export default IndexPage
 
 export const Route = createFileRoute('/')({
   validateSearch: searchSchema,
+  beforeLoad: ({ search }) => {
+    if (search.slot === 'afternoon' && !isAfternoonAvailable()) {
+      throw redirect({ to: '/', search: { ...search, slot: 'morning' } })
+    }
+  },
   loaderDeps: ({ search }) => ({ slot: search.slot }),
   head: () => ({
     meta: [
@@ -222,8 +226,8 @@ export const Route = createFileRoute('/')({
       <Masthead />
       <main>
         <div className={skeletonGridClass} data-testid="loading-skeleton">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <SkeletonCard key={i} />
+          {skeletonKeys.map((id) => (
+            <SkeletonCard key={id} />
           ))}
         </div>
       </main>

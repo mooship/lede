@@ -544,9 +544,9 @@ describe('buildEdition', () => {
     await buildEdition(envWithCf)
     const cfCall = fetchSpy.mock.calls.find(([url]) => String(url).includes('cloudflare.com'))
     expect(cfCall).toBeDefined()
-    expect(String(cfCall![0])).toContain('zone-abc')
-    expect((cfCall![1] as RequestInit)?.method).toBe('DELETE')
-    expect((cfCall![1] as RequestInit)?.headers).toMatchObject({
+    expect(String(cfCall?.[0])).toContain('zone-abc')
+    expect((cfCall?.[1] as RequestInit)?.method).toBe('DELETE')
+    expect((cfCall?.[1] as RequestInit)?.headers).toMatchObject({
       Authorization: 'Bearer tok-xyz',
     })
     fetchSpy.mockRestore()

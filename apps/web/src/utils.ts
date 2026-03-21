@@ -1,3 +1,7 @@
+export function isAfternoonAvailable(): boolean {
+  return new Date().getUTCHours() >= 12
+}
+
 /**
  * Returns the reference date for the current edition.
  * Before 04:00 UTC (the morning build time) the previous day's edition is current.

@@ -69,7 +69,7 @@ describe('StoryPage', () => {
 
   it('renders the description byline when present', async () => {
     await renderStoryPage(mockStory)
-    expect(screen.getByText(mockStory.description!)).not.toBeNull()
+    expect(screen.getByText(mockStory.description ?? '')).not.toBeNull()
   })
 
   it('does not render a byline when description is null', async () => {

@@ -259,7 +259,7 @@ describe('edition.byDate', () => {
       slot: 'afternoon',
       builtAt: new Date(),
     })
-    const afternoonStory = { ...mockStories[0]!, editionSlot: 'afternoon', id: '2' }
+    const afternoonStory = { ...mockStories[0], editionSlot: 'afternoon', id: '2' }
     mockDb.orderBy.mockResolvedValue([afternoonStory])
     const router = await getRouter()
     const factory = createCallerFactory(router)
@@ -309,9 +309,9 @@ describe('edition.adminStatus', () => {
     const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.adminStatus()
     expect(result).not.toBeNull()
-    expect(result![0]!.feedStats).toBeNull()
-    expect(result![0]!.date).toBe('2024-01-01')
-    expect(result![0]!.builtAt).toBe(builtAt.toISOString())
+    expect(result?.[0]?.feedStats).toBeNull()
+    expect(result?.[0]?.date).toBe('2024-01-01')
+    expect(result?.[0]?.builtAt).toBe(builtAt.toISOString())
   })
 
   it('parses feedStats JSON string into an object', async () => {
@@ -334,7 +334,7 @@ describe('edition.adminStatus', () => {
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.adminStatus()
-    expect(result![0]!.feedStats).toEqual({
+    expect(result?.[0]?.feedStats).toEqual({
       'https://feed.example': 'ok',
       'https://bad.example': 'error',
     })
@@ -359,7 +359,7 @@ describe('edition.adminStatus', () => {
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.adminStatus()
-    expect(result![0]!.categoryBreakdown).toEqual({ Technology: 3, World: 4 })
+    expect(result?.[0]?.categoryBreakdown).toEqual({ Technology: 3, World: 4 })
   })
 })
 
