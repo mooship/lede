@@ -38,6 +38,7 @@ describe('PageHeader', () => {
   it('does not render a back link when backTo is not provided', () => {
     render(<PageHeader />)
     const links = screen.getAllByRole('link')
-    expect(links).toHaveLength(1)
+    const backLink = links.find((l) => l.textContent?.includes('Back'))
+    expect(backLink).toBeUndefined()
   })
 })

@@ -9,11 +9,14 @@ const DESCRIPTION =
 
 const APP_URL = import.meta.env.VITE_APP_URL ?? ''
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { title: 'Tidel' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { name: 'color-scheme', content: 'light dark' },
       { name: 'description', content: DESCRIPTION },
       { property: 'og:site_name', content: 'Tidel' },
       { property: 'og:type', content: 'website' },
@@ -22,6 +25,20 @@ export const Route = createRootRoute({
       { name: 'twitter:card', content: 'summary' },
       { name: 'twitter:title', content: 'Tidel — Daily News Digest' },
       { name: 'twitter:description', content: DESCRIPTION },
+    ],
+    links: [
+      {
+        rel: 'alternate',
+        type: 'application/atom+xml',
+        title: 'Tidel — Morning Edition',
+        href: `${API_URL}/feed.xml`,
+      },
+      {
+        rel: 'alternate',
+        type: 'application/atom+xml',
+        title: 'Tidel — Afternoon Edition',
+        href: `${API_URL}/feed.xml?slot=afternoon`,
+      },
     ],
     scripts: [
       {

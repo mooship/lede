@@ -50,6 +50,13 @@
       "when": 1774075441877,
       "tag": "0006_strange_synch",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774088940307,
+      "tag": "0007_noisy_metal_master",
+      "breakpoints": true
     }
   ]
 }

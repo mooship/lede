@@ -7,6 +7,7 @@ import { css } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 import { PageHeader } from '../components/PageHeader.js'
 import { PageMessage } from '../components/PageMessage.js'
+import { readingTimeMinutes } from '../components/StoryCard.js'
 import { createServerTrpcCaller } from '../trpc.js'
 
 async function shareStory(title: string, url: string): Promise<boolean> {
@@ -48,6 +49,23 @@ const sourceClass = css({
   fontSize: '0.8rem',
   color: 'textMuted',
   fontStyle: 'italic',
+})
+
+const metaChipClass = css({
+  fontFamily: 'body',
+  fontSize: '0.78rem',
+  color: 'textMuted',
+})
+
+const whyClass = css({
+  fontFamily: 'body',
+  fontSize: '0.82rem',
+  color: 'textDim',
+  fontStyle: 'italic',
+  marginBottom: '2rem',
+  paddingLeft: '5',
+  borderLeft: '2px solid',
+  borderColor: 'border',
 })
 
 const storyTitleClass = css({
@@ -127,6 +145,9 @@ function StoryPage() {
   }
 
   const accentVar = CATEGORY_CSS_VAR[story.category] ?? 'var(--colors-text-primary)'
+  const mins = readingTimeMinutes(story.summary)
+  const sourceWord = story.sourceCount === 1 ? 'source' : 'sources'
+  const whyText = `Selected because it was covered by ${story.sourceCount} ${sourceWord} in ${story.category}.`
 
   return (
     <div className={pageClass}>
@@ -138,6 +159,7 @@ function StoryPage() {
             {CATEGORY_LABEL[story.category] ?? story.category}
           </span>
           <span className={sourceClass}>{story.source}</span>
+          <span className={metaChipClass}>{mins} min read</span>
         </div>
 
         <h1 className={storyTitleClass} style={{ borderLeftColor: accentVar }}>
@@ -147,6 +169,8 @@ function StoryPage() {
         {story.description && <p className={bylineClass}>{story.description}</p>}
 
         <p className={summaryClass}>{story.summary}</p>
+
+        <p className={whyClass}>{whyText}</p>
 
         <div className={actionsClass}>
           <a

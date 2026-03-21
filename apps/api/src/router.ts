@@ -1,7 +1,7 @@
 import type { Story } from '@tidel/api'
 import { createDb, schema } from '@tidel/db'
 import { initTRPC, TRPCError } from '@trpc/server'
-import { and, count, desc, eq } from 'drizzle-orm'
+import { and, count, desc, eq, ilike, or } from 'drizzle-orm'
 import { z } from 'zod'
 import type { Context } from './context.js'
 import { buildEdition, currentSlot, todayUTC } from './pipeline.js'
@@ -31,6 +31,7 @@ function mapStoryRow(r: {
   pubDate: string | null
   source: string
   position: number
+  sourceCount: number
 }): Story {
   return {
     id: r.id,
@@ -44,6 +45,7 @@ function mapStoryRow(r: {
     pubDate: r.pubDate ?? null,
     source: r.source,
     position: r.position,
+    sourceCount: r.sourceCount,
   }
 }
 
@@ -254,6 +256,21 @@ const storyRouter = router({
         return null
       }
       return mapStoryRow(rows[0])
+    }),
+
+  search: publicProcedure
+    .input(z.object({ query: z.string().min(2).max(100) }))
+    .query(async ({ ctx, input }): Promise<Story[]> => {
+      const db = createDb(ctx.env.DATABASE_URL)
+      const escaped = input.query.replace(/[%_\\]/g, '\\$&')
+      const like = `%${escaped}%`
+      const rows = await db
+        .select()
+        .from(schema.stories)
+        .where(or(ilike(schema.stories.title, like), ilike(schema.stories.summary, like)))
+        .orderBy(desc(schema.stories.editionDate), schema.stories.position)
+        .limit(50)
+      return rows.map(mapStoryRow)
     }),
 })
 

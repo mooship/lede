@@ -46,6 +46,7 @@ export const stories = pgTable(
     pubDate: text('pub_date'),
     source: text('source').notNull(),
     position: integer('position').notNull(),
+    sourceCount: integer('source_count').notNull().default(1),
   },
   (t) => [
     foreignKey({

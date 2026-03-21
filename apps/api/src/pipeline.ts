@@ -223,7 +223,7 @@ export async function curateWithClaude(
   scored: ScoredItem[],
   env: Env,
   slot: 'morning' | 'afternoon' = 'morning',
-): Promise<Array<RssItem & { category: Category }>> {
+): Promise<ScoredItem[]> {
   const cfg = getCurationConfig(slot)
   const byCategory = groupByCategory(scored)
   const numCategories = byCategory.size
@@ -237,8 +237,8 @@ export async function curateWithClaude(
       return db - da
     })
 
-  const fallbackResult = (): Array<RssItem & { category: Category }> => {
-    const result: Array<RssItem & { category: Category }> = []
+  const fallbackResult = (): ScoredItem[] => {
+    const result: ScoredItem[] = []
     for (const [, bucket] of byCategory) {
       result.push(...fallbackSort(bucket).slice(0, fallbackPerCategory))
     }
@@ -317,7 +317,7 @@ ${categoryBlocks.join('\n\n')}`
     })
 
     const countByCategory = new Map<Category, number>()
-    const result: Array<RssItem & { category: Category }> = []
+    const result: ScoredItem[] = []
     for (const n of validIndices) {
       const story = allStories[n - 1] as ScoredItem
       const count = countByCategory.get(story.category) ?? 0
@@ -488,7 +488,7 @@ export async function buildEdition(
   )
   const unique = deduplicateByTitle(filtered)
   const scored = scoreBySourceOverlap(filtered, unique)
-  const selected = await curateWithClaude(scored, env, slot)
+  const selected: ScoredItem[] = await curateWithClaude(scored, env, slot)
 
   const summariser = createSummariser(env)
   const summarised = await Promise.all(
@@ -519,6 +519,7 @@ export async function buildEdition(
         pubDate: story.pubDate || null,
         source: hostnameFromUrl(story.link),
         position: i,
+        sourceCount: story.sourceScore,
       })),
     )
   } catch (err) {

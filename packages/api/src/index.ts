@@ -20,4 +20,5 @@ export type Story = {
   pubDate: string | null
   source: string
   position: number
+  sourceCount: number
 }

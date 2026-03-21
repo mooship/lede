@@ -24,6 +24,8 @@ vi.mock('./pipeline.js', () => ({
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn((a, b) => `${String(a)}=${b}`),
   and: vi.fn((...args: unknown[]) => args.join('&')),
+  or: vi.fn((...args: unknown[]) => args.join('|')),
+  ilike: vi.fn((col, val) => `${String(col)} ilike ${String(val)}`),
   desc: vi.fn((a) => `${String(a)} desc`),
   asc: vi.fn((a) => `${String(a)} asc`),
   count: vi.fn(() => 'count'),
@@ -42,6 +44,7 @@ const mockStories: Story[] = [
     pubDate: null,
     source: 'example.com',
     position: 0,
+    sourceCount: 1,
   },
 ]
 

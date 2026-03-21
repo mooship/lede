@@ -17,6 +17,7 @@ const story: Story = {
   pubDate: null,
   source: 'example.com',
   position: 0,
+  sourceCount: 1,
 }
 
 describe('StoryCard', () => {

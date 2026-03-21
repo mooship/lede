@@ -49,11 +49,16 @@ export function PageHeader({ backTo }: PageHeaderProps) {
         <Link to="/" className={brandLinkClass}>
           TIDEL
         </Link>
-        {backTo && (
-          <Link to={backTo} className={backLinkClass}>
-            {'\u2190\uFE0E'} Back
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <Link to="/search" className={backLinkClass}>
+            Search
           </Link>
-        )}
+          {backTo && (
+            <Link to={backTo} className={backLinkClass}>
+              {'\u2190\uFE0E'} Back
+            </Link>
+          )}
+        </nav>
       </div>
     </header>
   )

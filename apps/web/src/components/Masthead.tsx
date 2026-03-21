@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { css } from '../../styled-system/css'
 
 const headerClass = css({
@@ -46,6 +47,18 @@ const dateClass = css({
   lineHeight: '1.5',
 })
 
+const searchLinkClass = css({
+  fontFamily: 'display',
+  fontSize: '0.65rem',
+  fontWeight: '700',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase',
+  color: 'textMuted',
+  textDecoration: 'none',
+  display: 'block',
+  marginTop: '4',
+})
+
 interface MastheadProps {
   editionDate?: string | null | undefined
   slot?: 'morning' | 'afternoon'
@@ -79,12 +92,17 @@ export function Masthead({ editionDate, slot }: MastheadProps) {
           <h1 className={titleClass}>Tidel</h1>
           <p className={subtitleClass}>{subtitle}</p>
         </div>
-        {date && (
-          <div className={dateClass}>
-            <div>{dayName}</div>
-            <div>{dateLine}</div>
-          </div>
-        )}
+        <div style={{ textAlign: 'right' }}>
+          {date && (
+            <div className={dateClass}>
+              <div>{dayName}</div>
+              <div>{dateLine}</div>
+            </div>
+          )}
+          <Link to="/search" className={searchLinkClass}>
+            Search
+          </Link>
+        </div>
       </div>
     </header>
   )
