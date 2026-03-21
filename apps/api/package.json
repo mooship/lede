@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "0.79.0",
+    "@anthropic-ai/sdk": "0.80.0",
     "@tidel/api": "*",
     "@tidel/db": "*",
     "@hono/trpc-server": "0.4.2",
