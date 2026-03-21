@@ -269,6 +269,8 @@ export async function curateWithClaude(
 ${afternoonNote}
 You MUST select between ${cfg.min} and ${cfg.max} stories. Aim for exactly ${cfg.target}.
 
+Source count is a strong signal of significance — a story covered by multiple outlets is more important than one covered by a single source. Prefer higher source counts when choosing between stories of similar newsworthiness.
+
 Rules:
 - At most ${cfg.maxPerCat} stories from any single category.
 - Include at least 1 story from each category, provided something newsworthy exists.
@@ -282,8 +284,6 @@ Editorial criteria by category:
 - Sport: Only select results from major international competitions (World Cup, Olympics, Grand Slams, Champions League, major league finals) or significant breaking news. Skip routine match results, transfer rumours, and roundup articles that merely list results without a specific story.
 
 Exclude across all categories: food, lifestyle, travel, entertainment, opinion columns, human-interest stories, promotional content, and roundup/recap articles that aggregate multiple events without a clear central news development (e.g. "Day One results", "weekly roundup", "all the winners").
-
-Source count is a strong signal of significance — a story covered by multiple outlets is more important than one covered by a single source. Prefer higher source counts when choosing between stories of similar newsworthiness.
 
 Respond with ONLY a JSON array of story numbers, e.g. [1, 3, 5, 7]. No explanation, no markdown fences, no preamble.
 
@@ -339,13 +339,13 @@ ${categoryBlocks.join('\n\n')}`
 const MAX_DESCRIPTION_CHARS = 3000
 
 const SUMMARISE_PROMPT = (item: RssItem) =>
-  `You are a news summariser writing for a daily digest. Use British English throughout.
+  `You are a news summariser writing for a daily digest. Use British English throughout. Use past tense throughout.
 
 Given the article below, produce exactly three labelled fields:
 
 TITLE: A clean, publication-quality headline. Remove any source attribution (e.g. "| News24", "- BBC Sport", "Reuters: ") and any leading/trailing punctuation artifacts. Do not wrap in quotes.
-BYLINE: A single factual sentence of no more than 25 words that captures the key development. Do not repeat the title.
-SUMMARY: A summary of approximately 200 words from a progressive perspective. Lead with the most important fact. Centre impacts on working people, marginalised communities, and the environment. Do not speculate. Use past tense for events that have occurred.
+BYLINE: A single factual sentence of around 20 words that captures the key development from a progressive perspective, centring impacts on working people, marginalised communities, or the environment where relevant. Do not repeat the title or the opening sentence of the summary.
+SUMMARY: A summary of 150–200 words from a progressive perspective. Lead with the most important fact. Centre impacts on working people, marginalised communities, and the environment. Do not speculate.
 
 Output format — use exactly these labels, one per line, with no other text:
 TITLE: <headline>

@@ -483,21 +483,25 @@ function AdminStatus({ secret }: { secret: string }) {
     )
   }
 
-  if (!data || data.length === 0) {
-    return <p className={css({ fontFamily: 'body', color: 'textMuted' })}>No editions built yet.</p>
-  }
-
   return (
     <div>
-      <h2 className={sectionHeadingClass}>Last Build</h2>
-      {data.map((slotData) => (
-        <div key={slotData.slot}>
-          <p className={slotHeadingClass}>
-            {slotData.slot === 'morning' ? 'Morning Edition' : 'Afternoon Edition'}
-          </p>
-          <SlotStatusCard slotData={slotData} />
-        </div>
-      ))}
+      {!data || data.length === 0 ? (
+        <p className={css({ fontFamily: 'body', color: 'textMuted', marginBottom: '10' })}>
+          No editions built yet.
+        </p>
+      ) : (
+        <>
+          <h2 className={sectionHeadingClass}>Last Build</h2>
+          {data.map((slotData) => (
+            <div key={slotData.slot}>
+              <p className={slotHeadingClass}>
+                {slotData.slot === 'morning' ? 'Morning Edition' : 'Afternoon Edition'}
+              </p>
+              <SlotStatusCard slotData={slotData} />
+            </div>
+          ))}
+        </>
+      )}
 
       {showConfirmModal && (
         <Modal

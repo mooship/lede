@@ -20,7 +20,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 }
 
 function renderAdminPage() {
-  const AdminPage = Route.component as React.ComponentType
+  const AdminPage = (Route as unknown as { component: React.ComponentType }).component
   render(<AdminPage />, { wrapper })
 }
 
