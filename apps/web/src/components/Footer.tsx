@@ -2,6 +2,8 @@ import { Link } from '@tanstack/react-router'
 import React from 'react'
 import { css } from '../../styled-system/css'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
+
 const footerClass = css({
   borderTop: '1px solid',
   borderColor: 'border',
@@ -62,6 +64,7 @@ const ALL_LINKS = [
     href: 'https://opensource.org/license/agpl-3-0-only',
     ariaLabel: 'AGPL-3.0 licence (opens in new tab)',
   },
+  { label: 'RSS', href: `${API_URL}/feed.xml`, ariaLabel: 'Subscribe via RSS / Atom feed' },
   { label: 'Feedback', href: 'mailto:contact@tidel.app', ariaLabel: 'Send feedback by email' },
   {
     label: 'Report a bug',
