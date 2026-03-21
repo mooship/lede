@@ -6,11 +6,6 @@ import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 
 type Props = { story: Story; position: number }
 
-export function readingTimeMinutes(text: string): number {
-  const words = text.trim().split(/\s+/).length
-  return Math.max(1, Math.round(words / 200))
-}
-
 const linkClass = css({ textDecoration: 'none', display: 'block', height: '100%' })
 
 const headerClass = css({ display: 'flex', justifyContent: 'space-between', alignItems: 'center' })
@@ -56,18 +51,8 @@ const sourceClass = css({
   fontStyle: 'italic',
 })
 
-const metaClass = css({
-  fontFamily: 'body',
-  fontSize: '0.72rem',
-  color: 'textDim',
-  display: 'flex',
-  gap: '2',
-  alignItems: 'center',
-})
-
 export function StoryCard({ story, position }: Props) {
   const accentVar = CATEGORY_CSS_VAR[story.category] ?? 'var(--colors-text-primary)'
-  const mins = readingTimeMinutes(story.summary)
 
   return (
     <Link to="/story/$id" params={{ id: story.id }} className={linkClass}>
@@ -92,9 +77,6 @@ export function StoryCard({ story, position }: Props) {
 
         <div className={footerClass}>
           <p className={sourceClass}>{story.source}</p>
-          <span className={metaClass}>
-            <span>{mins} min read</span>
-          </span>
         </div>
       </article>
     </Link>
