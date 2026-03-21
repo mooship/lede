@@ -172,7 +172,7 @@ describe('edition.build', () => {
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.build({ slot: 'afternoon' })
-    expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), false, 'afternoon')
+    expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), 'afternoon')
     expect(result).toMatchObject({ ok: true, message: expect.any(String) })
   })
 
@@ -182,7 +182,7 @@ describe('edition.build', () => {
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
     await caller.edition.build({})
-    expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), false, 'morning')
+    expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), 'morning')
   })
 })
 
