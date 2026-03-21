@@ -36,7 +36,7 @@ const mockStory: Story = {
 
 async function renderStoryPage(story: Story | null) {
   vi.spyOn(Route, 'useLoaderData').mockReturnValue(story)
-  const StoryPage = Route.component as React.ComponentType
+  const StoryPage = (Route as any).component as React.ComponentType
   render(<StoryPage />)
 }
 

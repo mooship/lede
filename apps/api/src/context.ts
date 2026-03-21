@@ -1,3 +1,4 @@
+import type { ExecutionContext } from '@cloudflare/workers-types'
 import type { Env } from './env.js'
 
 export type Context = {
