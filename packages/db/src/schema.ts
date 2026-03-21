@@ -3,6 +3,7 @@ import {
   foreignKey,
   index,
   integer,
+  pgEnum,
   pgTable,
   primaryKey,
   text,
@@ -10,6 +11,15 @@ import {
   unique,
   uuid,
 } from 'drizzle-orm/pg-core'
+
+export const categoryEnum = pgEnum('story_category', [
+  'World',
+  'Technology',
+  'Science',
+  'Business / Economy',
+  'Sport',
+  'Culture',
+])
 
 export const editions = pgTable(
   'editions',
@@ -31,7 +41,7 @@ export const stories = pgTable(
     title: text('title').notNull(),
     description: text('description'),
     summary: text('summary').notNull(),
-    category: text('category').notNull(),
+    category: categoryEnum('category').notNull(),
     link: text('link').notNull(),
     pubDate: text('pub_date'),
     source: text('source').notNull(),

@@ -1,4 +1,10 @@
-export type Category = 'World' | 'Technology' | 'Science' | 'Business / Economy' | 'Sport'
+export type Category =
+  | 'World'
+  | 'Technology'
+  | 'Science'
+  | 'Business / Economy'
+  | 'Sport'
+  | 'Culture'
 
 export type Slot = 'morning' | 'afternoon'
 

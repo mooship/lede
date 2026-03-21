@@ -1,0 +1,2 @@
+CREATE TYPE "public"."story_category" AS ENUM('World', 'Technology', 'Science', 'Business / Economy', 'Sport', 'Culture');--> statement-breakpoint
+ALTER TABLE "stories" ALTER COLUMN "category" SET DATA TYPE "public"."story_category" USING "category"::"public"."story_category";

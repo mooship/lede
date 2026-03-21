@@ -23,6 +23,7 @@ export default defineConfig({
           science: { value: '#3ecf8e' },
           business: { value: '#f5c542' },
           sport: { value: '#a855f7' },
+          culture: { value: '#f43f5e' },
         },
         fonts: {
           display: { value: "'Syne Variable', 'Syne', sans-serif" },
@@ -54,6 +55,7 @@ export default defineConfig({
               Science: {},
               'Business / Economy': {},
               Sport: {},
+              Culture: {},
             },
           },
         },

@@ -131,7 +131,7 @@ Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified
 
 ## RSS feeds (`apps/api/src/config.ts`)
 
-Five categories: World, Technology, Science, Business/Economy, Sport. Feed count is deliberately capped to stay within Cloudflare Workers' free-plan subrequest limit (50 per invocation). The budget is roughly: 22 feeds + 15 Claude summarisation calls + 1 curation call + 3 Neon HTTP calls = ~41 subrequests. Do not add feeds without checking the budget.
+Five categories: World, Technology, Science, Business/Economy, Sport. Feed count is deliberately capped to stay within Cloudflare Workers' free-plan subrequest limit (50 per invocation). The budget is roughly: 26 feeds + 15 Claude summarisation calls + 1 curation call + 3 Neon HTTP calls = ~45 subrequests. Do not add feeds without checking the budget.
 
 ## Testing
 

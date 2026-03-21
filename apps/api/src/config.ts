@@ -34,14 +34,20 @@ export const FEEDS: Record<Category, string[]> = {
     'https://www.france24.com/en/sport/rss',
     'https://www.lemonde.fr/en/sports/rss_full.xml',
   ],
+  Culture: [
+    'https://hyperallergic.com/feed/',
+    'https://pitchfork.com/rss/news/',
+    'https://www.france24.com/en/culture/rss',
+    'https://www.lemonde.fr/en/culture/rss_full.xml',
+  ],
 }
 
 export const MIN_STORIES_PER_CATEGORY = 2
 export const MAX_STORIES_PER_CATEGORY = 4
-export const TARGET_STORY_COUNT = 12
+export const TARGET_STORY_COUNT = 15
 
 export const AFTERNOON_MIN_STORIES_PER_CATEGORY = 1
 export const AFTERNOON_MAX_STORIES_PER_CATEGORY = 3
 export const AFTERNOON_MIN_STORY_COUNT = 6
-export const AFTERNOON_MAX_STORY_COUNT = 9
-export const AFTERNOON_TARGET_STORY_COUNT = 9
+export const AFTERNOON_MAX_STORY_COUNT = 12
+export const AFTERNOON_TARGET_STORY_COUNT = 12

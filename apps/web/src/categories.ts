@@ -6,6 +6,7 @@ export const CATEGORY_CSS_VAR: Record<Category, string> = {
   Science: 'var(--colors-science)',
   'Business / Economy': 'var(--colors-business)',
   Sport: 'var(--colors-sport)',
+  Culture: 'var(--colors-culture)',
 }
 
 export const CATEGORY_LABEL: Record<Category, string> = {
@@ -14,4 +15,5 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   Science: 'Science',
   'Business / Economy': 'Business',
   Sport: 'Sport',
+  Culture: 'Culture',
 }
