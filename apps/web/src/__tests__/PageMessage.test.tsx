@@ -23,9 +23,8 @@ describe('PageMessage', () => {
     expect(screen.getByRole('status').getAttribute('aria-live')).toBe('polite')
   })
 
-  it('applies custom color via style prop', () => {
-    render(<PageMessage message="Error" color="red" />)
-    const el = screen.getByRole('status')
-    expect(el.getAttribute('style')).toContain('color')
+  it('renders with error variant without crashing', () => {
+    render(<PageMessage message="Something went wrong." variant="error" />)
+    expect(screen.getByText('Something went wrong.')).not.toBeNull()
   })
 })

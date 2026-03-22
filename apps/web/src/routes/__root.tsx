@@ -95,7 +95,7 @@ export const Route = createRootRoute({
     ],
   }),
   component: Root,
-  errorComponent: () => <PageMessage message="Something went wrong." color="var(--colors-world)" />,
+  errorComponent: () => <PageMessage message="Something went wrong." variant="error" />,
   notFoundComponent: () => <PageMessage message="Page not found." />,
 })
 

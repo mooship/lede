@@ -2,8 +2,7 @@ import { css } from '../../styled-system/css'
 
 type Props = {
   message: string
-  variant?: 'loading' | 'serif'
-  color?: string
+  variant?: 'loading' | 'serif' | 'error'
 }
 
 const wrapClass = css({
@@ -29,11 +28,18 @@ const serifClass = css({
   color: 'textMuted',
 })
 
-export function PageMessage({ message, variant = 'serif', color }: Props) {
-  const textClass = variant === 'loading' ? loadingClass : serifClass
+const errorClass = css({
+  fontFamily: 'body',
+  fontSize: '1rem',
+  color: 'world',
+})
+
+export function PageMessage({ message, variant = 'serif' }: Props) {
+  const textClass =
+    variant === 'loading' ? loadingClass : variant === 'error' ? errorClass : serifClass
   return (
     <div className={wrapClass}>
-      <output className={textClass} aria-live="polite" style={color ? { color } : undefined}>
+      <output className={textClass} aria-live="polite">
         {message}
       </output>
     </div>
