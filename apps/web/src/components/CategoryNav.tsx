@@ -45,7 +45,7 @@ const navClass = css({
 const tabListClass = css({
   maxWidth: '1400px',
   mx: 'auto',
-  px: '8',
+  px: { base: '2', md: '8' },
   display: 'flex',
   flexDir: 'row',
   overflowX: 'auto',
@@ -75,6 +75,7 @@ const tabBaseClass = css({
   flexShrink: '0',
   whiteSpace: 'nowrap',
   color: 'textMuted',
+  _active: { opacity: '0.7' },
   '&:focus-visible': {
     outline: '2px solid',
     outlineColor: 'textPrimary',
@@ -86,7 +87,7 @@ export function CategoryNav({ active, onChange }: Props) {
   const [hovered, setHovered] = useState<Tab | null>(null)
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
 
-  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+  function handleKeyDown(e: React.KeyboardEvent, index: number) {
     if (e.key === 'ArrowRight') {
       const next = (index + 1) % TABS.length
       const nextTab = TABS[next]

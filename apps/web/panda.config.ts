@@ -4,17 +4,26 @@ export default defineConfig({
   preflight: true,
   include: ['./src/**/*.{ts,tsx}'],
   exclude: ['./src/routeTree.gen.ts'],
-
-  // Make _dark respond to OS preference
   conditions: {
     extend: {
-      dark: '@media (prefers-color-scheme: dark)',
+      dark: '[data-theme="dark"] &',
     },
   },
-
+  globalCss: {
+    'html, body': {
+      scrollbarWidth: 'none',
+      '-webkit-tap-highlight-color': 'transparent',
+      '&::-webkit-scrollbar': { display: 'none' },
+    },
+    html: {
+      '-webkit-text-size-adjust': '100%',
+    },
+    'html[data-font="opendyslexic"]': {
+      '--fonts-body': "'OpenDyslexic', cursive",
+    },
+  },
   theme: {
     extend: {
-      // Category accent colors are fixed (same in light and dark)
       tokens: {
         colors: {
           world: { value: '#e85a3c' },
@@ -29,8 +38,6 @@ export default defineConfig({
           body: { value: "'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', sans-serif" },
         },
       },
-
-      // Theme-sensitive colors use semantic tokens with light/dark values
       semanticTokens: {
         colors: {
           bg: {
@@ -62,7 +69,6 @@ export default defineConfig({
           },
         },
       },
-
       recipes: {
         storyCard: {
           className: 'storyCard',
@@ -75,10 +81,11 @@ export default defineConfig({
             display: 'flex',
             flexDirection: 'column',
             gap: '3',
-            transition: 'background-color 0.2s',
+            transition: 'background-color 0.2s, transform 0.1s',
             position: 'relative',
             boxSizing: 'border-box',
             _hover: { bg: 'surfaceHigh' },
+            _active: { transform: 'scale(0.985)', bg: 'surfaceHigh' },
           },
           variants: {
             category: {
@@ -94,6 +101,5 @@ export default defineConfig({
       },
     },
   },
-
   outdir: 'styled-system',
 })

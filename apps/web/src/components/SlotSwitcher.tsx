@@ -1,4 +1,4 @@
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 import { afternoonLocalTime } from '../utils.js'
 
 const wrapperClass = css({
@@ -6,41 +6,47 @@ const wrapperClass = css({
   borderBottom: '1px solid',
   borderColor: 'border',
   bg: 'bg',
+  px: { base: '4', md: '8' },
+  py: '3',
 })
 
 const innerClass = css({
   maxWidth: '1400px',
   mx: 'auto',
-  px: '8',
   display: 'flex',
-  gap: '0',
+  justifyContent: { base: 'center', md: 'flex-start' },
+})
+
+const segmentWrapClass = css({
+  display: 'inline-flex',
+  bg: 'surfaceHigh',
+  borderRadius: '10px',
+  padding: '3px',
 })
 
 const pillBase = css({
   fontFamily: 'display',
   fontSize: '0.7rem',
   fontWeight: '700',
-  letterSpacing: '0.1em',
+  letterSpacing: '0.08em',
   textTransform: 'uppercase',
   background: 'none',
   border: 'none',
-  borderBottom: '2px solid transparent',
-  marginBottom: '-1px',
+  borderRadius: '8px',
   px: '5',
-  py: '3',
+  py: '2',
   cursor: 'pointer',
-  transition: 'color 0.15s',
-  lineHeight: '1',
+  transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
+  lineHeight: '1.6',
+  minWidth: '80px',
+  textAlign: 'center',
+  color: 'textMuted',
 })
 
 const pillActiveClass = css({
+  bg: 'surface',
   color: 'textPrimary',
-  borderBottomColor: 'textPrimary',
-})
-
-const pillInactiveClass = css({
-  color: 'textMuted',
-  '&:hover': { color: 'textLight' },
+  boxShadow: '0 1px 3px token(colors.border)',
 })
 
 const pillDisabledClass = css({
@@ -62,34 +68,35 @@ export function SlotSwitcher({
   return (
     <div className={wrapperClass}>
       <div className={innerClass}>
-        <button
-          type="button"
-          className={`${pillBase} ${activeSlot === 'morning' ? pillActiveClass : pillInactiveClass}`}
-          onClick={() => onSlotChange('morning')}
-          aria-pressed={activeSlot === 'morning'}
-        >
-          Morning
-        </button>
-        <button
-          type="button"
-          className={`${pillBase} ${
-            !afternoonAvailable
-              ? pillDisabledClass
-              : activeSlot === 'afternoon'
-                ? pillActiveClass
-                : pillInactiveClass
-          }`}
-          onClick={() => {
-            if (afternoonAvailable) {
-              onSlotChange('afternoon')
-            }
-          }}
-          aria-pressed={activeSlot === 'afternoon'}
-          aria-disabled={!afternoonAvailable}
-          title={!afternoonAvailable ? `Available at ${afternoonLocalTime()}` : undefined}
-        >
-          Afternoon
-        </button>
+        <div className={segmentWrapClass}>
+          <button
+            type="button"
+            className={cx(pillBase, activeSlot === 'morning' && pillActiveClass)}
+            onClick={() => onSlotChange('morning')}
+            aria-pressed={activeSlot === 'morning'}
+          >
+            Morning
+          </button>
+          <button
+            type="button"
+            className={cx(
+              pillBase,
+              !afternoonAvailable
+                ? pillDisabledClass
+                : activeSlot === 'afternoon' && pillActiveClass,
+            )}
+            onClick={() => {
+              if (afternoonAvailable) {
+                onSlotChange('afternoon')
+              }
+            }}
+            aria-pressed={activeSlot === 'afternoon'}
+            aria-disabled={!afternoonAvailable}
+            title={!afternoonAvailable ? `Available at ${afternoonLocalTime()}` : undefined}
+          >
+            Afternoon
+          </button>
+        </div>
       </div>
     </div>
   )

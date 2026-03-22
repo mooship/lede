@@ -11,17 +11,18 @@ const headerClass = css({
 const innerClass = css({
   maxWidth: '1400px',
   mx: 'auto',
-  px: '8',
-  py: '10',
+  px: { base: '4', md: '8' },
+  py: { base: '3', md: '10' },
+  minHeight: { base: '56px', md: 'auto' },
   display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'flex-end',
+  alignItems: { base: 'center', md: 'flex-end' },
 })
 
 const titleClass = css({
   fontFamily: 'display',
   fontWeight: '800',
-  fontSize: 'clamp(3rem, 6vw, 5rem)',
+  fontSize: { base: '1.75rem', md: 'clamp(3rem, 6vw, 5rem)' },
   color: 'textPrimary',
   margin: '0',
   lineHeight: '1',
@@ -37,6 +38,7 @@ const subtitleClass = css({
   color: 'textMuted',
   textTransform: 'uppercase',
   margin: '0.4rem 0 0 0.1rem',
+  display: { base: 'none', md: 'block' },
 })
 
 const dateClass = css({
@@ -45,6 +47,7 @@ const dateClass = css({
   fontSize: '0.85rem',
   color: 'textMuted',
   lineHeight: '1.5',
+  display: { base: 'none', md: 'block' },
 })
 
 const searchLinkClass = css({
@@ -55,12 +58,17 @@ const searchLinkClass = css({
   textTransform: 'uppercase',
   color: 'textMuted',
   textDecoration: 'none',
-  display: 'block',
+  display: { base: 'none', md: 'block' },
   marginTop: '4',
 })
 
+const SLOT_LABELS: Record<string, string> = {
+  morning: 'Morning Edition',
+  afternoon: 'Afternoon Edition',
+}
+
 interface MastheadProps {
-  editionDate?: string | null | undefined
+  editionDate?: string | null
   slot?: 'morning' | 'afternoon'
 }
 
@@ -78,12 +86,7 @@ export function Masthead({ editionDate, slot }: MastheadProps) {
     timeZone: 'UTC',
   })
 
-  const subtitle =
-    slot === 'morning'
-      ? 'Morning Edition'
-      : slot === 'afternoon'
-        ? 'Afternoon Edition'
-        : 'Daily Edition'
+  const subtitle = (slot && SLOT_LABELS[slot]) ?? 'Daily Edition'
 
   return (
     <header className={headerClass}>

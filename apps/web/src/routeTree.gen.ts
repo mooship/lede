@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ArchiveRouteImport } from './routes/archive'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoryIdRouteImport } from './routes/story.$id'
 import { Route as EditionDateRouteImport } from './routes/edition.$date'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/archive': typeof ArchiveRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/edition/$date': typeof EditionDateRoute
   '/story/$id': typeof StoryIdRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/archive': typeof ArchiveRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/edition/$date': typeof EditionDateRoute
   '/story/$id': typeof StoryIdRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/archive': typeof ArchiveRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/edition/$date': typeof EditionDateRoute
   '/story/$id': typeof StoryIdRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/archive'
     | '/search'
+    | '/settings'
     | '/edition/$date'
     | '/story/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/archive'
     | '/search'
+    | '/settings'
     | '/edition/$date'
     | '/story/$id'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/archive'
     | '/search'
+    | '/settings'
     | '/edition/$date'
     | '/story/$id'
   fileRoutesById: FileRoutesById
@@ -117,12 +129,20 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   ArchiveRoute: typeof ArchiveRoute
   SearchRoute: typeof SearchRoute
+  SettingsRoute: typeof SettingsRoute
   EditionDateRoute: typeof EditionDateRoute
   StoryIdRoute: typeof StoryIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   ArchiveRoute: ArchiveRoute,
   SearchRoute: SearchRoute,
+  SettingsRoute: SettingsRoute,
   EditionDateRoute: EditionDateRoute,
   StoryIdRoute: StoryIdRoute,
 }

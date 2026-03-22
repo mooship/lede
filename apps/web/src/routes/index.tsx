@@ -40,6 +40,7 @@ const bannerClass = css({
   bg: 'science',
   px: '8',
   py: '3',
+  paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -148,24 +149,12 @@ function IndexPage() {
 
   const afternoonAvailable = isAfternoonAvailable()
 
-  if (data == null && activeSlot === 'afternoon') {
-    return (
-      <div className={pageClass}>
-        <Masthead slot={activeSlot} />
-        <SlotSwitcher
-          activeSlot={activeSlot}
-          onSlotChange={handleSlotChange}
-          afternoonAvailable={afternoonAvailable}
-        />
-        <main className={contentClass}>
-          <p className={emptyTextClass}>No afternoon edition yet — check back later.</p>
-        </main>
-        <Footer />
-      </div>
-    )
-  }
-
   if (data == null) {
+    const emptyMessage =
+      activeSlot === 'afternoon'
+        ? 'No afternoon edition yet — check back later.'
+        : 'No editions yet — check back soon.'
+
     return (
       <div className={pageClass}>
         <Masthead slot={activeSlot} />
@@ -175,7 +164,7 @@ function IndexPage() {
           afternoonAvailable={afternoonAvailable}
         />
         <main className={contentClass}>
-          <p className={emptyTextClass}>No editions yet — check back soon.</p>
+          <p className={emptyTextClass}>{emptyMessage}</p>
         </main>
         <Footer />
       </div>

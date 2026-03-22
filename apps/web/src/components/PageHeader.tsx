@@ -11,8 +11,9 @@ const headerClass = css({
 const innerClass = css({
   maxWidth: '1400px',
   mx: 'auto',
-  px: '8',
+  px: { base: '4', md: '8' },
   py: '5',
+  minHeight: '56px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
@@ -28,6 +29,12 @@ const brandLinkClass = css({
   lineHeight: '1',
 })
 
+const rightNavClass = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4',
+})
+
 const backLinkClass = css({
   fontFamily: 'display',
   fontSize: '0.65rem',
@@ -36,6 +43,17 @@ const backLinkClass = css({
   textTransform: 'uppercase',
   color: 'textMuted',
   textDecoration: 'none',
+})
+
+const searchNavLinkClass = css({
+  fontFamily: 'display',
+  fontSize: '0.65rem',
+  fontWeight: '700',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase',
+  color: 'textMuted',
+  textDecoration: 'none',
+  display: { base: 'none', md: 'inline' },
 })
 
 interface PageHeaderProps {
@@ -49,8 +67,8 @@ export function PageHeader({ backTo }: PageHeaderProps) {
         <Link to="/" className={brandLinkClass}>
           TIDEL
         </Link>
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link to="/search" className={backLinkClass}>
+        <nav className={rightNavClass}>
+          <Link to="/search" className={searchNavLinkClass}>
             Search
           </Link>
           {backTo && (

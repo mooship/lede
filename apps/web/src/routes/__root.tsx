@@ -1,7 +1,11 @@
+import '@fontsource/opendyslexic/400.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { useState } from 'react'
+import { css } from '../../styled-system/css'
+import { BottomNav } from '../components/BottomNav.js'
 import { PageMessage } from '../components/PageMessage.js'
+import { SettingsProvider } from '../context/settings.js'
 import { createTrpcClient, trpc } from '../trpc.js'
 
 const DESCRIPTION =
@@ -11,12 +15,25 @@ const APP_URL = import.meta.env.VITE_APP_URL ?? ''
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
 
+const pageWrapClass = css({
+  paddingBottom: { base: 'calc(49px + env(safe-area-inset-bottom))', md: '0' },
+})
+
+const FOUC_SCRIPT =
+  `(function(){var t=localStorage.getItem('tidel-theme'),f=localStorage.getItem('tidel-font'),d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');if(f==='opendyslexic')document.documentElement.setAttribute('data-font','opendyslexic');})()` as const
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { title: 'Tidel' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
       { name: 'color-scheme', content: 'light dark' },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+      { name: 'apple-mobile-web-app-title', content: 'Tidel' },
+      { name: 'mobile-web-app-capable', content: 'yes' },
+      { name: 'theme-color', content: '#fafafa', media: '(prefers-color-scheme: light)' },
+      { name: 'theme-color', content: '#0f0f0f', media: '(prefers-color-scheme: dark)' },
       { name: 'description', content: DESCRIPTION },
       { property: 'og:site_name', content: 'Tidel' },
       { property: 'og:type', content: 'website' },
@@ -65,6 +82,7 @@ export const Route = createRootRoute({
       },
     ],
     scripts: [
+      { children: FOUC_SCRIPT },
       {
         type: 'application/ld+json',
         children: JSON.stringify({
@@ -94,7 +112,12 @@ function Root() {
       <body>
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
-            <Outlet />
+            <SettingsProvider>
+              <div className={pageWrapClass}>
+                <Outlet />
+              </div>
+              <BottomNav />
+            </SettingsProvider>
           </QueryClientProvider>
         </trpc.Provider>
         <Scripts />

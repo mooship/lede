@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import React from 'react'
+import { Fragment } from 'react'
 import { css } from '../../styled-system/css'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
@@ -10,7 +10,7 @@ const footerClass = css({
   marginTop: '16',
   px: '8',
   py: '8',
-  display: 'flex',
+  display: { base: 'none', md: 'flex' },
   flexDirection: 'column',
   alignItems: 'center',
   gap: '3',
@@ -86,7 +86,7 @@ export function Footer() {
       <span>Made with ♥ in South Africa</span>
       <div className={linksClass}>
         {ALL_LINKS.map(({ label, ...link }, i) => (
-          <React.Fragment key={label}>
+          <Fragment key={label}>
             {i > 0 && !('highlight' in link && link.highlight) && (
               <span className={separatorClass} aria-hidden="true">
                 ·
@@ -107,7 +107,7 @@ export function Footer() {
                 {label}
               </a>
             )}
-          </React.Fragment>
+          </Fragment>
         ))}
       </div>
     </footer>
