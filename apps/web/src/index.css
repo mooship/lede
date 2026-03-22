@@ -1,5 +1,9 @@
 @layer reset, base, tokens, recipes, utilities;
 
+html[data-font='opendyslexic'] {
+  --fonts-body: 'OpenDyslexic', cursive;
+}
+
 body {
   background-color: var(--colors-bg);
   font-family: var(--fonts-body);

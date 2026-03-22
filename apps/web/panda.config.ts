@@ -18,9 +18,6 @@ export default defineConfig({
     html: {
       '-webkit-text-size-adjust': '100%',
     },
-    'html[data-font="opendyslexic"]': {
-      '--fonts-body': "'OpenDyslexic', cursive",
-    },
   },
   theme: {
     extend: {
