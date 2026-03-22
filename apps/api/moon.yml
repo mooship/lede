@@ -20,7 +20,7 @@ tasks:
     command: 'biome check --write .'
     inputs:
       - 'src/**/*.ts'
-      - 'biome.json'
+      - '/biome.json'
       - '/*.json'
 
   typecheck:

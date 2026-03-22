@@ -267,6 +267,10 @@ describe('isJunk', () => {
     expect(isJunk('Your weekly horoscope')).toBe(true)
   })
 
+  it('filters "Security News This Week" aggregation headlines', () => {
+    expect(isJunk('Security News This Week')).toBe(true)
+  })
+
   it('filters digest descriptions with repeated "read the full story"', () => {
     const desc = 'Read the full story. Read the full story. Read the full story.'
     expect(isJunk('World news roundup', desc)).toBe(true)

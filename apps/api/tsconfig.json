@@ -1,8 +1,12 @@
 {
   "extends": "@tidel/tsconfig/worker.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@tidel/api": ["../../packages/api/src/index.ts"],
+      "@tidel/db": ["../../packages/db/src/index.ts"]
+    },
     "types": ["@cloudflare/workers-types"],
-    "rootDir": "src",
     "noEmit": true
   },
   "include": ["src"]

@@ -50,6 +50,7 @@ export function currentSlot(): 'morning' | 'afternoon' {
 }
 
 const JUNK_PATTERNS = [
+  /^security\s+news\s+this\s+week\b/i,
   /promo\s*code/i,
   /coupon/i,
   /discount\s*code/i,

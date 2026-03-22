@@ -35,7 +35,7 @@ tasks:
     command: 'biome check --write .'
     inputs:
       - 'src/**/*.{ts,tsx}'
-      - 'biome.json'
+      - '/biome.json'
       - '/*.json'
 
   typecheck:
