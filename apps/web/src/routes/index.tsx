@@ -184,7 +184,7 @@ function IndexPage() {
           </button>
         </div>
       )}
-      <Masthead editionDate={data[0]?.editionDate} slot={activeSlot} />
+      <Masthead editionDate={data[0]?.editionDate ?? null} slot={activeSlot} />
       <SlotSwitcher
         activeSlot={activeSlot}
         onSlotChange={handleSlotChange}

@@ -1,4 +1,3 @@
-import '@fontsource/opendyslexic/400.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { useState } from 'react'
