@@ -33,14 +33,9 @@ export function PageMessage({ message, variant = 'serif', color }: Props) {
   const textClass = variant === 'loading' ? loadingClass : serifClass
   return (
     <div className={wrapClass}>
-      <p
-        className={textClass}
-        role="status"
-        aria-live="polite"
-        style={color ? { color } : undefined}
-      >
+      <output className={textClass} aria-live="polite" style={color ? { color } : undefined}>
         {message}
-      </p>
+      </output>
     </div>
   )
 }
