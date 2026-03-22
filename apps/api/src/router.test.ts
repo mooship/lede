@@ -152,7 +152,7 @@ describe('edition.today', () => {
     const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.today({ slot: 'afternoon' })
     expect(result).toBeNull()
-    expect(mockDb.query.editions.findFirst).toHaveBeenCalledTimes(1)
+    expect(mockDb.query.editions.findFirst).toHaveBeenCalledTimes(2)
   })
 })
 

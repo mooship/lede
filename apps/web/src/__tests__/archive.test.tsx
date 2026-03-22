@@ -69,13 +69,12 @@ describe('ArchivePage', () => {
     expect(screen.getByText(/No editions yet/)).not.toBeNull()
   })
 
-  it('renders slot links for each edition entry', async () => {
+  it('renders slot badge for a date with both slots', async () => {
     await renderArchive([
       { date: '2024-03-15', slot: 'morning', storyCount: 12 },
       { date: '2024-03-15', slot: 'afternoon', storyCount: 9 },
     ])
-    expect(screen.getByText(/Morning/)).not.toBeNull()
-    expect(screen.getByText(/Afternoon/)).not.toBeNull()
+    expect(screen.getByText('AM · PM')).not.toBeNull()
   })
 
   it('renders a formatted date label for each date group', async () => {
@@ -83,8 +82,8 @@ describe('ArchivePage', () => {
     expect(screen.getByText(/March/)).not.toBeNull()
   })
 
-  it('renders story counts alongside slot links', async () => {
+  it('renders AM badge for morning-only entry', async () => {
     await renderArchive([{ date: '2024-03-15', slot: 'morning', storyCount: 12 }])
-    expect(screen.getByText(/12/)).not.toBeNull()
+    expect(screen.getByText('AM')).not.toBeNull()
   })
 })

@@ -1,5 +1,3 @@
-import { Link } from '@tanstack/react-router'
-import { Fragment } from 'react'
 import { css } from '../../styled-system/css'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
@@ -52,17 +50,10 @@ const coffeeClass = css({
 })
 
 const ALL_LINKS = [
-  { label: 'About', internal: '/about' as const },
-  { label: 'Archive', internal: '/archive' as const },
   {
     label: 'Source',
     href: 'https://github.com/mooship/tidel',
     ariaLabel: 'Source code (opens in new tab)',
-  },
-  {
-    label: 'AGPL-3.0',
-    href: 'https://opensource.org/license/agpl-3-0-only',
-    ariaLabel: 'AGPL-3.0 licence (opens in new tab)',
   },
   { label: 'Atom', href: `${API_URL}/atom.xml`, ariaLabel: 'Subscribe via Atom feed' },
   { label: 'RSS', href: `${API_URL}/rss.xml`, ariaLabel: 'Subscribe via RSS feed' },
@@ -85,29 +76,23 @@ export function Footer() {
     <footer className={footerClass}>
       <span>Made with ♥ in South Africa</span>
       <div className={linksClass}>
-        {ALL_LINKS.map(({ label, ...link }, i) => (
-          <Fragment key={label}>
-            {i > 0 && !('highlight' in link && link.highlight) && (
+        {ALL_LINKS.map(({ label, href, ariaLabel, highlight }, i) => (
+          <span key={label} style={{ display: 'contents' }}>
+            {i > 0 && !highlight && (
               <span className={separatorClass} aria-hidden="true">
                 ·
               </span>
             )}
-            {'internal' in link ? (
-              <Link to={link.internal} className={linkClass}>
-                {label}
-              </Link>
-            ) : (
-              <a
-                href={link.href}
-                className={'highlight' in link && link.highlight ? coffeeClass : linkClass}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={link.ariaLabel}
-              >
-                {label}
-              </a>
-            )}
-          </Fragment>
+            <a
+              href={href}
+              className={highlight ? coffeeClass : linkClass}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={ariaLabel}
+            >
+              {label}
+            </a>
+          </span>
         ))}
       </div>
     </footer>

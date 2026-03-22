@@ -28,14 +28,6 @@ const itemClass = css({
   '&:first-child': { borderTop: '1px solid', borderTopColor: 'border' },
 })
 
-const itemInnerClass = css({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  py: '5',
-  px: '0',
-})
-
 const dateLabelClass = css({
   fontFamily: 'display',
   fontWeight: '700',
@@ -44,27 +36,25 @@ const dateLabelClass = css({
   letterSpacing: '-0.01em',
 })
 
-const slotsClass = css({
+const rowLinkClass = css({
   display: 'flex',
-  gap: '3',
+  justifyContent: 'space-between',
   alignItems: 'center',
-  flexShrink: '0',
+  py: '5',
+  px: '0',
+  textDecoration: 'none',
+  transition: 'opacity 0.1s',
+  _hover: { opacity: '0.7' },
 })
 
-const slotLinkClass = css({
+const slotBadgeClass = css({
   fontFamily: 'display',
   fontSize: '0.65rem',
   fontWeight: '700',
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
-  color: 'textMuted',
-  textDecoration: 'none',
-  border: '1px solid',
-  borderColor: 'border',
-  px: '3',
-  py: '1',
-  transition: 'color 0.1s, border-color 0.1s',
-  '&:hover': { color: 'textPrimary', borderColor: 'textMuted' },
+  color: 'textDim',
+  flexShrink: '0',
 })
 
 export function formatArchiveDate(dateStr: string): string {
@@ -117,27 +107,25 @@ function ArchivePage() {
           </p>
         ) : (
           <ul className={listClass}>
-            {[...grouped.entries()].map(([date, slots]) => (
-              <li key={date} className={itemClass}>
-                <div className={itemInnerClass}>
-                  <span className={dateLabelClass}>{formatArchiveDate(date)}</span>
-                  <div className={slotsClass}>
-                    {slots.map((ed) => (
-                      <Link
-                        key={ed.slot}
-                        to="/edition/$date"
-                        params={{ date }}
-                        search={{ slot: ed.slot as 'morning' | 'afternoon' }}
-                        className={slotLinkClass}
-                        aria-label={`${ed.slot === 'morning' ? 'Morning' : 'Afternoon'} edition for ${formatArchiveDate(date)}, ${ed.storyCount} stories`}
-                      >
-                        {ed.slot === 'morning' ? 'Morning' : 'Afternoon'} · {ed.storyCount}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </li>
-            ))}
+            {[...grouped.entries()].map(([date, slots]) => {
+              const hasAfternoon = slots.some((s) => s.slot === 'afternoon')
+              const defaultSlot = hasAfternoon ? 'afternoon' : 'morning'
+              const slotLabel = slots.map((s) => (s.slot === 'morning' ? 'AM' : 'PM')).join(' · ')
+              return (
+                <li key={date} className={itemClass}>
+                  <Link
+                    to="/edition/$date"
+                    params={{ date }}
+                    search={{ slot: defaultSlot }}
+                    className={rowLinkClass}
+                    aria-label={`Edition for ${formatArchiveDate(date)}`}
+                  >
+                    <span className={dateLabelClass}>{formatArchiveDate(date)}</span>
+                    <span className={slotBadgeClass}>{slotLabel}</span>
+                  </Link>
+                </li>
+              )
+            })}
           </ul>
         )}
       </main>

@@ -47,10 +47,22 @@ const dateClass = css({
   fontSize: '0.85rem',
   color: 'textMuted',
   lineHeight: '1.5',
-  display: { base: 'none', md: 'block' },
+  mb: '4',
 })
 
-const searchLinkClass = css({
+const rightColClass = css({
+  display: { base: 'none', md: 'flex' },
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+})
+
+const navLinksClass = css({
+  display: 'flex',
+  gap: '5',
+  alignItems: 'center',
+})
+
+const navLinkClass = css({
   fontFamily: 'display',
   fontSize: '0.65rem',
   fontWeight: '700',
@@ -58,8 +70,7 @@ const searchLinkClass = css({
   textTransform: 'uppercase',
   color: 'textMuted',
   textDecoration: 'none',
-  display: { base: 'none', md: 'block' },
-  marginTop: '4',
+  _hover: { color: 'textLight' },
 })
 
 const SLOT_LABELS: Record<string, string> = {
@@ -95,16 +106,24 @@ export function Masthead({ editionDate, slot }: MastheadProps) {
           <h1 className={titleClass}>Tidel</h1>
           <p className={subtitleClass}>{subtitle}</p>
         </div>
-        <div style={{ textAlign: 'right' }}>
+        <div className={rightColClass}>
           {date && (
             <div className={dateClass}>
               <div>{dayName}</div>
               <div>{dateLine}</div>
             </div>
           )}
-          <Link to="/search" className={searchLinkClass}>
-            Search
-          </Link>
+          <nav className={navLinksClass} aria-label="Site navigation">
+            <Link to="/about" className={navLinkClass}>
+              About
+            </Link>
+            <Link to="/archive" className={navLinkClass}>
+              Archive
+            </Link>
+            <Link to="/search" className={navLinkClass}>
+              Search
+            </Link>
+          </nav>
         </div>
       </div>
     </header>

@@ -105,7 +105,7 @@ function Root() {
   const [trpcClient] = useState(() => createTrpcClient())
 
   return (
-    <html lang="en">
+    <html lang="en" data-theme="light">
       <head>
         <HeadContent />
       </head>

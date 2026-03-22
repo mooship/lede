@@ -10,7 +10,6 @@ import { PageMessage } from '../components/PageMessage.js'
 import { SlotSwitcher } from '../components/SlotSwitcher.js'
 import { StoryList } from '../components/StoryList.js'
 import { createServerTrpcCaller } from '../trpc.js'
-import { isAfternoonAvailable } from '../utils.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 const storyWrapClass = css({ maxWidth: '1400px', mx: 'auto' })
@@ -92,8 +91,6 @@ function EditionPage() {
     void navigate({ search: (prev) => ({ ...prev, slot }), replace: true })
   }
 
-  const afternoonAvailable = isAfternoonAvailable()
-
   if (data == null) {
     return (
       <div className={pageClass}>
@@ -110,7 +107,7 @@ function EditionPage() {
         <SlotSwitcher
           activeSlot={activeSlot}
           onSlotChange={handleSlotChange}
-          afternoonAvailable={afternoonAvailable}
+          afternoonAvailable={true}
         />
         <div className={css({ maxWidth: '720px', mx: 'auto', px: '8', py: '12' })}>
           <p className={css({ fontFamily: 'body', fontSize: '1.1rem', color: 'textMuted' })}>
@@ -147,7 +144,7 @@ function EditionPage() {
       <SlotSwitcher
         activeSlot={activeSlot}
         onSlotChange={handleSlotChange}
-        afternoonAvailable={afternoonAvailable}
+        afternoonAvailable={true}
       />
       <CategoryNav active={activeCategory} onChange={setActiveCategory} />
       <div className={storyWrapClass}>

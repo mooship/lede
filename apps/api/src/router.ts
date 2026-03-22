@@ -59,9 +59,9 @@ const editionRouter = router({
         let edition = await db.query.editions.findFirst({
           where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)),
         })
-        if (!edition && slot === 'morning') {
+        if (!edition) {
           edition = await db.query.editions.findFirst({
-            where: eq(schema.editions.slot, 'morning'),
+            where: eq(schema.editions.slot, slot),
             orderBy: desc(schema.editions.date),
           })
         }

@@ -3,7 +3,8 @@ import { msUntilNextEdition } from '@tidel/api'
 export { msUntilNextEdition }
 
 export function isAfternoonAvailable(): boolean {
-  return new Date().getUTCHours() >= 15
+  const hour = new Date().getUTCHours()
+  return hour >= 15 || hour < 6
 }
 
 export function afternoonLocalTime(): string {
