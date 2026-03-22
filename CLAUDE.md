@@ -18,23 +18,32 @@ Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`
 
 ## Commands
 
+> **IMPORTANT — always use Moon** for lint, build, test, and typecheck. Do NOT run `npm run` scripts directly in workspaces, do NOT run `npx vitest` or `npx tsc` directly. Moon sets up the correct environment and runs tasks in dependency order. The only exceptions are the per-workspace `dev` and `deploy` commands listed below, which have no Moon equivalent.
+
 > **Before running any command**, ensure dependencies are installed: `npm install`
 
-> **Moon requires internet on first run** to cache its WASM plugins. In restrictive environments where Moon fails, use the per-project commands directly:
+> **Moon requires internet on first run** to cache its WASM plugins. If Moon is unavailable (no network, WASM error), you may fall back to these direct commands only as a last resort:
 > - **Lint**: `./node_modules/.bin/biome check .` (from repo root)
 > - **Typecheck** (`apps/api`): `cd apps/api && npx tsc --noEmit`
 > - **Typecheck** (`apps/web`): `cd apps/web && npx panda codegen --silent && npx tsc --noEmit`
-> - **Test**: `cd apps/api && npx vitest run` and `cd apps/web && npx vitest run`
+> - **Test** (`apps/api`): `cd apps/api && npx vitest run`
+> - **Test** (`apps/web`): `cd apps/web && npx vitest run`
+> Running `npx vitest run` from the repo root does NOT work — it ignores per-workspace vitest configs and will produce false failures.
 
 ```bash
-# All workspaces
-npm run dev          # moon run :dev (starts wrangler dev + vite concurrently)
-npm run build        # moon run :build
-npm run test         # moon run :test
-npm run lint         # moon run :lint (Biome --write)
-npm run typecheck    # moon run :typecheck
+# All workspaces — always prefer these
+moon run :build
+moon run :test
+moon run :lint        # Biome --write
+moon run :typecheck
 
-# Single test file
+# npm run shortcuts (delegate to Moon)
+npm run build
+npm run test
+npm run lint
+npm run typecheck
+
+# Single test file (Moon has no single-file mode — this is the only exception)
 cd apps/api && npx vitest run src/pipeline.test.ts
 
 # API worker only
