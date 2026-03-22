@@ -252,6 +252,7 @@ const linkClass = css({
   color: 'textMuted',
   textDecoration: 'underline',
   textUnderlineOffset: '3px',
+  whiteSpace: 'nowrap',
 })
 
 const slotBadgeMorningClass = css({
