@@ -27,7 +27,9 @@ function trpcCacheMiddleware(getSecs: () => number) {
         const secs = getSecs()
         c.res.headers.set('Cache-Control', `public, s-maxage=${secs}, stale-while-revalidate=86400`)
       }
-    } catch {}
+    } catch (err) {
+      console.warn('[cache] failed to parse tRPC response for cache headers:', err)
+    }
   }
 }
 
@@ -55,6 +57,7 @@ app.use('/trpc/*', async (c, next) => {
   const ip = c.req.header('CF-Connecting-IP') ?? 'unknown'
   const { success } = await c.env.RATE_LIMITER.limit({ key: ip })
   if (!success) {
+    console.warn(`[rate-limit] blocked ${ip} on ${c.req.path}`)
     return c.json(
       { error: { message: 'Too many requests', data: { code: 'TOO_MANY_REQUESTS' } } },
       429,
@@ -264,11 +267,18 @@ app.get('/atom.xml', (c) => handleFeedRequest(c, 'atom'))
 app.get('/rss.xml', (c) => handleFeedRequest(c, 'rss'))
 
 async function handleCron(event: ScheduledEvent, env: Env): Promise<void> {
-  if (event.cron === '0 6 * * *') {
-    await buildEdition(env, 'morning')
+  const slot = event.cron === '0 15 * * *' ? 'afternoon' : 'morning'
+  if (event.cron !== '0 6 * * *' && event.cron !== '0 15 * * *') {
+    console.warn(`[cron] unrecognised cron expression: "${event.cron}"`)
+    return
   }
-  if (event.cron === '0 15 * * *') {
-    await buildEdition(env, 'afternoon')
+  console.log(`[cron] ${slot} build triggered`)
+  try {
+    await buildEdition(env, slot)
+    console.log(`[cron] ${slot} build finished`)
+  } catch (err) {
+    console.error(`[cron] ${slot} build failed:`, err)
+    throw err
   }
 }
 

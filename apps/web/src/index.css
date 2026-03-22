@@ -1,7 +1,7 @@
 @layer reset, base, tokens, recipes, utilities;
 
-html[data-font='opendyslexic'] {
-  --fonts-body: 'OpenDyslexic', cursive;
+html[data-font="opendyslexic"] {
+  --fonts-body: "OpenDyslexic", cursive;
 }
 
 body {

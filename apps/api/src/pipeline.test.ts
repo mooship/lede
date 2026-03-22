@@ -32,7 +32,14 @@ vi.mock('./rss.js', () => ({ fetchFeed: vi.fn() }))
 
 vi.mock('drizzle-orm', () => ({ eq: vi.fn(), and: vi.fn() }))
 
-const mockInsertValues = vi.fn().mockResolvedValue(undefined)
+const mockOnConflictDoNothing = vi.fn().mockResolvedValue(undefined)
+const mockInsertValues = vi
+  .fn()
+  .mockImplementation((arg: unknown) =>
+    Array.isArray(arg)
+      ? Promise.resolve(undefined)
+      : { onConflictDoNothing: mockOnConflictDoNothing },
+  )
 const mockDeleteWhere = vi.fn().mockResolvedValue(undefined)
 const mockFindFirst = vi.fn()
 const mockSelectWhere = vi.fn().mockResolvedValue([])
@@ -293,7 +300,12 @@ describe('buildEdition', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(createDb).mockReturnValue(mockDb as unknown as ReturnType<typeof createDb>)
-    mockInsertValues.mockResolvedValue(undefined)
+    mockInsertValues.mockImplementation((arg: unknown) =>
+      Array.isArray(arg)
+        ? Promise.resolve(undefined)
+        : { onConflictDoNothing: mockOnConflictDoNothing },
+    )
+    mockOnConflictDoNothing.mockResolvedValue(undefined)
     mockDeleteWhere.mockResolvedValue(undefined)
     mockFindFirst.mockResolvedValue(undefined)
     mockSelectWhere.mockResolvedValue([])
@@ -384,9 +396,11 @@ describe('buildEdition', () => {
 
   it('rolls back the edition row if the stories insert fails', async () => {
     vi.mocked(fetchFeed).mockResolvedValue([goodStory])
-    mockInsertValues
-      .mockResolvedValueOnce(undefined)
-      .mockRejectedValueOnce(new Error('DB write error'))
+    mockInsertValues.mockImplementation((arg: unknown) =>
+      Array.isArray(arg)
+        ? Promise.reject(new Error('DB write error'))
+        : { onConflictDoNothing: mockOnConflictDoNothing },
+    )
     await expect(buildEdition(mockEnv)).rejects.toThrow('DB write error')
     expect(mockDb.delete).toHaveBeenCalled()
   })

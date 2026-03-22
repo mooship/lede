@@ -388,10 +388,9 @@ async function purgeEditionCache(zoneId: string, apiToken: string): Promise<void
     body: JSON.stringify({ purge_everything: true }),
   })
   if (!res.ok) {
-    console.error('[purgeCache] failed:', res.status, await res.text())
-  } else {
-    console.log('[purgeCache] Cloudflare cache purged')
+    throw new Error(`Cloudflare purge failed: ${res.status} ${await res.text()}`)
   }
+  console.log('[purgeCache] Cloudflare cache purged')
 }
 
 /**
@@ -405,10 +404,13 @@ export async function buildEdition(
   const db = createDb(env.DATABASE_URL)
   const date = todayUTC()
 
+  console.log(`[buildEdition] starting ${slot} build for ${date}`)
+
   const existing = await db.query.editions.findFirst({
     where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)),
   })
   if (existing) {
+    console.log(`[buildEdition] ${slot} edition for ${date} already exists, skipping`)
     return
   }
 
@@ -446,8 +448,21 @@ export async function buildEdition(
         reason instanceof Error &&
         (reason.message.includes('timeout') || reason.message.includes('timed out'))
       feedStats[feedEntry.url] = isTimeout ? 'timeout' : 'error'
-      console.error(`Failed to fetch ${feedEntry.url}:`, reason)
+      console.error(
+        `[buildEdition] feed fetch failed (${feedStats[feedEntry.url]}): ${feedEntry.url}`,
+        reason,
+      )
     }
+  }
+
+  const okCount = Object.values(feedStats).filter((v) => v === 'ok').length
+  const failCount = feedEntries.length - okCount
+  if (failCount > 0) {
+    console.warn(
+      `[buildEdition] ${failCount}/${feedEntries.length} feeds failed; ${allItems.length} items from ${okCount} feeds`,
+    )
+  } else {
+    console.log(`[buildEdition] all ${feedEntries.length} feeds ok; ${allItems.length} items`)
   }
 
   const filtered = allItems.filter(
@@ -472,23 +487,28 @@ export async function buildEdition(
     return
   }
 
-  await db
-    .insert(schema.editions)
-    .values({ date, slot, builtAt: new Date(), feedStats: JSON.stringify(feedStats) })
+  await withRetry(() =>
+    db
+      .insert(schema.editions)
+      .values({ date, slot, builtAt: new Date(), feedStats: JSON.stringify(feedStats) })
+      .onConflictDoNothing(),
+  )
   try {
-    await db.insert(schema.stories).values(
-      summarised.map((story, i) => ({
-        editionDate: date,
-        editionSlot: slot,
-        title: story.title,
-        description: story.byline || null,
-        summary: story.summary,
-        category: story.category,
-        link: story.link,
-        pubDate: story.pubDate || null,
-        source: hostnameFromUrl(story.link),
-        position: i,
-      })),
+    await withRetry(() =>
+      db.insert(schema.stories).values(
+        summarised.map((story, i) => ({
+          editionDate: date,
+          editionSlot: slot,
+          title: story.title,
+          description: story.byline || null,
+          summary: story.summary,
+          category: story.category,
+          link: story.link,
+          pubDate: story.pubDate || null,
+          source: hostnameFromUrl(story.link),
+          position: i,
+        })),
+      ),
     )
   } catch (err) {
     const e = err as Record<string, unknown>
@@ -512,7 +532,16 @@ export async function buildEdition(
     throw err
   }
 
-  if (env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_API_TOKEN) {
-    await purgeEditionCache(env.CLOUDFLARE_ZONE_ID, env.CLOUDFLARE_API_TOKEN)
+  console.log(
+    `[buildEdition] ${slot} build complete: ${summarised.length} stories persisted for ${date}`,
+  )
+
+  const { CLOUDFLARE_ZONE_ID, CLOUDFLARE_API_TOKEN } = env
+  if (CLOUDFLARE_ZONE_ID && CLOUDFLARE_API_TOKEN) {
+    try {
+      await withRetry(() => purgeEditionCache(CLOUDFLARE_ZONE_ID, CLOUDFLARE_API_TOKEN))
+    } catch (err) {
+      console.error('[purgeCache] failed after retries:', err)
+    }
   }
 }
