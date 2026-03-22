@@ -1,12 +1,6 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
 
 tasks:
-  build:
-    command: 'npx tsc --noEmit'
-    inputs:
-      - 'src/**/*.ts'
-      - 'tsconfig.json'
-
   dev:
     command: 'npx wrangler dev --test-scheduled'
     preset: 'server'
@@ -25,6 +19,9 @@ tasks:
 
   typecheck:
     command: 'npx tsc --noEmit'
+    deps:
+      - 'api:typecheck'
+      - 'db:typecheck'
     inputs:
       - 'src/**/*.ts'
       - 'tsconfig.json'
