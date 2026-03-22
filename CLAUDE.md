@@ -22,6 +22,8 @@ Build order matters: `tsconfig` → `db` → `api` → `apps/api` → `apps/web`
 
 > **Before running any command**, ensure dependencies are installed: `npm install`
 
+> **Moon on Windows** runs tasks via PowerShell, which does not add `node_modules/.bin` to PATH automatically. All per-project `moon.yml` task commands use `npx` prefixes (e.g. `npx vitest run`, `npx tsc --noEmit`) to work around this. Do not remove `npx` prefixes from moon.yml commands.
+
 > **Moon requires internet on first run** to cache its WASM plugins. If Moon is unavailable (no network, WASM error), you may fall back to these direct commands only as a last resort:
 > - **Lint**: `./node_modules/.bin/biome check .` (from repo root)
 > - **Typecheck** (`apps/api`): `cd apps/api && npx tsc --noEmit`
@@ -61,6 +63,9 @@ cd packages/db && DATABASE_URL="<dev url>" npx drizzle-kit migrate
 
 # Production branch — DATABASE_URL from apps/api/.secrets.production.json
 cd packages/db && DATABASE_URL="<prod url>" npx drizzle-kit migrate
+
+# Web deploy (includes uploading ADMIN_SECRET from .secrets.web.json)
+cd apps/web && npm run deploy
 ```
 
 ## Environments
@@ -95,8 +100,10 @@ The web app deploys as a Cloudflare Worker (SSR):
 
 ```bash
 cd apps/web && npm run deploy
-# runs: panda codegen --silent && vite build && wrangler deploy --config wrangler.deploy.jsonc
+# runs: npm run build && wrangler secret bulk .secrets.web.json --config wrangler.deploy.jsonc && wrangler deploy --config wrangler.deploy.jsonc
 ```
+
+`apps/web/.secrets.web.json` (gitignored) holds secrets for the web Worker, deployed via `wrangler secret bulk`. Add any secrets the web Worker needs (e.g. `ADMIN_SECRET` for the server-side admin proxy).
 
 `API_URL` is already set in `wrangler.deploy.jsonc`. For `VITE_API_URL` and `VITE_APP_URL` (used by the client bundle), set them as Cloudflare Worker environment variables in the dashboard or add them to `apps/web/.env.production` before building.
 
@@ -116,7 +123,12 @@ cd apps/web && npm run deploy
 ### tRPC router (`apps/api/src/router.ts`)
 
 - `edition.today` — public query, returns `Story[] | null` for today's UTC date; has a 5 s timeout guard
-- `edition.build` — protected mutation, checks Bearer token against `ADMIN_SECRET`
+- `edition.list` — public query, returns `{ date, slot, storyCount }[]` for all editions
+- `edition.byDate` — public query, returns `Story[] | null` for a specific date + slot; immutable (7-day cache)
+- `edition.adminStatus` — protected query, returns per-slot feed and category stats for the latest date
+- `edition.build` — protected mutation, triggers `buildEdition` via `waitUntil`; idempotent
+- `story.byId` — public query, returns a single `Story` by UUID; immutable (7-day cache)
+- `story.search` — public query, ILIKE with explicit `ESCAPE '\\'` so `%` and `_` in user input are treated as literals
 
 Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified in `context.ts` using `crypto.subtle.timingSafeEqual`.
 
@@ -170,19 +182,36 @@ Web tests (`apps/web`) use vitest + happy-dom with `@testing-library/react`. No 
 
 `@tanstack/react-router`'s `Link` and `createFileRoute` must be mocked in tests that render components containing them without a `RouterProvider`.
 
+`@tanstack/react-start`'s `createServerFn` must be mocked in any test that imports a module using it — see the Key gotchas section for the mock pattern.
+
 ## Key gotchas
 
-- **Moon** task runner — config lives in `.moon/workspace.yml`, `.moon/toolchain.yml`, and per-project `moon.yml` files. Run tasks with `moon run <project>:<task>` or `moon run :<task>` for all projects.
 - **Neon HTTP driver** does not support transactions — use sequential inserts
 - **Wrangler local dev** does not have `DOMParser` — XML parsing uses `fast-xml-parser`
-- **Fontaine** is the `fontaine` npm package (unjs), not `vite-plugin-fontaine` (doesn't exist)
+- **Fontaine** is the `fontaine` npm package (unjs) — used for font fallback metric matching
 - **PandaCSS token names** use camelCase in config but become kebab-case CSS vars (e.g. `textMuted` → `--colors-text-muted`). Use the token name in `css()` calls and the CSS var string in `style={}` props via `CATEGORY_CSS_VAR`.
 - **PandaCSS `styled-system/`** is gitignored and generated at build time — `panda codegen --silent` runs before `tsc` and `vite` in every script. The `prepare` hook also runs it on `npm install`.
-- **CORS** origin callback in Hono uses `resolveCorsOrigin(origin, c.env.WEB_ORIGIN)` from `src/cors.ts`; `WEB_ORIGIN` supports comma-separated URLs
+- **CORS** `resolveCorsOrigin` returns `null` (not `''`) for disallowed or missing origins. The Hono middleware in `src/cors.ts` reads `c.env.WEB_ORIGIN`; `WEB_ORIGIN` supports comma-separated URLs
 - **`ADMIN_SECRET`** must be at least 32 characters — enforced by Zod (`validateEnv`) on every request
 - **After resetting the DB** (drop/recreate tables), migrations must be re-run with `drizzle-kit migrate` before the pipeline will work again
 - **routeTree.gen.ts** is regenerated on every `vite dev` start — commit it after adding new routes
 - **`story.position` is 0-indexed** — the pipeline stores `position: i` (zero-based). Display as `story.position + 1`.
+- **`drizzle-kit migrate` hangs on Node.js 22+** — Node.js 22+ ships a native `WebSocket` global that `@neondatabase/serverless` auto-detects but which fails Neon's handshake silently. `drizzle.config.ts` sets `neonConfig.webSocketConstructor = ws` (the `ws` npm package) to fix this. If the CLI still hangs, apply the migration SQL directly via a Node.js script that imports `ws` and uses `neon()` from `@neondatabase/serverless`.
+- **FK constraint during column type changes** — Postgres refuses to alter a column's type while a foreign key references it. Drop the FK first, run the type changes, then recreate it.
+- **Admin page uses `createServerFn` proxies** — `apps/web/src/routes/admin.tsx` calls the API with the admin secret server-side; the secret never reaches the browser. The web Worker must have `ADMIN_SECRET` in its environment (via `.secrets.web.json`).
+- **`createServerFn` must be mocked in web tests** — `@tanstack/react-start`'s `createServerFn` makes real HTTP requests in a Vitest/happy-dom environment. Mock it with a builder that calls handlers directly:
+  ```ts
+  vi.mock('@tanstack/react-start', () => ({
+    createServerFn: () => {
+      type HandlerFn = (ctx: { data?: unknown }) => unknown
+      const obj = {
+        inputValidator: () => obj,
+        handler: (fn: HandlerFn) => (ctx: { data?: unknown } = {}) => fn(ctx),
+      }
+      return obj
+    },
+  }))
+  ```
 
 ## Library docs
 
