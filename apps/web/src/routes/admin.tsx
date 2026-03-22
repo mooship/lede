@@ -16,7 +16,7 @@ const metaValueWarnClass = css({ color: 'business' })
 const sectionMtClass = css({ marginTop: '2' })
 const tableMbClass = css({ marginBottom: '10px' })
 const thNarrowClass = css({ width: '120px' })
-const thMediumClass = css({ width: '120px' })
+const thMediumClass = css({ width: '80px' })
 const thTinyClass = css({ width: '80px' })
 const mainClass = css({ maxWidth: '900px', mx: 'auto', px: '8', pt: '12', pb: '20' })
 
