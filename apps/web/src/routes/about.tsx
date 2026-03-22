@@ -3,6 +3,8 @@ import { css } from '../../styled-system/css'
 import { Footer } from '../components/Footer.js'
 import { PageHeader } from '../components/PageHeader.js'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
+
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 
 const mainClass = css({ maxWidth: '720px', mx: 'auto', px: '8', pt: '16', pb: '20' })
@@ -103,6 +105,32 @@ const inlineLinkClass = css({
   color: 'textSecondary',
   textDecoration: 'underline',
   textUnderlineOffset: '2px',
+})
+
+const feedLinksClass = css({
+  display: 'flex',
+  gap: '3',
+  flexWrap: 'wrap',
+  marginTop: '2',
+})
+
+const feedLinkClass = css({
+  fontFamily: 'display',
+  fontSize: '0.75rem',
+  fontWeight: '700',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'textMuted',
+  textDecoration: 'none',
+  border: '1px solid',
+  borderColor: 'border',
+  borderRadius: '4px',
+  px: '3',
+  py: '2',
+  minHeight: '44px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  _hover: { color: 'textPrimary', borderColor: 'textMuted' },
 })
 
 const tableNoteClass = css({
@@ -231,6 +259,29 @@ function AboutPage() {
             Tidel is editorially progressive. We draw from international sources and avoid outlets
             that reflect a narrow political or commercial agenda.
           </p>
+        </div>
+
+        <div className={sectionClass}>
+          <h2 className={headingClass}>Subscribe via feed</h2>
+          <p className={bodyClass}>
+            Read Tidel in any RSS or Atom-compatible reader — no account needed.
+          </p>
+          <div className={feedLinksClass}>
+            <a
+              href={`${API_URL}/atom.xml`}
+              className={feedLinkClass}
+              aria-label="Subscribe via Atom feed"
+            >
+              Atom
+            </a>
+            <a
+              href={`${API_URL}/rss.xml`}
+              className={feedLinkClass}
+              aria-label="Subscribe via RSS feed"
+            >
+              RSS
+            </a>
+          </div>
         </div>
 
         <div className={sectionClass}>
