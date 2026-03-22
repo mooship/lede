@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
 import type { Category, Slot } from '@tidel/api'
 import { useState } from 'react'
+import { z } from 'zod'
 import { css, cx } from '../../styled-system/css'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 import { Footer } from '../components/Footer.js'
@@ -295,47 +297,63 @@ type AdminStatusData = SlotStatusData[] | null
 
 const CATEGORY_ORDER: Category[] = ['World', 'Technology', 'Science', 'Business / Economy', 'Sport']
 
-async function fetchAdminStatus(secret: string): Promise<AdminStatusData> {
-  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
-  const res = await fetch(`${apiUrl}/trpc/edition.adminStatus`, {
-    headers: { Authorization: `Bearer ${secret}` },
+const adminStatusServerFn = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ password: z.string() }))
+  .handler(async ({ data }) => {
+    const apiUrl = process.env.API_URL ?? 'http://localhost:8787'
+    const res = await fetch(`${apiUrl}/trpc/edition.adminStatus`, {
+      headers: { Authorization: `Bearer ${data.password}` },
+    })
+    const json = (await res.json()) as {
+      result?: { data?: AdminStatusData }
+      error?: { message: string; data?: { code?: string } }
+    }
+    if (json.error) {
+      const code = json.error.data?.code
+      throw Object.assign(new Error(json.error.message), { code })
+    }
+    return json.result?.data ?? null
   })
-  const json = (await res.json()) as {
-    result?: { data?: AdminStatusData }
-    error?: { message: string; data?: { code?: string } }
-  }
-  if (json.error) {
-    const code = json.error.data?.code
-    throw Object.assign(new Error(json.error.message), { code })
-  }
-  return json.result?.data ?? null
-}
 
-async function fetchEditionList(): Promise<
-  Array<{ date: string; slot: string; storyCount: number }>
-> {
-  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
+const editionListServerFn = createServerFn({ method: 'GET' }).handler(async () => {
+  const apiUrl = process.env.API_URL ?? 'http://localhost:8787'
   const res = await fetch(`${apiUrl}/trpc/edition.list`)
   const json = (await res.json()) as {
     result?: { data?: Array<{ date: string; slot: string; storyCount: number }> }
   }
   return json.result?.data ?? []
+})
+
+const triggerBuildServerFn = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ password: z.string(), slot: z.enum(['morning', 'afternoon']) }))
+  .handler(async ({ data }) => {
+    const apiUrl = process.env.API_URL ?? 'http://localhost:8787'
+    const res = await fetch(`${apiUrl}/trpc/edition.build`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.password}` },
+      body: JSON.stringify({ slot: data.slot }),
+    })
+    const json = (await res.json()) as {
+      result?: { data?: { ok: boolean } }
+      error?: { message: string }
+    }
+    if (json.error) {
+      throw new Error(json.error.message)
+    }
+  })
+
+async function fetchAdminStatus(password: string): Promise<AdminStatusData> {
+  return adminStatusServerFn({ data: { password } })
 }
 
-async function triggerBuild(secret: string, slot: Slot): Promise<void> {
-  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
-  const res = await fetch(`${apiUrl}/trpc/edition.build`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
-    body: JSON.stringify({ slot }),
-  })
-  const json = (await res.json()) as {
-    result?: { data?: { ok: boolean } }
-    error?: { message: string }
-  }
-  if (json.error) {
-    throw new Error(json.error.message)
-  }
+async function fetchEditionList(): Promise<
+  Array<{ date: string; slot: string; storyCount: number }>
+> {
+  return editionListServerFn()
+}
+
+async function triggerBuild(password: string, slot: Slot): Promise<void> {
+  return triggerBuildServerFn({ data: { password, slot } })
 }
 
 function formatBuiltAt(iso: string): string {

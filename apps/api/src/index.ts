@@ -76,8 +76,13 @@ app.use(
 
 type FeedStory = Story & { builtAt: Date }
 
-function escapeXml(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+export function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
 }
 
 function buildAtomFeed(
@@ -166,28 +171,20 @@ async function fetchFeedData(
   if (slotParam === 'morning' || slotParam === 'afternoon') {
     let edition = await db.query.editions.findFirst({
       where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slotParam)),
+      with: { stories: { orderBy: schema.stories.position } },
     })
     if (!edition && slotParam === 'morning') {
       edition = await db.query.editions.findFirst({
         where: eq(schema.editions.slot, 'morning'),
         orderBy: desc(schema.editions.date),
+        with: { stories: { orderBy: schema.stories.position } },
       })
     }
     if (!edition) {
       return null
     }
-    const rows = await db
-      .select()
-      .from(schema.stories)
-      .where(
-        and(
-          eq(schema.stories.editionDate, edition.date),
-          eq(schema.stories.editionSlot, edition.slot),
-        ),
-      )
-      .orderBy(schema.stories.position)
     const slotLabel = slotParam === 'afternoon' ? 'Afternoon' : 'Morning'
-    const stories: FeedStory[] = rows.map(mapStoryRow).map((s) => ({
+    const stories: FeedStory[] = edition.stories.map(mapStoryRow).map((s) => ({
       ...s,
       builtAt: edition.builtAt,
     }))
@@ -196,11 +193,13 @@ async function fetchFeedData(
 
   let morningEdition = await db.query.editions.findFirst({
     where: and(eq(schema.editions.date, date), eq(schema.editions.slot, 'morning')),
+    with: { stories: { orderBy: schema.stories.position } },
   })
   if (!morningEdition) {
     morningEdition = await db.query.editions.findFirst({
       where: eq(schema.editions.slot, 'morning'),
       orderBy: desc(schema.editions.date),
+      with: { stories: { orderBy: schema.stories.position } },
     })
   }
   if (!morningEdition) {
@@ -212,25 +211,18 @@ async function fetchFeedData(
       eq(schema.editions.date, morningEdition.date),
       eq(schema.editions.slot, 'afternoon'),
     ),
+    with: { stories: { orderBy: schema.stories.position } },
   })
 
-  const fetchRows = async (ed: typeof morningEdition) =>
-    db
-      .select()
-      .from(schema.stories)
-      .where(and(eq(schema.stories.editionDate, ed.date), eq(schema.stories.editionSlot, ed.slot)))
-      .orderBy(schema.stories.position)
-
-  const [morningRows, afternoonRows] = await Promise.all([
-    fetchRows(morningEdition),
-    afternoonEdition ? fetchRows(afternoonEdition) : Promise.resolve([]),
-  ])
-  const morning: FeedStory[] = morningRows.map(mapStoryRow).map((s) => ({
+  const morning: FeedStory[] = morningEdition.stories.map(mapStoryRow).map((s) => ({
     ...s,
     builtAt: morningEdition.builtAt,
   }))
   const afternoon: FeedStory[] = afternoonEdition
-    ? afternoonRows.map(mapStoryRow).map((s) => ({ ...s, builtAt: afternoonEdition.builtAt }))
+    ? afternoonEdition.stories.map(mapStoryRow).map((s) => ({
+        ...s,
+        builtAt: afternoonEdition.builtAt,
+      }))
     : []
   return { stories: [...morning, ...afternoon], title: 'Tidel' }
 }
@@ -267,11 +259,11 @@ app.get('/atom.xml', (c) => handleFeedRequest(c, 'atom'))
 app.get('/rss.xml', (c) => handleFeedRequest(c, 'rss'))
 
 async function handleCron(event: ScheduledEvent, env: Env): Promise<void> {
-  const slot = event.cron === '0 15 * * *' ? 'afternoon' : 'morning'
   if (event.cron !== '0 6 * * *' && event.cron !== '0 15 * * *') {
     console.warn(`[cron] unrecognised cron expression: "${event.cron}"`)
     return
   }
+  const slot = event.cron === '0 15 * * *' ? 'afternoon' : 'morning'
   console.log(`[cron] ${slot} build triggered`)
   try {
     await buildEdition(env, slot)

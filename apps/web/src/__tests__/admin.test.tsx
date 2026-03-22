@@ -3,6 +3,20 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('@tanstack/react-start', () => ({
+  createServerFn: () => {
+    type HandlerFn = (ctx: { data?: unknown }) => unknown
+    const obj = {
+      inputValidator: () => obj,
+      handler:
+        (fn: HandlerFn) =>
+        (ctx: { data?: unknown } = {}) =>
+          fn(ctx),
+    }
+    return obj
+  },
+}))
+
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => (config: object) => ({ ...config }),
   Link: ({ children, to }: { children: React.ReactNode; to: string }) => (

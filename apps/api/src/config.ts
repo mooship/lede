@@ -42,8 +42,7 @@ export const FEEDS: Record<Category, string[]> = {
   ],
 }
 
-export const MAX_STORIES_PER_CATEGORY = 3
-export const MAX_STORY_COUNT = 12
-
-export const AFTERNOON_MAX_STORIES_PER_CATEGORY = 3
-export const AFTERNOON_MAX_STORY_COUNT = 12
+export const SLOT_CONFIG = {
+  morning: { max: 15, maxPerCat: 5 },
+  afternoon: { max: 12, maxPerCat: 3 },
+} as const

@@ -2,13 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { Category } from '@tidel/api'
 import { createDb, schema } from '@tidel/db'
 import { and, eq } from 'drizzle-orm'
-import {
-  AFTERNOON_MAX_STORIES_PER_CATEGORY,
-  AFTERNOON_MAX_STORY_COUNT,
-  FEEDS,
-  MAX_STORIES_PER_CATEGORY,
-  MAX_STORY_COUNT,
-} from './config.js'
+import { FEEDS, SLOT_CONFIG } from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
 import { fetchFeed } from './rss.js'
@@ -160,18 +154,7 @@ type CurationConfig = {
 }
 
 function getCurationConfig(slot: 'morning' | 'afternoon'): CurationConfig {
-  if (slot === 'afternoon') {
-    return {
-      max: AFTERNOON_MAX_STORY_COUNT,
-      maxPerCat: AFTERNOON_MAX_STORIES_PER_CATEGORY,
-      slotLabel: 'afternoon',
-    }
-  }
-  return {
-    max: MAX_STORY_COUNT,
-    maxPerCat: MAX_STORIES_PER_CATEGORY,
-    slotLabel: 'morning',
-  }
+  return { ...SLOT_CONFIG[slot], slotLabel: slot }
 }
 
 /**
@@ -182,6 +165,7 @@ export async function curateWithClaude(
   scored: ScoredItem[],
   env: Env,
   slot: 'morning' | 'afternoon' = 'morning',
+  anthropicClient: Anthropic | null = null,
 ): Promise<ScoredItem[]> {
   const cfg = getCurationConfig(slot)
   const byCategory = groupByCategory(scored)
@@ -203,11 +187,12 @@ export async function curateWithClaude(
     return result
   }
 
-  if (!env.ANTHROPIC_API_KEY) {
+  const client =
+    anthropicClient ??
+    (env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null)
+  if (!client) {
     return fallbackResult()
   }
-
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
 
   const allStories: ScoredItem[] = []
   const categoryBlocks: string[] = []
@@ -333,15 +318,20 @@ function parseSummariseResponse(
   return { title, byline, summary }
 }
 
-function createSummariser(env: Env): (item: RssItem) => Promise<SummariseResult> {
+function createSummariser(
+  env: Env,
+  anthropicClient: Anthropic | null = null,
+): (item: RssItem) => Promise<SummariseResult> {
   const raw = async (item: RssItem): Promise<SummariseResult> => ({
     title: item.title,
     byline: item.description || item.title,
     summary: item.description || item.title,
   })
 
-  if (env.ANTHROPIC_API_KEY) {
-    const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
+  const client =
+    anthropicClient ??
+    (env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null)
+  if (client) {
     console.log('[summariser] Claude Haiku')
     return async (item) => {
       try {
@@ -463,9 +453,12 @@ export async function buildEdition(
       !excludeLinks.has(item.link),
   )
   const scored: ScoredItem[] = deduplicateByTitle(filtered)
-  const selected: ScoredItem[] = await curateWithClaude(scored, env, slot)
+  const anthropicClient = env.ANTHROPIC_API_KEY
+    ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
+    : null
+  const selected: ScoredItem[] = await curateWithClaude(scored, env, slot, anthropicClient)
 
-  const summariser = createSummariser(env)
+  const summariser = createSummariser(env, anthropicClient)
   const summarised = await Promise.all(
     selected.map(async (item) => {
       const { title, byline, summary } = await summariser(item)
@@ -502,13 +495,13 @@ export async function buildEdition(
       ),
     )
   } catch (err) {
-    const e = err as Record<string, unknown>
+    const pg = err as Record<string, unknown>
     console.error('[buildEdition] Failed to insert stories, rolling back edition:', {
-      message: e.message,
-      code: e.code,
-      detail: e.detail,
-      constraint: e.constraint,
-      table: e.table,
+      message: err instanceof Error ? err.message : String(err),
+      code: pg.code,
+      detail: pg.detail,
+      constraint: pg.constraint,
+      table: pg.table,
     })
     try {
       await db
@@ -517,7 +510,7 @@ export async function buildEdition(
     } catch (deleteErr) {
       console.error(
         '[buildEdition] Rollback delete also failed:',
-        (deleteErr as Record<string, unknown>).message,
+        deleteErr instanceof Error ? deleteErr.message : String(deleteErr),
       )
     }
     throw err

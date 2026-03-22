@@ -11,12 +11,14 @@ vi.mock('@tidel/db', () => ({
       editionSlot: 'editionSlot',
       position: 'position',
       id: 'id',
+      title: 'title',
+      summary: 'summary',
     },
   },
 }))
 
 vi.mock('./pipeline.js', () => ({
-  buildEdition: vi.fn(),
+  buildEdition: vi.fn().mockResolvedValue(undefined),
   todayUTC: vi.fn(() => '2024-01-01'),
   currentSlot: vi.fn(() => 'morning'),
 }))
@@ -25,7 +27,7 @@ vi.mock('drizzle-orm', () => ({
   eq: vi.fn((a, b) => `${String(a)}=${b}`),
   and: vi.fn((...args: unknown[]) => args.join('&')),
   or: vi.fn((...args: unknown[]) => args.join('|')),
-  ilike: vi.fn((col, val) => `${String(col)} ilike ${String(val)}`),
+  sql: vi.fn((..._args: unknown[]) => 'sql-expr'),
   desc: vi.fn((a) => `${String(a)} desc`),
   asc: vi.fn((a) => `${String(a)} asc`),
   count: vi.fn(() => 'count'),
@@ -58,19 +60,13 @@ const mockDb = {
   where: vi.fn().mockReturnThis(),
   leftJoin: vi.fn().mockReturnThis(),
   groupBy: vi.fn().mockReturnThis(),
-  orderBy: vi.fn().mockResolvedValue(
-    mockStories.map((s) => ({
-      ...s,
-      pubDate: s.pubDate,
-    })),
-  ),
+  orderBy: vi.fn().mockReturnThis(),
   limit: vi.fn().mockResolvedValue(
     mockStories.map((s) => ({
       ...s,
       pubDate: s.pubDate,
     })),
   ),
-  [Symbol.iterator]: function* () {},
 }
 
 function makeEnv() {
@@ -113,8 +109,8 @@ describe('edition.today', () => {
       date: '2024-01-01',
       slot: 'morning',
       builtAt: new Date(),
+      stories: mockStories.map((s) => ({ ...s })),
     })
-    mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s, pubDate: s.pubDate })))
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
@@ -133,10 +129,12 @@ describe('edition.today', () => {
   })
 
   it('falls back to the most recent morning edition when today has no entry', async () => {
-    mockDb.query.editions.findFirst
-      .mockResolvedValueOnce(undefined)
-      .mockResolvedValueOnce({ date: '2023-12-31', slot: 'morning', builtAt: new Date() })
-    mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s })))
+    mockDb.query.editions.findFirst.mockResolvedValueOnce(undefined).mockResolvedValueOnce({
+      date: '2023-12-31',
+      slot: 'morning',
+      builtAt: new Date(),
+      stories: mockStories.map((s) => ({ ...s })),
+    })
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
@@ -238,8 +236,8 @@ describe('edition.byDate', () => {
       date: '2024-01-01',
       slot: 'morning',
       builtAt: new Date(),
+      stories: mockStories.map((s) => ({ ...s })),
     })
-    mockDb.orderBy.mockResolvedValue(mockStories.map((s) => ({ ...s })))
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
@@ -256,13 +254,13 @@ describe('edition.byDate', () => {
   })
 
   it('returns afternoon slot stories when slot is specified', async () => {
+    const afternoonStory = { ...mockStories[0], editionSlot: 'afternoon' as const, id: '2' }
     mockDb.query.editions.findFirst.mockResolvedValue({
       date: '2024-01-01',
       slot: 'afternoon',
       builtAt: new Date(),
+      stories: [afternoonStory],
     })
-    const afternoonStory = { ...mockStories[0], editionSlot: 'afternoon', id: '2' }
-    mockDb.orderBy.mockResolvedValue([afternoonStory])
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
@@ -275,7 +273,8 @@ describe('edition.byDate', () => {
 describe('edition.adminStatus', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockDb.groupBy.mockResolvedValue([])
+    mockDb.groupBy.mockReturnThis()
+    mockDb.orderBy.mockResolvedValue([])
   })
 
   it('throws UNAUTHORIZED for non-admin callers', async () => {
@@ -303,9 +302,15 @@ describe('edition.adminStatus', () => {
       feedStats: null,
     })
     mockDb.orderBy.mockResolvedValue([
-      { date: '2024-01-01', slot: 'morning', builtAt, feedStats: null },
+      {
+        date: '2024-01-01',
+        slot: 'morning',
+        builtAt,
+        feedStats: null,
+        category: null,
+        storyCount: 0,
+      },
     ])
-    mockDb.groupBy.mockResolvedValue([])
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
@@ -329,9 +334,15 @@ describe('edition.adminStatus', () => {
       feedStats: feedStatsJson,
     })
     mockDb.orderBy.mockResolvedValue([
-      { date: '2024-01-01', slot: 'morning', builtAt, feedStats: feedStatsJson },
+      {
+        date: '2024-01-01',
+        slot: 'morning',
+        builtAt,
+        feedStats: feedStatsJson,
+        category: null,
+        storyCount: 0,
+      },
     ])
-    mockDb.groupBy.mockResolvedValue([])
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
@@ -342,7 +353,7 @@ describe('edition.adminStatus', () => {
     })
   })
 
-  it('includes categoryBreakdown from category query results', async () => {
+  it('includes categoryBreakdown from joined category rows', async () => {
     const builtAt = new Date('2024-01-01T04:00:00Z')
     mockDb.query.editions.findFirst.mockResolvedValue({
       date: '2024-01-01',
@@ -351,17 +362,29 @@ describe('edition.adminStatus', () => {
       feedStats: null,
     })
     mockDb.orderBy.mockResolvedValue([
-      { date: '2024-01-01', slot: 'morning', builtAt, feedStats: null },
-    ])
-    mockDb.groupBy.mockResolvedValue([
-      { category: 'Technology', storyCount: 3 },
-      { category: 'World', storyCount: 4 },
+      {
+        date: '2024-01-01',
+        slot: 'morning',
+        builtAt,
+        feedStats: null,
+        category: 'Technology',
+        storyCount: 3,
+      },
+      {
+        date: '2024-01-01',
+        slot: 'morning',
+        builtAt,
+        feedStats: null,
+        category: 'World',
+        storyCount: 4,
+      },
     ])
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
     const result = await caller.edition.adminStatus()
     expect(result?.[0]?.categoryBreakdown).toEqual({ Technology: 3, World: 4 })
+    expect(result?.[0]?.storyCount).toBe(7)
   })
 })
 
@@ -401,7 +424,7 @@ describe('story.byId', () => {
     const row = {
       id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
       editionDate: '2024-01-01',
-      editionSlot: 'morning',
+      editionSlot: 'morning' as const,
       title: 'Mapped Title',
       description: 'A byline.',
       summary: 'Summary here.',
@@ -425,5 +448,73 @@ describe('story.byId', () => {
       source: 'nature.com',
       position: 5,
     })
+  })
+})
+
+describe('story.search', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockDb.orderBy.mockReturnThis()
+  })
+
+  it('returns matching stories', async () => {
+    mockDb.limit.mockResolvedValue(mockStories.map((s) => ({ ...s })))
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.story.search({ query: 'climate' })
+    expect(result).toHaveLength(1)
+    expect(result[0]?.title).toBe('Test Story')
+  })
+
+  it('returns empty array when no stories match', async () => {
+    mockDb.limit.mockResolvedValue([])
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const result = await caller.story.search({ query: 'no match' })
+    expect(result).toEqual([])
+  })
+
+  it('rejects queries shorter than 2 characters', async () => {
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    await expect(caller.story.search({ query: 'x' })).rejects.toThrow()
+  })
+
+  it('rejects queries longer than 100 characters', async () => {
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    await expect(caller.story.search({ query: 'a'.repeat(101) })).rejects.toThrow()
+  })
+
+  it('escapes % wildcard in query so it is treated as a literal', async () => {
+    mockDb.limit.mockResolvedValue([])
+    const { sql } = await import('drizzle-orm')
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    await caller.story.search({ query: '100% sure' })
+    const sqlCalls = (sql as unknown as ReturnType<typeof vi.fn>).mock.calls
+    const patterns = sqlCalls
+      .flatMap((args: unknown[]) => args)
+      .filter((a) => typeof a === 'string')
+    expect(patterns.some((p) => p.includes('%100\\% sure%'))).toBe(true)
+  })
+
+  it('escapes _ wildcard in query so it is treated as a literal', async () => {
+    mockDb.limit.mockResolvedValue([])
+    const { sql } = await import('drizzle-orm')
+    const router = await getRouter()
+    const factory = createCallerFactory(router)
+    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    await caller.story.search({ query: 'some_thing' })
+    const sqlCalls = (sql as unknown as ReturnType<typeof vi.fn>).mock.calls
+    const patterns = sqlCalls
+      .flatMap((args: unknown[]) => args)
+      .filter((a) => typeof a === 'string')
+    expect(patterns.some((p) => p.includes('%some\\_thing%'))).toBe(true)
   })
 })

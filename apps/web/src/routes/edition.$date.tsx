@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import type { Category, Slot, Story } from '@tidel/api'
-import { useState } from 'react'
 import { z } from 'zod'
 import { css } from '../../styled-system/css'
 import { CategoryNav } from '../components/CategoryNav.js'
@@ -69,17 +68,24 @@ const fetchEditionByDate = createServerFn({ method: 'GET' })
 
 const searchSchema = z.object({
   slot: z.enum(['morning', 'afternoon']).optional().default('morning'),
+  category: z
+    .enum(['All', 'World', 'Technology', 'Science', 'Business / Economy', 'Sport', 'Culture'])
+    .optional()
+    .default('All'),
 })
 
 function EditionPage() {
   const { date } = Route.useParams()
-  const { slot: activeSlot } = useSearch({ from: '/edition/$date' })
+  const { slot: activeSlot, category: activeCategory } = useSearch({ from: '/edition/$date' })
   const navigate = useNavigate({ from: '/edition/$date' })
-  const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All')
   const data: Story[] | null = Route.useLoaderData()
 
   function handleSlotChange(slot: Slot) {
     void navigate({ search: (prev) => ({ ...prev, slot }), replace: true })
+  }
+
+  function handleCategoryChange(tab: Category | 'All') {
+    void navigate({ search: (prev) => ({ ...prev, category: tab }), replace: true })
   }
 
   if (data == null) {
@@ -137,7 +143,7 @@ function EditionPage() {
         onSlotChange={handleSlotChange}
         afternoonAvailable={true}
       />
-      <CategoryNav active={activeCategory} onChange={setActiveCategory} />
+      <CategoryNav active={activeCategory} onChange={handleCategoryChange} />
       <div className={storyWrapClass}>
         {filtered.length === 0 ? (
           <p

@@ -11,7 +11,7 @@ export type Slot = 'morning' | 'afternoon'
 export type Story = {
   id: string
   editionDate: string
-  editionSlot: string
+  editionSlot: Slot
   title: string
   description: string | null
   summary: string

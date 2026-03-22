@@ -2,7 +2,7 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 
 tasks:
   codegen:
-    command: 'panda codegen --silent'
+    command: 'npx panda codegen --silent'
     inputs:
       - 'panda.config.ts'
       - 'src/**/*.{ts,tsx}'
@@ -10,7 +10,7 @@ tasks:
       - 'styled-system/**'
 
   build:
-    command: 'vite build'
+    command: 'npx vite build'
     deps:
       - '~:codegen'
     inputs:
@@ -21,25 +21,25 @@ tasks:
       - 'dist/**'
 
   dev:
-    command: 'vite dev'
+    command: 'npx vite dev'
     deps:
       - '~:codegen'
     preset: 'server'
 
   test:
-    command: 'vitest run'
+    command: 'npx vitest run'
     inputs:
       - 'src/**/*.{ts,tsx}'
 
   lint:
-    command: 'biome check --write .'
+    command: 'npx biome check --write .'
     inputs:
       - 'src/**/*.{ts,tsx}'
       - '/biome.json'
       - '/*.json'
 
   typecheck:
-    command: 'tsc --noEmit'
+    command: 'npx tsc --noEmit'
     inputs:
       - 'src/**/*.{ts,tsx}'
       - 'tsconfig.json'

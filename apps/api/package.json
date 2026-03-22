@@ -4,6 +4,9 @@
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",
+  "exports": {
+    "./types": "./src/router.ts"
+  },
   "scripts": {
     "dev": "wrangler dev --test-scheduled",
     "build": "tsc --noEmit",

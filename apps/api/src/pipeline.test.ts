@@ -1,11 +1,7 @@
 import type { Category } from '@tidel/api'
 import { createDb } from '@tidel/db'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  AFTERNOON_MAX_STORIES_PER_CATEGORY,
-  AFTERNOON_MAX_STORY_COUNT,
-  MAX_STORIES_PER_CATEGORY,
-} from './config.js'
+import { SLOT_CONFIG } from './config.js'
 import type { Env } from './env.js'
 import {
   buildEdition,
@@ -150,7 +146,7 @@ describe('curateWithClaude', () => {
     const env = { ANTHROPIC_API_KEY: 'test-key' } as Parameters<typeof curateWithClaude>[1]
     const result = await curateWithClaude(scored, env)
     const techResults = result.filter((s) => s.category === 'Technology')
-    expect(techResults).toHaveLength(3)
+    expect(techResults).toHaveLength(4)
     expect(techResults[0]?.title).toBe('Story 1')
     expect(techResults[1]?.title).toBe('Story 3')
   })
@@ -162,7 +158,7 @@ describe('curateWithClaude', () => {
     const scored = makeScoredItems(8)
     const env = { ANTHROPIC_API_KEY: 'test-key' } as Parameters<typeof curateWithClaude>[1]
     const result = await curateWithClaude(scored, env)
-    expect(result.filter((s) => s.category === 'Technology')).toHaveLength(3)
+    expect(result.filter((s) => s.category === 'Technology')).toHaveLength(4)
   })
 
   it('falls back to date-sort when no JSON array in response', async () => {
@@ -171,7 +167,7 @@ describe('curateWithClaude', () => {
     const env = { ANTHROPIC_API_KEY: 'test-key' } as Parameters<typeof curateWithClaude>[1]
     const result = await curateWithClaude(scored, env)
     const techResults = result.filter((s) => s.category === 'Technology')
-    expect(techResults.length).toBeLessThanOrEqual(MAX_STORIES_PER_CATEGORY)
+    expect(techResults.length).toBeLessThanOrEqual(SLOT_CONFIG.morning.maxPerCat)
     expect(techResults[0]?.title).toBe('Story 8')
   })
 
@@ -206,7 +202,7 @@ describe('curateWithClaude', () => {
     const result = await curateWithClaude(scored, env)
     expect(mockCreate).not.toHaveBeenCalled()
     const techResults = result.filter((s) => s.category === 'Technology')
-    expect(techResults.length).toBeLessThanOrEqual(MAX_STORIES_PER_CATEGORY)
+    expect(techResults.length).toBeLessThanOrEqual(SLOT_CONFIG.morning.maxPerCat)
     expect(techResults[0]?.title).toBe('Story 8')
   })
 
@@ -218,7 +214,7 @@ describe('curateWithClaude', () => {
     const env = { ANTHROPIC_API_KEY: 'test-key' } as Parameters<typeof curateWithClaude>[1]
     const result = await curateWithClaude(scored, env, 'afternoon')
     const techResults = result.filter((s) => s.category === 'Technology')
-    expect(techResults.length).toBeLessThanOrEqual(AFTERNOON_MAX_STORIES_PER_CATEGORY)
+    expect(techResults.length).toBeLessThanOrEqual(SLOT_CONFIG.afternoon.maxPerCat)
   })
 
   it('afternoon slot fallback targets afternoon story count', async () => {
@@ -226,7 +222,19 @@ describe('curateWithClaude', () => {
     const scored = makeScoredItems(20)
     const env = {} as Parameters<typeof curateWithClaude>[1]
     const result = await curateWithClaude(scored, env, 'afternoon')
-    expect(result.length).toBeLessThanOrEqual(AFTERNOON_MAX_STORY_COUNT)
+    expect(result.length).toBeLessThanOrEqual(SLOT_CONFIG.afternoon.max)
+  })
+
+  it('caps per-category results when Claude returns more indices than maxPerCat', async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: 'text', text: '[1, 2, 3, 4, 5, 6, 7, 8]' }],
+    })
+    const scored = makeScoredItems(8)
+    const env = { ANTHROPIC_API_KEY: 'test-key' } as Parameters<typeof curateWithClaude>[1]
+    const result = await curateWithClaude(scored, env, 'morning')
+    const techResults = result.filter((s) => s.category === 'Technology')
+    expect(techResults.length).toBeLessThanOrEqual(SLOT_CONFIG.morning.maxPerCat)
+    expect(techResults).toHaveLength(SLOT_CONFIG.morning.maxPerCat)
   })
 })
 

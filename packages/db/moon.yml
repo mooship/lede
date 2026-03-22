@@ -2,7 +2,7 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 
 tasks:
   lint:
-    command: 'biome check --write .'
+    command: 'npx biome check --write .'
     inputs:
       - 'src/**/*.ts'
       - '/biome.json'

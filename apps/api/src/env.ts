@@ -16,5 +16,10 @@ type RateLimiter = {
 export type Env = z.infer<typeof envSchema> & { RATE_LIMITER: RateLimiter }
 
 export function validateEnv(raw: unknown): Env {
-  return envSchema.parse(raw) as Env
+  const parsed = envSchema.parse(raw)
+  const rateLimiter = (raw as Record<string, unknown>).RATE_LIMITER
+  if (!rateLimiter || typeof (rateLimiter as RateLimiter).limit !== 'function') {
+    throw new Error('RATE_LIMITER binding is missing or misconfigured')
+  }
+  return { ...parsed, RATE_LIMITER: rateLimiter as RateLimiter }
 }

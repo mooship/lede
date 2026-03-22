@@ -102,7 +102,7 @@ function IndexPage() {
   const { category: activeCategory, slot: activeSlot } = useSearch({ from: '/' })
   const data: Story[] | null = Route.useLoaderData()
 
-  const seenEditionDate = useRef<string | null>(null)
+  const seenEditionId = useRef<string | null>(null)
   const seenSlot = useRef<string | null>(null)
   const [showBanner, setShowBanner] = useState(false)
 
@@ -120,22 +120,22 @@ function IndexPage() {
     }
     const firstId = data[0]?.id ?? ''
     if (seenSlot.current !== null && seenSlot.current !== activeSlot) {
-      seenEditionDate.current = firstId
+      seenEditionId.current = firstId
       seenSlot.current = activeSlot
       setShowBanner(false)
       return
     }
     seenSlot.current = activeSlot
-    if (seenEditionDate.current === null) {
-      seenEditionDate.current = firstId
-    } else if (seenEditionDate.current !== firstId) {
+    if (seenEditionId.current === null) {
+      seenEditionId.current = firstId
+    } else if (seenEditionId.current !== firstId) {
       setShowBanner(true)
     }
   }, [data, activeSlot])
 
   function handleBannerRefresh() {
     setShowBanner(false)
-    seenEditionDate.current = data?.[0]?.id ?? null
+    seenEditionId.current = data?.[0]?.id ?? null
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 

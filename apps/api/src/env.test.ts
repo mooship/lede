@@ -5,6 +5,7 @@ const VALID_ENV = {
   DATABASE_URL: 'postgresql://user:pass@host/db',
   ADMIN_SECRET: 'a'.repeat(32),
   WEB_ORIGIN: 'https://tidel.app',
+  RATE_LIMITER: { limit: async () => ({ success: true }) },
 }
 
 describe('validateEnv', () => {

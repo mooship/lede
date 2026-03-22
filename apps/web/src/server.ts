@@ -4,7 +4,8 @@ import { msUntilNextEdition } from '@tidel/api'
 
 declare const __BUILD_ID__: string
 
-const cfCaches = caches as unknown as { default: Cache }
+const cfCache: Cache | null =
+  typeof caches !== 'undefined' ? ((caches as unknown as { default: Cache }).default ?? null) : null
 
 function versionedCacheKey(request: Request): Request {
   const url = new URL(request.url)
@@ -17,8 +18,8 @@ export default {
     const url = new URL(request.url)
     const cacheable = request.method === 'GET' && url.pathname !== '/admin'
 
-    if (cacheable) {
-      const cached = await cfCaches.default.match(versionedCacheKey(request))
+    if (cacheable && cfCache) {
+      const cached = await cfCache.match(versionedCacheKey(request))
       if (cached) {
         return cached
       }
@@ -28,6 +29,7 @@ export default {
 
     if (
       cacheable &&
+      cfCache &&
       response.status === 200 &&
       response.headers.get('content-type')?.includes('text/html')
     ) {
@@ -39,7 +41,7 @@ export default {
         statusText: response.statusText,
         headers,
       })
-      context.waitUntil(cfCaches.default.put(versionedCacheKey(request), withCacheHeaders.clone()))
+      context.waitUntil(cfCache.put(versionedCacheKey(request), withCacheHeaders.clone()))
       return withCacheHeaders
     }
 

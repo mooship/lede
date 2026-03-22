@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm'
 import {
   date,
   foreignKey,
@@ -21,12 +22,14 @@ export const categoryEnum = pgEnum('story_category', [
   'Culture',
 ])
 
+export const slotEnum = pgEnum('edition_slot', ['morning', 'afternoon'])
+
 export const editions = pgTable(
   'editions',
   {
     date: date('date').notNull(),
-    slot: text('slot').notNull().default('morning'),
-    builtAt: timestamp('built_at').notNull(),
+    slot: slotEnum('slot').notNull().default('morning'),
+    builtAt: timestamp('built_at', { withTimezone: true }).notNull(),
     feedStats: text('feed_stats'),
   },
   (t) => [primaryKey({ columns: [t.date, t.slot] })],
@@ -37,7 +40,7 @@ export const stories = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     editionDate: date('edition_date').notNull(),
-    editionSlot: text('edition_slot').notNull().default('morning'),
+    editionSlot: slotEnum('edition_slot').notNull().default('morning'),
     title: text('title').notNull(),
     description: text('description'),
     summary: text('summary').notNull(),
@@ -57,3 +60,14 @@ export const stories = pgTable(
     unique('stories_link_edition_unique').on(t.link, t.editionDate),
   ],
 )
+
+export const editionsRelations = relations(editions, ({ many }) => ({
+  stories: many(stories),
+}))
+
+export const storiesRelations = relations(stories, ({ one }) => ({
+  edition: one(editions, {
+    fields: [stories.editionDate, stories.editionSlot],
+    references: [editions.date, editions.slot],
+  }),
+}))

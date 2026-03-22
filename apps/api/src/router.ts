@@ -1,7 +1,7 @@
-import type { Story } from '@tidel/api'
+import type { Category, Slot, Story } from '@tidel/api'
 import { createDb, schema } from '@tidel/db'
 import { initTRPC, TRPCError } from '@trpc/server'
-import { and, count, desc, eq, ilike, or } from 'drizzle-orm'
+import { and, count, desc, eq, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import type { Context } from './context.js'
 import { buildEdition, currentSlot, todayUTC } from './pipeline.js'
@@ -19,10 +19,19 @@ const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 
 const slotSchema = z.enum(['morning', 'afternoon'])
 
+const categorySchema = z.enum([
+  'World',
+  'Technology',
+  'Science',
+  'Business / Economy',
+  'Sport',
+  'Culture',
+])
+
 export function mapStoryRow(r: {
   id: string
   editionDate: string
-  editionSlot: string
+  editionSlot: Slot
   title: string
   description: string | null
   summary: string
@@ -39,12 +48,23 @@ export function mapStoryRow(r: {
     title: r.title,
     description: r.description ?? null,
     summary: r.summary,
-    category: r.category as Story['category'],
+    category: categorySchema.parse(r.category) as Category,
     link: r.link,
     pubDate: r.pubDate ?? null,
     source: r.source,
     position: r.position,
   }
+}
+
+function withTimeout<T>(fn: () => Promise<T>, ms: number): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout>
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(
+      () => reject(new TRPCError({ code: 'TIMEOUT', message: 'Database query timed out' })),
+      ms,
+    )
+  })
+  return Promise.race([fn(), timeout]).finally(() => clearTimeout(timeoutId))
 }
 
 const editionRouter = router({
@@ -55,42 +75,23 @@ const editionRouter = router({
       const date = todayUTC()
       const { slot } = input
 
-      const queryFn = async (): Promise<Story[] | null> => {
+      return withTimeout(async () => {
         let edition = await db.query.editions.findFirst({
           where: and(eq(schema.editions.date, date), eq(schema.editions.slot, slot)),
+          with: { stories: { orderBy: schema.stories.position } },
         })
         if (!edition) {
           edition = await db.query.editions.findFirst({
             where: eq(schema.editions.slot, slot),
             orderBy: desc(schema.editions.date),
+            with: { stories: { orderBy: schema.stories.position } },
           })
         }
         if (!edition) {
           return null
         }
-
-        const rows = await db
-          .select()
-          .from(schema.stories)
-          .where(
-            and(
-              eq(schema.stories.editionDate, edition.date),
-              eq(schema.stories.editionSlot, edition.slot),
-            ),
-          )
-          .orderBy(schema.stories.position)
-
-        return rows.map(mapStoryRow)
-      }
-
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new TRPCError({ code: 'TIMEOUT', message: 'Database query timed out' })),
-          5000,
-        ),
-      )
-
-      return Promise.race([queryFn(), timeout])
+        return edition.stories.map(mapStoryRow)
+      }, 5000)
     }),
 
   list: publicProcedure.query(
@@ -127,21 +128,12 @@ const editionRouter = router({
       const db = createDb(ctx.env.DATABASE_URL)
       const edition = await db.query.editions.findFirst({
         where: and(eq(schema.editions.date, input.date), eq(schema.editions.slot, input.slot)),
+        with: { stories: { orderBy: schema.stories.position } },
       })
       if (!edition) {
         return null
       }
-      const rows = await db
-        .select()
-        .from(schema.stories)
-        .where(
-          and(
-            eq(schema.stories.editionDate, input.date),
-            eq(schema.stories.editionSlot, input.slot),
-          ),
-        )
-        .orderBy(schema.stories.position)
-      return rows.map(mapStoryRow)
+      return edition.stories.map(mapStoryRow)
     }),
 
   adminStatus: protectedProcedure.query(
@@ -163,42 +155,63 @@ const editionRouter = router({
         return null
       }
 
-      const editionRows = await db
-        .select()
+      const rows = await db
+        .select({
+          date: schema.editions.date,
+          slot: schema.editions.slot,
+          builtAt: schema.editions.builtAt,
+          feedStats: schema.editions.feedStats,
+          category: schema.stories.category,
+          storyCount: count(schema.stories.id),
+        })
         .from(schema.editions)
+        .leftJoin(
+          schema.stories,
+          and(
+            eq(schema.stories.editionDate, schema.editions.date),
+            eq(schema.stories.editionSlot, schema.editions.slot),
+          ),
+        )
         .where(eq(schema.editions.date, latest.date))
+        .groupBy(
+          schema.editions.date,
+          schema.editions.slot,
+          schema.editions.builtAt,
+          schema.editions.feedStats,
+          schema.stories.category,
+        )
         .orderBy(desc(schema.editions.slot))
 
-      const results = await Promise.all(
-        editionRows.map(async (edition) => {
-          const categoryRows = await db
-            .select({ category: schema.stories.category, storyCount: count(schema.stories.id) })
-            .from(schema.stories)
-            .where(
-              and(
-                eq(schema.stories.editionDate, edition.date),
-                eq(schema.stories.editionSlot, edition.slot),
-              ),
-            )
-            .groupBy(schema.stories.category)
-          const storyCount = categoryRows.reduce((sum, r) => sum + r.storyCount, 0)
-          const feedStats = edition.feedStats
-            ? (JSON.parse(edition.feedStats) as Record<string, 'ok' | 'timeout' | 'error'>)
-            : null
-          return {
-            date: edition.date,
-            slot: edition.slot,
-            builtAt: edition.builtAt.toISOString(),
-            storyCount,
-            feedStats,
-            categoryBreakdown: Object.fromEntries(
-              categoryRows.map((r) => [r.category, r.storyCount]),
-            ),
-          }
-        }),
-      )
-
-      return results
+      type EditionEntry = {
+        date: string
+        slot: string
+        builtAt: string
+        storyCount: number
+        feedStats: Record<string, 'ok' | 'timeout' | 'error'> | null
+        categoryBreakdown: Record<string, number>
+      }
+      const editionMap = new Map<string, EditionEntry>()
+      for (const row of rows) {
+        const key = `${row.date}|${row.slot}`
+        if (!editionMap.has(key)) {
+          editionMap.set(key, {
+            date: row.date,
+            slot: row.slot,
+            builtAt: row.builtAt.toISOString(),
+            storyCount: 0,
+            feedStats: row.feedStats
+              ? (JSON.parse(row.feedStats) as Record<string, 'ok' | 'timeout' | 'error'>)
+              : null,
+            categoryBreakdown: {},
+          })
+        }
+        const entry = editionMap.get(key)
+        if (row.category && entry) {
+          entry.storyCount += row.storyCount
+          entry.categoryBreakdown[row.category] = row.storyCount
+        }
+      }
+      return Array.from(editionMap.values())
     },
   ),
 
@@ -224,7 +237,11 @@ const editionRouter = router({
         }
       }
 
-      ctx.executionCtx.waitUntil(buildEdition(ctx.env, slot))
+      ctx.executionCtx.waitUntil(
+        buildEdition(ctx.env, slot).catch((err) => {
+          console.error('[edition.build] background buildEdition failed:', err)
+        }),
+      )
       return {
         ok: true,
         message: `Building ${slot} edition for ${date}`,
@@ -254,13 +271,22 @@ const storyRouter = router({
       const db = createDb(ctx.env.DATABASE_URL)
       const escaped = input.query.replace(/[%_\\]/g, '\\$&')
       const like = `%${escaped}%`
-      const rows = await db
-        .select()
-        .from(schema.stories)
-        .where(or(ilike(schema.stories.title, like), ilike(schema.stories.summary, like)))
-        .orderBy(desc(schema.stories.editionDate), schema.stories.position)
-        .limit(50)
-      return rows.map(mapStoryRow)
+      return withTimeout(
+        () =>
+          db
+            .select()
+            .from(schema.stories)
+            .where(
+              or(
+                sql`${schema.stories.title} ILIKE ${like} ESCAPE '\\'`,
+                sql`${schema.stories.summary} ILIKE ${like} ESCAPE '\\'`,
+              ),
+            )
+            .orderBy(desc(schema.stories.editionDate), schema.stories.position)
+            .limit(50)
+            .then((rows) => rows.map(mapStoryRow)),
+        5000,
+      )
     }),
 })
 

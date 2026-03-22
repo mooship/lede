@@ -7,14 +7,17 @@ export function parseWebOrigins(rawOrigins: string): string[] {
 
 /**
  * Resolves the CORS origin to echo back to the client.
- * Returns `''` (deny) when the request origin is absent or not in the allowlist.
- * Hono's cors middleware treats an empty string as a denied origin.
+ * Returns `null` (deny) when the request origin is absent or not in the allowlist.
+ * Returning null causes Hono to omit the Access-Control-Allow-Origin header entirely.
  */
-export function resolveCorsOrigin(requestOrigin: string | undefined, rawOrigins: string): string {
+export function resolveCorsOrigin(
+  requestOrigin: string | undefined,
+  rawOrigins: string,
+): string | null {
   if (!requestOrigin) {
-    return ''
+    return null
   }
 
   const allowedOrigins = parseWebOrigins(rawOrigins)
-  return allowedOrigins.includes(requestOrigin) ? requestOrigin : ''
+  return allowedOrigins.includes(requestOrigin) ? requestOrigin : null
 }

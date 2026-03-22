@@ -11,8 +11,16 @@ const DESCRIPTION =
   'A free, ad-free daily news digest. Every morning, Tidel curates the most significant stories across world news, technology, science, business, and sport.'
 
 const APP_URL = import.meta.env.VITE_APP_URL ?? ''
-
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
+
+if (import.meta.env.PROD) {
+  if (!import.meta.env.VITE_APP_URL) {
+    console.warn('[config] VITE_APP_URL is not set — og:url and canonical links will be blank')
+  }
+  if (!import.meta.env.VITE_API_URL) {
+    console.warn('[config] VITE_API_URL is not set — falling back to http://localhost:8787')
+  }
+}
 
 const pageWrapClass = css({
   paddingBottom: { base: 'calc(49px + env(safe-area-inset-bottom))', md: '0' },

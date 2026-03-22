@@ -27,11 +27,11 @@ describe('resolveCorsOrigin', () => {
     expect(resolveCorsOrigin('https://b.com', 'https://a.com,https://b.com')).toBe('https://b.com')
   })
 
-  it('returns empty string when request origin is not allowed', () => {
-    expect(resolveCorsOrigin('https://nope.com', 'https://a.com,https://b.com')).toBe('')
+  it('returns null when request origin is not allowed', () => {
+    expect(resolveCorsOrigin('https://nope.com', 'https://a.com,https://b.com')).toBeNull()
   })
 
-  it('returns empty string when request has no origin header', () => {
-    expect(resolveCorsOrigin(undefined, 'https://a.com,https://b.com')).toBe('')
+  it('returns null when request has no origin header', () => {
+    expect(resolveCorsOrigin(undefined, 'https://a.com,https://b.com')).toBeNull()
   })
 })
