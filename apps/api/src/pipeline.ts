@@ -5,13 +5,9 @@ import { and, eq } from 'drizzle-orm'
 import {
   AFTERNOON_MAX_STORIES_PER_CATEGORY,
   AFTERNOON_MAX_STORY_COUNT,
-  AFTERNOON_MIN_STORIES_PER_CATEGORY,
-  AFTERNOON_MIN_STORY_COUNT,
-  AFTERNOON_TARGET_STORY_COUNT,
   FEEDS,
   MAX_STORIES_PER_CATEGORY,
-  MIN_STORIES_PER_CATEGORY,
-  TARGET_STORY_COUNT,
+  MAX_STORY_COUNT,
 } from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
@@ -157,31 +153,22 @@ export function deduplicateByTitle(
 export type ScoredItem = RssItem & { category: Category }
 
 type CurationConfig = {
-  target: number
-  min: number
   max: number
   maxPerCat: number
-  minPerCat: number
   slotLabel: string
 }
 
 function getCurationConfig(slot: 'morning' | 'afternoon'): CurationConfig {
   if (slot === 'afternoon') {
     return {
-      target: AFTERNOON_TARGET_STORY_COUNT,
-      min: AFTERNOON_MIN_STORY_COUNT,
       max: AFTERNOON_MAX_STORY_COUNT,
       maxPerCat: AFTERNOON_MAX_STORIES_PER_CATEGORY,
-      minPerCat: AFTERNOON_MIN_STORIES_PER_CATEGORY,
       slotLabel: 'afternoon',
     }
   }
   return {
-    target: TARGET_STORY_COUNT,
-    min: MIN_STORIES_PER_CATEGORY * Object.keys(FEEDS).length,
-    max: TARGET_STORY_COUNT,
+    max: MAX_STORY_COUNT,
     maxPerCat: MAX_STORIES_PER_CATEGORY,
-    minPerCat: MIN_STORIES_PER_CATEGORY,
     slotLabel: 'morning',
   }
 }
@@ -198,7 +185,7 @@ export async function curateWithClaude(
   const cfg = getCurationConfig(slot)
   const byCategory = groupByCategory(scored)
   const numCategories = byCategory.size
-  const fallbackPerCategory = Math.min(cfg.maxPerCat, Math.floor(cfg.target / numCategories))
+  const fallbackPerCategory = Math.min(cfg.maxPerCat, Math.floor(cfg.max / numCategories))
 
   const fallbackSort = (items: ScoredItem[]): ScoredItem[] =>
     [...items].sort((a, b) => {
@@ -237,13 +224,13 @@ export async function curateWithClaude(
 
   const prompt = `You are a senior news editor curating a ${cfg.slotLabel} digest for an international audience.
 ${afternoonNote}
-You MUST select between ${cfg.min} and ${cfg.max} stories. Aim for exactly ${cfg.target}. Reaching the minimum of ${cfg.min} is a hard requirement — if you are struggling to reach it, relax your quality threshold and pick the best available stories from each category rather than selecting nothing.
+Select up to ${cfg.max} stories — that is a hard ceiling, never exceed it. Only include a story if it genuinely merits publication. Quality always takes priority over filling a quota.
 
 Source count is a strong signal of significance — a story covered by multiple outlets is more important than one covered by a single source. Prefer higher source counts when choosing between stories of similar newsworthiness.
 
 Rules:
 - At most ${cfg.maxPerCat} stories from any single category.
-- Include at least ${cfg.minPerCat} stories from each category, provided enough newsworthy stories exist.
+- Try to include at least one story from each category if a genuinely newsworthy story exists, but do not force inclusion from a category if nothing merits it.
 - Never select more than one story about the same event or topic. If multiple stories cover the same event, pick the one with the highest source count and skip the rest.
 
 Editorial criteria by category:
@@ -289,6 +276,9 @@ ${categoryBlocks.join('\n\n')}`
     const countByCategory = new Map<Category, number>()
     const result: ScoredItem[] = []
     for (const n of validIndices) {
+      if (result.length >= cfg.max) {
+        break
+      }
       const story = allStories[n - 1] as ScoredItem
       const count = countByCategory.get(story.category) ?? 0
       if (count < cfg.maxPerCat) {
@@ -316,7 +306,7 @@ Using the news details below as your source, write three fields for publication:
 
 TITLE: A clean, publication-quality headline. Remove any source attribution (e.g. "| News24", "- BBC Sport", "Reuters: ") and any leading/trailing punctuation artifacts. Do not wrap in quotes.
 BYLINE: One sentence, no more than 15 words, capturing the key development. Where the story genuinely affects working people, marginalised communities, or the environment, centre that impact — otherwise state the key fact plainly.
-SUMMARY: 50–200 words of original, publication-ready prose — use only as many words as the story needs. Write as a journalist reporting the story — not as someone summarising a document. Lead with the most important fact. Omit filler, padding, and repetition. Where the story genuinely affects working people, marginalised communities, or the environment, highlight that impact — do not force this framing onto stories where it does not apply. Do not speculate beyond what the details support. Do not refer to a source, article, or report.
+SUMMARY: 50-200 words of original, publication-ready prose — use only as many words as the story needs. Write as a journalist reporting the story — not as someone summarising a document. Lead with the most important fact. Omit filler, padding, and repetition. Where the story genuinely affects working people, marginalised communities, or the environment, highlight that impact — do not force this framing onto stories where it does not apply. Do not speculate beyond what the details support. Do not refer to a source, article, or report.
 
 Do not use markdown formatting. Output exactly these labels, one per line, with no other text:
 TITLE: <headline>

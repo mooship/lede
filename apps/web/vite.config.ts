@@ -5,6 +5,9 @@ import { FontaineTransform } from 'fontaine'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  define: {
+    __BUILD_ID__: JSON.stringify(Date.now().toString(36)),
+  },
   plugins: [
     cloudflare({ viteEnvironment: { name: 'ssr' } }),
     tanstackStart(),
