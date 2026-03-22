@@ -18,12 +18,7 @@ const SettingsContext = createContext<SettingsContextValue>({
 })
 
 function resolveTheme(theme: Theme): 'light' | 'dark' {
-  if (theme === 'dark') {
-    return 'dark'
-  }
-  if (theme === 'light') {
-    return 'light'
-  }
+  if (theme !== 'system') return theme
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
@@ -48,9 +43,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const savedFont = localStorage.getItem('tidel-font') as Font | null
     if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') {
       setThemeState(savedTheme)
+      applyTheme(savedTheme)
     }
     if (savedFont === 'opendyslexic' || savedFont === 'default') {
       setFontState(savedFont)
+      applyFont(savedFont)
     }
   }, [])
 

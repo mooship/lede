@@ -10,6 +10,7 @@ import { PageMessage } from '../components/PageMessage.js'
 import { SlotSwitcher } from '../components/SlotSwitcher.js'
 import { StoryList } from '../components/StoryList.js'
 import { createServerTrpcCaller } from '../trpc.js'
+import { formatEditionDate } from '../utils.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 const storyWrapClass = css({ maxWidth: '1400px', mx: 'auto' })
@@ -59,16 +60,6 @@ const archiveLinkClass = css({
   color: 'textMuted',
   textDecoration: 'none',
 })
-
-function formatEditionDate(dateStr: string): string {
-  const d = new Date(`${dateStr}T12:00:00Z`)
-  return d.toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
 
 const fetchEditionByDate = createServerFn({ method: 'GET' })
   .inputValidator(z.object({ date: z.string(), slot: z.enum(['morning', 'afternoon']) }))

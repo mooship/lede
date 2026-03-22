@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { css } from '../../styled-system/css'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
@@ -77,7 +78,7 @@ export function Footer() {
       <span>Made with ♥ in South Africa</span>
       <div className={linksClass}>
         {ALL_LINKS.map(({ label, href, ariaLabel, highlight }, i) => (
-          <span key={label} style={{ display: 'contents' }}>
+          <Fragment key={label}>
             {i > 0 && !highlight && (
               <span className={separatorClass} aria-hidden="true">
                 ·
@@ -92,7 +93,7 @@ export function Footer() {
             >
               {label}
             </a>
-          </span>
+          </Fragment>
         ))}
       </div>
     </footer>

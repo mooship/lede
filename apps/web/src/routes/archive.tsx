@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import { useMemo } from 'react'
 import { css } from '../../styled-system/css'
 import { Footer } from '../components/Footer.js'
 import { PageHeader } from '../components/PageHeader.js'
 import { PageMessage } from '../components/PageMessage.js'
 import { createServerTrpcCaller } from '../trpc.js'
+import { formatEditionDate } from '../utils.js'
 
 const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 const mainClass = css({ maxWidth: '720px', mx: 'auto', px: '8', pt: '12', pb: '20' })
@@ -57,15 +59,7 @@ const slotBadgeClass = css({
   flexShrink: '0',
 })
 
-export function formatArchiveDate(dateStr: string): string {
-  const d = new Date(`${dateStr}T12:00:00Z`)
-  return d.toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
+export { formatEditionDate as formatArchiveDate }
 
 type EditionEntry = { date: string; slot: string; storyCount: number }
 
@@ -87,7 +81,7 @@ export function groupByDate(editions: EditionEntry[]): Map<string, EditionEntry[
 
 function ArchivePage() {
   const data: Array<EditionEntry> = Route.useLoaderData()
-  const grouped = groupByDate(data)
+  const grouped = useMemo(() => groupByDate(data), [data])
 
   return (
     <div className={pageClass}>
@@ -118,9 +112,9 @@ function ArchivePage() {
                     params={{ date }}
                     search={{ slot: defaultSlot }}
                     className={rowLinkClass}
-                    aria-label={`Edition for ${formatArchiveDate(date)}`}
+                    aria-label={`Edition for ${formatEditionDate(date)}`}
                   >
-                    <span className={dateLabelClass}>{formatArchiveDate(date)}</span>
+                    <span className={dateLabelClass}>{formatEditionDate(date)}</span>
                     <span className={slotBadgeClass}>{slotLabel}</span>
                   </Link>
                 </li>

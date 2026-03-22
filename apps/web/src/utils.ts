@@ -2,6 +2,16 @@ import { msUntilNextEdition } from '@tidel/api'
 
 export { msUntilNextEdition }
 
+export function formatEditionDate(dateStr: string): string {
+  const d = new Date(`${dateStr}T12:00:00Z`)
+  return d.toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
 export function isAfternoonAvailable(): boolean {
   const hour = new Date().getUTCHours()
   return hour >= 15 || hour < 6
