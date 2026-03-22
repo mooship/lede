@@ -13,6 +13,7 @@ tasks:
     command: 'npx vite build'
     deps:
       - '~:codegen'
+      - 'api:typecheck'
     inputs:
       - 'src/**/*.{ts,tsx}'
       - 'index.html'
@@ -40,6 +41,9 @@ tasks:
 
   typecheck:
     command: 'npx tsc --noEmit'
+    deps:
+      - '~:codegen'
+      - 'api:typecheck'
     inputs:
       - 'src/**/*.{ts,tsx}'
       - 'tsconfig.json'
