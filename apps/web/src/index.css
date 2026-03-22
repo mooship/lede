@@ -2,6 +2,7 @@
 
 html[data-font="opendyslexic"] {
   --fonts-body: "OpenDyslexic", cursive;
+  --fonts-display: "OpenDyslexic", cursive;
 }
 
 body {
