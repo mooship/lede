@@ -3,6 +3,7 @@ import type { Category } from '@tidel/api'
 export const FEEDS: Record<Category, string[]> = {
   World: [
     'https://www.theguardian.com/world/rss',
+    'https://www.cgtn.com/subscribe/rss/section/world.xml',
   ],
   Technology: [
     'https://www.theguardian.com/technology/rss',
@@ -29,6 +30,6 @@ export const FEEDS: Record<Category, string[]> = {
 }
 
 export const SLOT_CONFIG = {
-  morning: { max: 15, maxPerCat: 5 },
+  morning: { max: 12, maxPerCat: 5 },
   afternoon: { max: 12, maxPerCat: 3 },
 } as const
