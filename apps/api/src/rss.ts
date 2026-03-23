@@ -79,7 +79,13 @@ function resolveLink(value: unknown): string {
  * and tag stripping in text fields. Times out after 8 seconds.
  */
 export async function fetchFeed(url: string): Promise<RssItem[]> {
-  const text = await ofetch<string, 'text'>(url, { responseType: 'text', timeout: 8000 })
+  const text = await ofetch<string, 'text'>(url, {
+    responseType: 'text',
+    timeout: 8000,
+    headers: {
+      Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+    },
+  })
   const feed = parser.parse(text)
   const items: unknown[] =
     feed?.rss?.channel?.item ?? feed?.feed?.entry ?? feed?.['rdf:RDF']?.item ?? []
