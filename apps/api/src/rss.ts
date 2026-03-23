@@ -84,6 +84,7 @@ export async function fetchFeed(url: string): Promise<RssItem[]> {
     timeout: 8000,
     headers: {
       Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+      'User-Agent': 'Mozilla/5.0 (compatible; Tidel/1.0; RSS reader; +https://tidel.app)',
     },
   })
   const feed = parser.parse(text)
