@@ -26,6 +26,7 @@ dist-ssr
 # Project-specific
 .env
 .env.production
+.env.development
 .dev.vars
 .secrets.*.json
 .wrangler
