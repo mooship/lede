@@ -2,7 +2,7 @@
 
 ## What is Tidel
 
-A daily news digest that fetches RSS feeds across six categories, summarises each story with Claude Haiku, and publishes a ~15-story morning edition and ~12-story afternoon edition per day. Morning builds at 06:00 UTC, afternoon at 15:00 UTC via Cloudflare Worker cron triggers.
+A daily news digest that fetches RSS feeds across six categories, summarises each story with Claude Haiku, and publishes a ~12-story morning edition and ~12-story afternoon edition per day. Morning builds at 06:00 UTC, afternoon at 15:00 UTC via Cloudflare Worker cron triggers.
 
 ## Monorepo structure
 
