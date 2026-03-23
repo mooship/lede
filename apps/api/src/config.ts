@@ -3,6 +3,7 @@ import type { Category } from '@tidel/api'
 export const FEEDS: Record<Category, string[]> = {
   World: [
     'https://www.theguardian.com/world/rss',
+    'https://www.cgtn.com/subscribe/rss/section/world.xml',
   ],
   Technology: [
     'https://www.theguardian.com/technology/rss',
