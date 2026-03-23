@@ -30,6 +30,6 @@ export const FEEDS: Record<Category, string[]> = {
 }
 
 export const SLOT_CONFIG = {
-  morning: { max: 15, maxPerCat: 5 },
+  morning: { max: 12, maxPerCat: 5 },
   afternoon: { max: 12, maxPerCat: 3 },
 } as const
