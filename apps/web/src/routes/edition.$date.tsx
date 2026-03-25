@@ -134,7 +134,7 @@ function EditionPage() {
           </Link>
           <h1 className={dateTitleClass}>{formattedDate}</h1>
           <Link to="/archive" className={archiveLinkClass}>
-            ← Archive
+            {'\u2190\uFE0E'} Archive
           </Link>
         </div>
       </div>

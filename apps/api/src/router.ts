@@ -46,11 +46,11 @@ export function mapStoryRow(r: {
     editionDate: r.editionDate,
     editionSlot: r.editionSlot,
     title: r.title,
-    description: r.description ?? null,
+    description: r.description,
     summary: r.summary,
     category: categorySchema.parse(r.category) as Category,
     link: r.link,
-    pubDate: r.pubDate ?? null,
+    pubDate: r.pubDate,
     source: r.source,
     position: r.position,
   }

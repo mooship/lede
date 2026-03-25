@@ -15,12 +15,8 @@ export const FEEDS: Record<Category, string[]> = {
     'https://www.theguardian.com/science/rss',
     'https://feeds.arstechnica.com/arstechnica/science',
   ],
-  'Business / Economy': [
-    'https://www.theguardian.com/business/rss',
-  ],
-  Sport: [
-    'https://www.theguardian.com/sport/rss',
-  ],
+  'Business / Economy': ['https://www.theguardian.com/business/rss'],
+  Sport: ['https://www.theguardian.com/sport/rss'],
   Culture: [
     'https://www.theguardian.com/culture/rss',
     'https://hyperallergic.com/feed/',

@@ -296,13 +296,21 @@ type SlotStatusData = {
 
 type AdminStatusData = SlotStatusData[] | null
 
-const CATEGORY_ORDER: Category[] = ['World', 'Technology', 'Science', 'Business / Economy', 'Sport']
+const CATEGORY_ORDER: Category[] = [
+  'World',
+  'Technology',
+  'Science',
+  'Business / Economy',
+  'Sport',
+  'Culture',
+]
+
+const API_URL = process.env.API_URL ?? 'http://localhost:8787'
 
 const adminStatusServerFn = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ password: z.string() }))
   .handler(async ({ data }) => {
-    const apiUrl = process.env.API_URL ?? 'http://localhost:8787'
-    const res = await fetch(`${apiUrl}/trpc/edition.adminStatus`, {
+    const res = await fetch(`${API_URL}/trpc/edition.adminStatus`, {
       headers: { Authorization: `Bearer ${data.password}` },
     })
     const json = (await res.json()) as {
@@ -317,8 +325,7 @@ const adminStatusServerFn = createServerFn({ method: 'POST' })
   })
 
 const editionListServerFn = createServerFn({ method: 'GET' }).handler(async () => {
-  const apiUrl = process.env.API_URL ?? 'http://localhost:8787'
-  const res = await fetch(`${apiUrl}/trpc/edition.list`)
+  const res = await fetch(`${API_URL}/trpc/edition.list`)
   const json = (await res.json()) as {
     result?: { data?: Array<{ date: string; slot: string; storyCount: number }> }
   }
@@ -328,8 +335,7 @@ const editionListServerFn = createServerFn({ method: 'GET' }).handler(async () =
 const triggerBuildServerFn = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ password: z.string(), slot: z.enum(['morning', 'afternoon']) }))
   .handler(async ({ data }) => {
-    const apiUrl = process.env.API_URL ?? 'http://localhost:8787'
-    const res = await fetch(`${apiUrl}/trpc/edition.build`, {
+    const res = await fetch(`${API_URL}/trpc/edition.build`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.password}` },
       body: JSON.stringify({ slot: data.slot }),
@@ -342,20 +348,6 @@ const triggerBuildServerFn = createServerFn({ method: 'POST' })
       throw new Error(json.error.message)
     }
   })
-
-async function fetchAdminStatus(password: string): Promise<AdminStatusData> {
-  return adminStatusServerFn({ data: { password } })
-}
-
-async function fetchEditionList(): Promise<
-  Array<{ date: string; slot: string; storyCount: number }>
-> {
-  return editionListServerFn()
-}
-
-async function triggerBuild(password: string, slot: Slot): Promise<void> {
-  return triggerBuildServerFn({ data: { password, slot } })
-}
 
 function formatBuiltAt(iso: string): string {
   return new Date(iso).toLocaleString('en-GB', {
@@ -465,19 +457,19 @@ function AdminStatus({ secret }: { secret: string }) {
 
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['adminStatus', secret],
-    queryFn: () => fetchAdminStatus(secret),
+    queryFn: () => adminStatusServerFn({ data: { password: secret } }),
     retry: false,
   })
 
   const { data: editions } = useQuery({
     queryKey: ['editionList'],
-    queryFn: fetchEditionList,
+    queryFn: editionListServerFn,
   })
 
   const [buildSlot, setBuildSlot] = useState<Slot>('morning')
 
   const buildMutation = useMutation<void, Error, { slot: Slot }>({
-    mutationFn: ({ slot }) => triggerBuild(secret, slot),
+    mutationFn: ({ slot }) => triggerBuildServerFn({ data: { password: secret, slot } }),
     onSuccess: () => {
       void refetch()
       queryClient.invalidateQueries({ queryKey: ['editionList'] })
