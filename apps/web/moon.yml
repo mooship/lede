@@ -16,7 +16,6 @@ tasks:
       - 'api:typecheck'
     inputs:
       - 'src/**/*.{ts,tsx}'
-      - 'index.html'
       - 'vite.config.ts'
     outputs:
       - 'dist/**'
