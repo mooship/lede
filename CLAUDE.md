@@ -4,6 +4,10 @@
 
 A daily news digest that fetches RSS feeds across six categories, summarises each story with Claude Haiku, and publishes a ~12-story morning edition and ~12-story afternoon edition per day. Morning builds at 06:00 UTC, afternoon at 15:00 UTC via Cloudflare Worker cron triggers.
 
+## Safety
+
+- **Never deploy to production (`wrangler deploy`) or run database migrations (`drizzle-kit migrate`) without explicit permission from the user.** Always ask first and wait for confirmation. This applies to both dev and production environments.
+
 ## Monorepo structure
 
 ```
@@ -225,4 +229,7 @@ Run `biome check --write .` to fix; `biome check .` to check only.
 
 Lefthook runs `biome check --write` on staged files as a pre-commit hook. It is installed automatically via the `prepare` script on `npm install`.
 
-- **No inline comments** — trailing `//` comments on the same line as code are not allowed. JSDoc block comments (`/** */`) are fine when genuinely useful.
+## Code style
+
+- **No inline comments** — never use trailing `//` comments on the same line as code. JSDoc block comments (`/** */`) are fine where genuinely useful.
+- **British English** in all user-visible copy.
