@@ -149,13 +149,6 @@ const editionRouter = router({
       categoryBreakdown: Record<string, number>
     }> | null> => {
       const { db } = ctx
-      const latest = await db.query.editions.findFirst({
-        orderBy: desc(schema.editions.date),
-      })
-      if (!latest) {
-        return null
-      }
-
       const rows = await db
         .select({
           date: schema.editions.date,
@@ -173,7 +166,7 @@ const editionRouter = router({
             eq(schema.stories.editionSlot, schema.editions.slot),
           ),
         )
-        .where(eq(schema.editions.date, latest.date))
+        .where(eq(schema.editions.date, sql<string>`(SELECT MAX(date) FROM editions)`))
         .groupBy(
           schema.editions.date,
           schema.editions.slot,
@@ -182,6 +175,10 @@ const editionRouter = router({
           schema.stories.category,
         )
         .orderBy(desc(schema.editions.slot))
+
+      if (rows.length === 0) {
+        return null
+      }
 
       type EditionEntry = {
         date: string
