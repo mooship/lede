@@ -19,14 +19,16 @@ function trpcCacheMiddleware(getSecs: () => number) {
   return async (c: Context<{ Bindings: Env }>, next: () => Promise<void>) => {
     await next()
     try {
-      const parsed = JSON.parse(await c.res.clone().text())
+      const text = await c.res.text()
+      const parsed = JSON.parse(text)
       const data = Array.isArray(parsed) ? parsed[0]?.result?.data : parsed?.result?.data
       const hasData =
         data !== null && data !== undefined && !(Array.isArray(data) && data.length === 0)
+      const headers = new Headers(c.res.headers)
       if (hasData) {
-        const secs = getSecs()
-        c.res.headers.set('Cache-Control', `public, s-maxage=${secs}, stale-while-revalidate=86400`)
+        headers.set('Cache-Control', `public, s-maxage=${getSecs()}, stale-while-revalidate=86400`)
       }
+      c.res = new Response(text, { status: c.res.status, statusText: c.res.statusText, headers })
     } catch (err) {
       console.warn('[cache] failed to parse tRPC response for cache headers:', err)
     }
@@ -35,8 +37,12 @@ function trpcCacheMiddleware(getSecs: () => number) {
 
 const app = new Hono<{ Bindings: Env }>()
 
+let envValidated = false
 app.use('*', (c, next) => {
-  validateEnv(c.env)
+  if (!envValidated) {
+    validateEnv(c.env)
+    envValidated = true
+  }
   return next()
 })
 
@@ -239,10 +245,11 @@ async function handleFeedRequest(
     return c.text('No edition available', 404)
   }
   const filename = `${format}.xml`
+  const apiOrigin = new URL(c.req.url).origin
   const selfUrl =
     slotParam === 'morning' || slotParam === 'afternoon'
-      ? `${appUrl}/${filename}?slot=${slotParam}`
-      : `${appUrl}/${filename}`
+      ? `${apiOrigin}/${filename}?slot=${slotParam}`
+      : `${apiOrigin}/${filename}`
   const xml =
     format === 'atom'
       ? buildAtomFeed(data.stories, data.title, selfUrl, appUrl)

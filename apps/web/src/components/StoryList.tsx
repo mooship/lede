@@ -1,5 +1,6 @@
 import type { Story } from '@tidel/api'
 import { css } from '../../styled-system/css'
+import { ErrorBoundary } from './ErrorBoundary.js'
 import { StoryCard } from './StoryCard.js'
 
 type Props = { stories: Story[] }
@@ -23,7 +24,9 @@ export function StoryList({ stories }: Props) {
     <div className={wrapClass}>
       <div className={gridClass}>
         {stories.map((story) => (
-          <StoryCard key={story.id} story={story} position={story.position + 1} />
+          <ErrorBoundary key={story.id}>
+            <StoryCard story={story} position={story.position + 1} />
+          </ErrorBoundary>
         ))}
       </div>
     </div>

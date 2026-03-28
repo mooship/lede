@@ -1,5 +1,5 @@
 import type { Category, Slot, Story } from '@tidel/api'
-import { createDb, schema } from '@tidel/db'
+import { schema } from '@tidel/db'
 import { initTRPC, TRPCError } from '@trpc/server'
 import { and, count, desc, eq, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
@@ -71,7 +71,7 @@ const editionRouter = router({
   today: publicProcedure
     .input(z.object({ slot: slotSchema.optional().default('morning') }))
     .query(async ({ ctx, input }): Promise<Story[] | null> => {
-      const db = createDb(ctx.env.DATABASE_URL)
+      const { db } = ctx
       const date = todayUTC()
       const { slot } = input
 
@@ -96,7 +96,7 @@ const editionRouter = router({
 
   list: publicProcedure.query(
     async ({ ctx }): Promise<Array<{ date: string; slot: string; storyCount: number }>> => {
-      const db = createDb(ctx.env.DATABASE_URL)
+      const { db } = ctx
       const rows = await db
         .select({
           date: schema.editions.date,
@@ -113,6 +113,7 @@ const editionRouter = router({
         )
         .groupBy(schema.editions.date, schema.editions.slot)
         .orderBy(desc(schema.editions.date), desc(schema.editions.slot))
+        .limit(200)
       return rows.map((r) => ({ date: r.date, slot: r.slot, storyCount: r.storyCount }))
     },
   ),
@@ -125,7 +126,7 @@ const editionRouter = router({
       }),
     )
     .query(async ({ ctx, input }): Promise<Story[] | null> => {
-      const db = createDb(ctx.env.DATABASE_URL)
+      const { db } = ctx
       const edition = await db.query.editions.findFirst({
         where: and(eq(schema.editions.date, input.date), eq(schema.editions.slot, input.slot)),
         with: { stories: { orderBy: schema.stories.position } },
@@ -147,7 +148,7 @@ const editionRouter = router({
       feedStats: Record<string, 'ok' | 'timeout' | 'error'> | null
       categoryBreakdown: Record<string, number>
     }> | null> => {
-      const db = createDb(ctx.env.DATABASE_URL)
+      const { db } = ctx
       const latest = await db.query.editions.findFirst({
         orderBy: desc(schema.editions.date),
       })
@@ -222,7 +223,7 @@ const editionRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }): Promise<{ ok: true; message: string }> => {
-      const db = createDb(ctx.env.DATABASE_URL)
+      const { db } = ctx
       const date = todayUTC()
       const { slot } = input
 
@@ -253,7 +254,7 @@ const storyRouter = router({
   byId: publicProcedure
     .input(z.string().uuid())
     .query(async ({ ctx, input }): Promise<Story | null> => {
-      const db = createDb(ctx.env.DATABASE_URL)
+      const { db } = ctx
       const rows = await db
         .select()
         .from(schema.stories)
@@ -268,7 +269,7 @@ const storyRouter = router({
   search: publicProcedure
     .input(z.object({ query: z.string().min(2).max(100) }))
     .query(async ({ ctx, input }): Promise<Story[]> => {
-      const db = createDb(ctx.env.DATABASE_URL)
+      const { db } = ctx
       const escaped = input.query.replace(/[%_\\]/g, '\\$&')
       const like = `%${escaped}%`
       return withTimeout(

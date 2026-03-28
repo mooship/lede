@@ -296,6 +296,14 @@ type SlotStatusData = {
 
 type AdminStatusData = SlotStatusData[] | null
 
+function hashSecret(secret: string): string {
+  let h = 0
+  for (let i = 0; i < secret.length; i++) {
+    h = (Math.imul(31, h) + secret.charCodeAt(i)) | 0
+  }
+  return (h >>> 0).toString(36)
+}
+
 const CATEGORY_ORDER: Category[] = [
   'World',
   'Technology',
@@ -456,7 +464,7 @@ function AdminStatus({ secret }: { secret: string }) {
   const queryClient = useQueryClient()
 
   const { data, isLoading, error, refetch, isFetching } = useQuery({
-    queryKey: ['adminStatus', secret],
+    queryKey: ['adminStatus', hashSecret(secret)],
     queryFn: () => adminStatusServerFn({ data: { password: secret } }),
     retry: false,
   })

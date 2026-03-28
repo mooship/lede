@@ -1,10 +1,12 @@
 import type { ExecutionContext } from '@cloudflare/workers-types'
+import { createDb } from '@tidel/db'
 import type { Env } from './env.js'
 
 export type Context = {
   isAdmin: boolean
   env: Env
   executionCtx: ExecutionContext
+  db: ReturnType<typeof createDb>
 }
 
 const enc = new TextEncoder()
@@ -20,9 +22,10 @@ export async function createContext(
   executionCtx: ExecutionContext,
 ): Promise<Context> {
   const authHeader = req.headers.get('Authorization')
+  const db = createDb(env.DATABASE_URL)
 
   if (!authHeader?.startsWith('Bearer ')) {
-    return { isAdmin: false, env, executionCtx }
+    return { isAdmin: false, env, executionCtx, db }
   }
 
   const token = authHeader.slice(7)
@@ -35,5 +38,5 @@ export async function createContext(
         timingSafeEqual(a: ArrayBufferView, b: ArrayBufferView): boolean
       }
     ).timingSafeEqual(a, b)
-  return { isAdmin, env, executionCtx }
+  return { isAdmin, env, executionCtx, db }
 }
