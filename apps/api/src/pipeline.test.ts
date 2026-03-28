@@ -466,9 +466,9 @@ describe('buildEdition', () => {
       CLOUDFLARE_API_TOKEN: 'tok-xyz',
     }
     await buildEdition(envWithCf)
-    const cfCall = fetchSpy.mock.calls.find(([url]) => String(url).includes('cloudflare.com'))
+    const expectedUrl = 'https://api.cloudflare.com/client/v4/zones/zone-abc/purge_cache'
+    const cfCall = fetchSpy.mock.calls.find(([url]) => String(url) === expectedUrl)
     expect(cfCall).toBeDefined()
-    expect(String(cfCall?.[0])).toContain('zone-abc')
     expect((cfCall?.[1] as RequestInit)?.method).toBe('DELETE')
     expect((cfCall?.[1] as RequestInit)?.headers).toMatchObject({
       Authorization: 'Bearer tok-xyz',
@@ -482,7 +482,9 @@ describe('buildEdition', () => {
       .mockResolvedValue(new Response(null, { status: 200 }))
     vi.mocked(fetchFeed).mockResolvedValue([goodStory])
     await buildEdition(mockEnv)
-    const cfCall = fetchSpy.mock.calls.find(([url]) => String(url).includes('cloudflare.com'))
+    const cfCall = fetchSpy.mock.calls.find(([url]) =>
+      String(url).startsWith('https://api.cloudflare.com/'),
+    )
     expect(cfCall).toBeUndefined()
     fetchSpy.mockRestore()
   })
