@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { Category } from '@tidel/api'
 import { createDb, schema } from '@tidel/db'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, lt } from 'drizzle-orm'
 import { FEEDS, SLOT_CONFIG } from './config.js'
 import type { Env } from './env.js'
 import type { RssItem } from './rss.js'
@@ -134,12 +134,25 @@ export function deduplicateByTitle(
     if (seen.has(norm)) {
       continue
     }
-    const isDuplicate = seenList.some((s) => s.includes(norm) || norm.includes(s))
-    if (!isDuplicate) {
-      seen.add(norm)
-      seenList.push(norm)
-      result.push(item)
+
+    // New title is contained within an already-kept title → existing is more complete, skip new
+    if (seenList.some((s) => s.includes(norm) && s !== norm)) {
+      continue
     }
+
+    // An already-kept title is contained within the new title → new is more complete, replace old
+    const supersededIdx = seenList.findIndex((s) => norm.includes(s) && s !== norm)
+    if (supersededIdx !== -1) {
+      const supersededNorm = seenList[supersededIdx]!
+      seen.delete(supersededNorm)
+      seenList.splice(supersededIdx, 1)
+      const resultIdx = result.findIndex((r) => normaliseTitle(r.title) === supersededNorm)
+      if (resultIdx !== -1) result.splice(resultIdx, 1)
+    }
+
+    seen.add(norm)
+    seenList.push(norm)
+    result.push(item)
   }
 
   return result
@@ -335,16 +348,19 @@ function createSummariser(
     console.log('[summariser] Claude Haiku')
     return async (item) => {
       try {
-        return await withRetry(async () => {
-          const msg = await client.messages.create({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 500,
-            messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
-          })
-          const block = msg.content[0]
-          const text = block?.type === 'text' ? block.text : ''
-          return parseSummariseResponse(text, item.title, item.description || item.title)
-        })
+        return await withRetry(
+          async () => {
+            const msg = await client.messages.create({
+              model: 'claude-haiku-4-5-20251001',
+              max_tokens: 500,
+              messages: [{ role: 'user', content: SUMMARISE_PROMPT(item) }],
+            })
+            const block = msg.content[0]
+            const text = block?.type === 'text' ? block.text : ''
+            return parseSummariseResponse(text, item.title, item.description || item.title)
+          },
+          { maxAttempts: 2 },
+        )
       } catch (err) {
         console.error(
           `[summariser] Claude failed after all retries for "${item.title}", falling back to raw:`,
@@ -372,6 +388,31 @@ async function purgeEditionCache(zoneId: string, apiToken: string): Promise<void
     throw new Error(`Cloudflare purge failed: ${res.status} ${await res.text()}`)
   }
   console.log('[purgeCache] Cloudflare cache purged')
+}
+
+async function runBatched<T, R>(
+  items: T[],
+  batchSize: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = []
+  for (let i = 0; i < items.length; i += batchSize) {
+    results.push(...(await Promise.all(items.slice(i, i + batchSize).map(fn))))
+  }
+  return results
+}
+
+async function cleanupOldEditions(db: ReturnType<typeof createDb>, daysToKeep = 90): Promise<void> {
+  const cutoff = new Date()
+  cutoff.setUTCDate(cutoff.getUTCDate() - daysToKeep)
+  const cutoffStr = UTC_DATE_FORMAT.format(cutoff)
+  const deleted = await db
+    .delete(schema.editions)
+    .where(lt(schema.editions.date, cutoffStr))
+    .returning({ date: schema.editions.date })
+  if (deleted.length > 0) {
+    console.log(`[cleanup] removed ${deleted.length} editions older than ${cutoffStr}`)
+  }
 }
 
 /**
@@ -459,24 +500,29 @@ export async function buildEdition(
   const selected: ScoredItem[] = await curateWithClaude(scored, env, slot, anthropicClient)
 
   const summariser = createSummariser(env, anthropicClient)
-  const summarised = await Promise.all(
-    selected.map(async (item) => {
-      const { title, byline, summary } = await summariser(item)
-      return { ...item, title, byline, summary }
-    }),
-  )
+  const summarised = await runBatched(selected, 4, async (item) => {
+    const { title, byline, summary } = await summariser(item)
+    return { ...item, title, byline, summary }
+  })
 
   if (summarised.length === 0) {
     console.warn('[buildEdition] No stories selected — skipping edition creation')
     return
   }
 
-  await withRetry(() =>
+  const inserted = await withRetry(() =>
     db
       .insert(schema.editions)
       .values({ date, slot, builtAt: new Date(), feedStats: JSON.stringify(feedStats) })
-      .onConflictDoNothing(),
+      .onConflictDoNothing()
+      .returning({ date: schema.editions.date }),
   )
+  if (inserted.length === 0) {
+    console.log(
+      `[buildEdition] ${slot} edition for ${date} was inserted by a concurrent build, skipping stories`,
+    )
+    return
+  }
   try {
     await withRetry(() =>
       db.insert(schema.stories).values(
@@ -527,5 +573,11 @@ export async function buildEdition(
     } catch (err) {
       console.error('[purgeCache] failed after retries:', err)
     }
+  }
+
+  try {
+    await cleanupOldEditions(db)
+  } catch (err) {
+    console.error('[cleanup] failed:', err)
   }
 }

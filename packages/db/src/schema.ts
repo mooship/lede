@@ -57,7 +57,7 @@ export const stories = pgTable(
     }).onDelete('cascade'),
     index('stories_edition_date_slot_idx').on(t.editionDate, t.editionSlot),
     index('stories_category_idx').on(t.category),
-    unique('stories_link_edition_unique').on(t.link, t.editionDate),
+    unique('stories_link_edition_slot_unique').on(t.link, t.editionDate, t.editionSlot),
   ],
 )
 

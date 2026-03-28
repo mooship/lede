@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createContext } from './context.js'
 import type { Env } from './env.js'
 
+vi.mock('@tidel/db', () => ({ createDb: vi.fn(() => ({})) }))
+
 const mockTimingSafeEqual = vi.fn()
 
 vi.stubGlobal('crypto', {

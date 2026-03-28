@@ -120,8 +120,8 @@ function SearchPage() {
               {results.length} {results.length === 1 ? 'story' : 'stories'} found
             </p>
             <div className={gridClass}>
-              {results.map((story) => (
-                <StoryCard key={story.id} story={story} position={story.position} />
+              {results.map((story, i) => (
+                <StoryCard key={story.id} story={story} position={i} />
               ))}
             </div>
           </>

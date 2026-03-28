@@ -1,4 +1,5 @@
 import type { Story } from '@tidel/api'
+import { createDb } from '@tidel/db'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createCallerFactory } from './router.js'
 
@@ -85,6 +86,10 @@ const mockExecutionCtx = {
   props: {},
 } as unknown as ExecutionContext
 
+function makeCtx(isAdmin = false) {
+  return { isAdmin, env: makeEnv(), executionCtx: mockExecutionCtx, db: createDb('test') }
+}
+
 async function getRouter() {
   const { appRouter } = await import('./router.js')
   return appRouter
@@ -99,7 +104,7 @@ describe('edition.today', () => {
     mockDb.query.editions.findFirst.mockResolvedValue(undefined)
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.edition.today({})
     expect(result).toBeNull()
   })
@@ -113,7 +118,7 @@ describe('edition.today', () => {
     })
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.edition.today({})
     expect(result).toHaveLength(1)
     expect(result?.[0]).toMatchObject({
@@ -137,7 +142,7 @@ describe('edition.today', () => {
     })
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.edition.today({})
     expect(result).toHaveLength(1)
     expect(mockDb.query.editions.findFirst).toHaveBeenCalledTimes(2)
@@ -147,7 +152,7 @@ describe('edition.today', () => {
     mockDb.query.editions.findFirst.mockResolvedValue(undefined)
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.edition.today({ slot: 'afternoon' })
     expect(result).toBeNull()
     expect(mockDb.query.editions.findFirst).toHaveBeenCalledTimes(2)
@@ -162,7 +167,7 @@ describe('edition.build', () => {
   it('rejects unauthenticated calls', async () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     await expect(caller.edition.build({})).rejects.toThrow()
   })
 
@@ -170,7 +175,7 @@ describe('edition.build', () => {
     const { buildEdition } = await import('./pipeline.js')
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx(true))
     const result = await caller.edition.build({ slot: 'afternoon' })
     expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), 'afternoon')
     expect(result).toMatchObject({ ok: true, message: expect.any(String) })
@@ -180,7 +185,7 @@ describe('edition.build', () => {
     const { buildEdition } = await import('./pipeline.js')
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx(true))
     await caller.edition.build({})
     expect(buildEdition).toHaveBeenCalledWith(expect.any(Object), 'morning')
   })
@@ -192,23 +197,23 @@ describe('edition.list', () => {
   })
 
   it('returns empty array when no editions exist', async () => {
-    mockDb.orderBy.mockResolvedValue([])
+    mockDb.limit.mockResolvedValue([])
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.edition.list()
     expect(result).toEqual([])
   })
 
   it('returns list with date, slot, and storyCount', async () => {
-    mockDb.orderBy.mockResolvedValue([
+    mockDb.limit.mockResolvedValue([
       { date: '2024-01-02', slot: 'afternoon', storyCount: 9 },
       { date: '2024-01-02', slot: 'morning', storyCount: 12 },
       { date: '2024-01-01', slot: 'morning', storyCount: 11 },
     ])
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.edition.list()
     expect(result).toHaveLength(3)
     expect(result[0]).toEqual({ date: '2024-01-02', slot: 'afternoon', storyCount: 9 })
@@ -226,7 +231,7 @@ describe('edition.byDate', () => {
     mockDb.query.editions.findFirst.mockResolvedValue(undefined)
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.edition.byDate({ date: '2024-01-01' })
     expect(result).toBeNull()
   })
@@ -240,7 +245,7 @@ describe('edition.byDate', () => {
     })
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.edition.byDate({ date: '2024-01-01', slot: 'morning' })
     expect(result).toHaveLength(1)
     expect(result?.[0]).toMatchObject({ id: '1', title: 'Test Story' })
@@ -249,7 +254,7 @@ describe('edition.byDate', () => {
   it('throws BAD_REQUEST for invalid date format', async () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     await expect(caller.edition.byDate({ date: 'not-a-date' })).rejects.toThrow()
   })
 
@@ -263,7 +268,7 @@ describe('edition.byDate', () => {
     })
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.edition.byDate({ date: '2024-01-01', slot: 'afternoon' })
     expect(result).toHaveLength(1)
     expect(result?.[0]?.id).toBe('2')
@@ -274,13 +279,13 @@ describe('edition.adminStatus', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockDb.groupBy.mockReturnThis()
-    mockDb.orderBy.mockResolvedValue([])
+    mockDb.limit.mockResolvedValue([])
   })
 
   it('throws UNAUTHORIZED for non-admin callers', async () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     await expect(caller.edition.adminStatus()).rejects.toThrow()
   })
 
@@ -288,7 +293,7 @@ describe('edition.adminStatus', () => {
     mockDb.query.editions.findFirst.mockResolvedValue(undefined)
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx(true))
     const result = await caller.edition.adminStatus()
     expect(result).toBeNull()
   })
@@ -313,7 +318,7 @@ describe('edition.adminStatus', () => {
     ])
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx(true))
     const result = await caller.edition.adminStatus()
     expect(result).not.toBeNull()
     expect(result?.[0]?.feedStats).toBeNull()
@@ -345,7 +350,7 @@ describe('edition.adminStatus', () => {
     ])
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx(true))
     const result = await caller.edition.adminStatus()
     expect(result?.[0]?.feedStats).toEqual({
       'https://feed.example': 'ok',
@@ -381,7 +386,7 @@ describe('edition.adminStatus', () => {
     ])
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: true, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx(true))
     const result = await caller.edition.adminStatus()
     expect(result?.[0]?.categoryBreakdown).toEqual({ Technology: 3, World: 4 })
     expect(result?.[0]?.storyCount).toBe(7)
@@ -397,7 +402,7 @@ describe('story.byId', () => {
     mockDb.limit.mockResolvedValue([mockStories[0]])
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.story.byId('550e8400-e29b-41d4-a716-446655440000')
     expect(result).not.toBeNull()
     expect(result?.id).toBe('1')
@@ -408,7 +413,7 @@ describe('story.byId', () => {
     mockDb.limit.mockResolvedValue([])
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.story.byId('550e8400-e29b-41d4-a716-446655440000')
     expect(result).toBeNull()
   })
@@ -416,7 +421,7 @@ describe('story.byId', () => {
   it('throws BAD_REQUEST for a non-UUID string', async () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     await expect(caller.story.byId('not-a-uuid')).rejects.toThrow()
   })
 
@@ -437,7 +442,7 @@ describe('story.byId', () => {
     mockDb.limit.mockResolvedValue([row])
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.story.byId('aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa')
     expect(result).toMatchObject({
       id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
@@ -461,7 +466,7 @@ describe('story.search', () => {
     mockDb.limit.mockResolvedValue(mockStories.map((s) => ({ ...s })))
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.story.search({ query: 'climate' })
     expect(result).toHaveLength(1)
     expect(result[0]?.title).toBe('Test Story')
@@ -471,7 +476,7 @@ describe('story.search', () => {
     mockDb.limit.mockResolvedValue([])
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     const result = await caller.story.search({ query: 'no match' })
     expect(result).toEqual([])
   })
@@ -479,14 +484,14 @@ describe('story.search', () => {
   it('rejects queries shorter than 2 characters', async () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     await expect(caller.story.search({ query: 'x' })).rejects.toThrow()
   })
 
   it('rejects queries longer than 100 characters', async () => {
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     await expect(caller.story.search({ query: 'a'.repeat(101) })).rejects.toThrow()
   })
 
@@ -495,7 +500,7 @@ describe('story.search', () => {
     const { sql } = await import('drizzle-orm')
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     await caller.story.search({ query: '100% sure' })
     const sqlCalls = (sql as unknown as ReturnType<typeof vi.fn>).mock.calls
     const patterns = sqlCalls
@@ -509,7 +514,7 @@ describe('story.search', () => {
     const { sql } = await import('drizzle-orm')
     const router = await getRouter()
     const factory = createCallerFactory(router)
-    const caller = factory({ isAdmin: false, env: makeEnv(), executionCtx: mockExecutionCtx })
+    const caller = factory(makeCtx())
     await caller.story.search({ query: 'some_thing' })
     const sqlCalls = (sql as unknown as ReturnType<typeof vi.fn>).mock.calls
     const patterns = sqlCalls
