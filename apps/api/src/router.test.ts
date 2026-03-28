@@ -290,7 +290,7 @@ describe('edition.adminStatus', () => {
   })
 
   it('returns null when no editions exist', async () => {
-    mockDb.query.editions.findFirst.mockResolvedValue(undefined)
+    mockDb.orderBy.mockResolvedValue([])
     const router = await getRouter()
     const factory = createCallerFactory(router)
     const caller = factory(makeCtx(true))
@@ -300,12 +300,6 @@ describe('edition.adminStatus', () => {
 
   it('returns edition stats with null feedStats when feedStats is null', async () => {
     const builtAt = new Date('2024-01-01T04:00:00Z')
-    mockDb.query.editions.findFirst.mockResolvedValue({
-      date: '2024-01-01',
-      slot: 'morning',
-      builtAt,
-      feedStats: null,
-    })
     mockDb.orderBy.mockResolvedValue([
       {
         date: '2024-01-01',
@@ -332,12 +326,6 @@ describe('edition.adminStatus', () => {
       'https://feed.example': 'ok',
       'https://bad.example': 'error',
     })
-    mockDb.query.editions.findFirst.mockResolvedValue({
-      date: '2024-01-01',
-      slot: 'morning',
-      builtAt,
-      feedStats: feedStatsJson,
-    })
     mockDb.orderBy.mockResolvedValue([
       {
         date: '2024-01-01',
@@ -360,12 +348,6 @@ describe('edition.adminStatus', () => {
 
   it('includes categoryBreakdown from joined category rows', async () => {
     const builtAt = new Date('2024-01-01T04:00:00Z')
-    mockDb.query.editions.findFirst.mockResolvedValue({
-      date: '2024-01-01',
-      slot: 'morning',
-      builtAt,
-      feedStats: null,
-    })
     mockDb.orderBy.mockResolvedValue([
       {
         date: '2024-01-01',

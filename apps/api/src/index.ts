@@ -202,28 +202,30 @@ async function fetchFeedData(
     return { stories, title: `Tidel — ${slotLabel} Edition` }
   }
 
-  let morningEdition = await db.query.editions.findFirst({
-    where: and(eq(schema.editions.date, date), eq(schema.editions.slot, 'morning')),
+  const todayEditions = await db.query.editions.findMany({
+    where: eq(schema.editions.date, date),
     with: { stories: { orderBy: schema.stories.position } },
   })
+  let morningEdition = todayEditions.find((e) => e.slot === 'morning')
+  let afternoonEdition = todayEditions.find((e) => e.slot === 'afternoon')
+
   if (!morningEdition) {
     morningEdition = await db.query.editions.findFirst({
       where: eq(schema.editions.slot, 'morning'),
       orderBy: desc(schema.editions.date),
       with: { stories: { orderBy: schema.stories.position } },
     })
+    if (!morningEdition) {
+      return null
+    }
+    afternoonEdition = await db.query.editions.findFirst({
+      where: and(
+        eq(schema.editions.date, morningEdition.date),
+        eq(schema.editions.slot, 'afternoon'),
+      ),
+      with: { stories: { orderBy: schema.stories.position } },
+    })
   }
-  if (!morningEdition) {
-    return null
-  }
-
-  const afternoonEdition = await db.query.editions.findFirst({
-    where: and(
-      eq(schema.editions.date, morningEdition.date),
-      eq(schema.editions.slot, 'afternoon'),
-    ),
-    with: { stories: { orderBy: schema.stories.position } },
-  })
 
   const morning: FeedStory[] = morningEdition.stories.map(mapStoryRow).map((s) => ({
     ...s,
