@@ -32,7 +32,7 @@ export function getEditionDate(): Date {
   const ref = new Date(now)
   ref.setUTCHours(6, 0, 0, 0)
   if (ref > now) {
-    ref.setUTCDate(ref.getUTCDate() - 1) // before today's build → use yesterday's
+    ref.setUTCDate(ref.getUTCDate() - 1)
   }
   return ref
 }
