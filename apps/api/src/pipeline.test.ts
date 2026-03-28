@@ -28,7 +28,8 @@ vi.mock('./rss.js', () => ({ fetchFeed: vi.fn() }))
 
 vi.mock('drizzle-orm', () => ({ eq: vi.fn(), and: vi.fn() }))
 
-const mockOnConflictDoNothing = vi.fn().mockResolvedValue(undefined)
+const mockEditionReturning = vi.fn().mockResolvedValue([{ date: '2024-01-01' }])
+const mockOnConflictDoNothing = vi.fn().mockReturnValue({ returning: mockEditionReturning })
 const mockInsertValues = vi
   .fn()
   .mockImplementation((arg: unknown) =>
@@ -36,7 +37,8 @@ const mockInsertValues = vi
       ? Promise.resolve(undefined)
       : { onConflictDoNothing: mockOnConflictDoNothing },
   )
-const mockDeleteWhere = vi.fn().mockResolvedValue(undefined)
+const mockDeleteReturning = vi.fn().mockResolvedValue([])
+const mockDeleteWhere = vi.fn().mockReturnValue({ returning: mockDeleteReturning })
 const mockFindFirst = vi.fn()
 const mockSelectWhere = vi.fn().mockResolvedValue([])
 const mockDb = {
@@ -317,8 +319,10 @@ describe('buildEdition', () => {
         ? Promise.resolve(undefined)
         : { onConflictDoNothing: mockOnConflictDoNothing },
     )
-    mockOnConflictDoNothing.mockResolvedValue(undefined)
-    mockDeleteWhere.mockResolvedValue(undefined)
+    mockEditionReturning.mockResolvedValue([{ date: '2024-01-01' }])
+    mockOnConflictDoNothing.mockReturnValue({ returning: mockEditionReturning })
+    mockDeleteReturning.mockResolvedValue([])
+    mockDeleteWhere.mockReturnValue({ returning: mockDeleteReturning })
     mockFindFirst.mockResolvedValue(undefined)
     mockSelectWhere.mockResolvedValue([])
   })
