@@ -121,7 +121,7 @@ cd apps/web && npm run deploy
 3. Filter junk — regex patterns for promo codes, coupons, sponsored content
 4. Deduplicate — normalise titles (lowercase, strip punctuation), drop substring matches
 5. Select — single cross-category Claude prompt picks ~15 stories total (min 2, max 5 per category); Claude decides the split based on newsworthiness. Fallback (no API key): top stories per category sorted by `pubDate`
-6. Summarise — `Promise.all` → Anthropic `claude-haiku-4-5-20251001` if `ANTHROPIC_API_KEY` set, else raw RSS description. 50–200 words, British English. Curation uses `claude-sonnet-4-6`.
+6. Summarise — batched in groups of 4 (`runBatched`) → Anthropic `claude-haiku-4-5-20251001` if `ANTHROPIC_API_KEY` set, else raw RSS description. 50–200 words, British English. Curation uses `claude-sonnet-4-6`.
 7. Persist — sequential `db.insert` for `editions` then `stories` (neon-http has no transaction support)
 
 ### tRPC router (`apps/api/src/router.ts`)
@@ -134,7 +134,7 @@ cd apps/web && npm run deploy
 - `story.byId` — public query, returns a single `Story` by UUID; immutable (7-day cache)
 - `story.search` — public query, ILIKE with explicit `ESCAPE '\\'` so `%` and `_` in user input are treated as literals
 
-Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified in `context.ts` using `crypto.subtle.timingSafeEqual`. `ADMIN_SECRET` must be at least 32 characters (enforced by Zod's `validateEnv` on every request).
+Auth is a static secret: `Authorization: Bearer <ADMIN_SECRET>` header, verified in `context.ts` using `crypto.subtle.timingSafeEqual`. `ADMIN_SECRET` must be at least 32 characters (enforced by Zod's `validateEnv`, which runs once per isolate and is cached thereafter).
 
 To trigger a build manually via curl, send the input as a plain JSON object (no tRPC `json` wrapper):
 ```bash
@@ -178,7 +178,7 @@ tRPC routes use `trpcCacheMiddleware(getSecs)` which sets `Cache-Control` by par
 ### DB schema (`packages/db/src/schema.ts`)
 
 - `editions(date, slot PK, built_at, feed_stats)`
-- `stories(id uuid PK, edition_date+edition_slot FK, title, description, summary, category, link, pub_date, source, position)` — indexes on `(edition_date, edition_slot)` and `category`; unique constraint on `(link, edition_date)`
+- `stories(id uuid PK, edition_date+edition_slot FK, title, description, summary, category, link, pub_date, source, position)` — indexes on `(edition_date, edition_slot)` and `category`; unique constraint on `(link, edition_date, edition_slot)`; GIN trigram indexes on `title` and `summary` for ILIKE search
 - `story.position` is 0-indexed — display as `story.position + 1`
 
 `createDb(connectionString)` uses `drizzle-orm/neon-http` — no transactions, no connection pooling.

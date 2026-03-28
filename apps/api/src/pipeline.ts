@@ -9,6 +9,10 @@ import { fetchFeed } from './rss.js'
 
 const UTC_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' })
 
+/**
+ * Retries an async function with exponential backoff and ±12.5% jitter up to `maxAttempts` times,
+ * re-throwing the last error if all attempts fail.
+ */
 export async function withRetry<T>(
   fn: () => Promise<T>,
   { maxAttempts = 3, baseDelayMs = 1000 }: { maxAttempts?: number; baseDelayMs?: number } = {},
@@ -122,6 +126,10 @@ function groupByCategory<T extends { category: Category }>(items: T[]): Map<Cate
  * Removes duplicate items by normalised title, including substring matches
  * (e.g. "Story A" and "Story A — updated" are treated as the same story).
  */
+/**
+ * Removes duplicate articles by normalised title using substring matching in both directions:
+ * when two titles overlap, the shorter (less complete) variant is dropped in favour of the longer.
+ */
 export function deduplicateByTitle(
   items: Array<RssItem & { category: Category }>,
 ): Array<RssItem & { category: Category }> {
@@ -135,12 +143,10 @@ export function deduplicateByTitle(
       continue
     }
 
-    // New title is contained within an already-kept title → existing is more complete, skip new
     if (seenList.some((s) => s.includes(norm) && s !== norm)) {
       continue
     }
 
-    // An already-kept title is contained within the new title → new is more complete, replace old
     const supersededIdx = seenList.findIndex((s) => norm.includes(s) && s !== norm)
     if (supersededIdx !== -1) {
       const supersededNorm = seenList[supersededIdx]!
@@ -390,6 +396,10 @@ async function purgeEditionCache(zoneId: string, apiToken: string): Promise<void
   console.log('[purgeCache] Cloudflare cache purged')
 }
 
+/**
+ * Processes `items` in sequential batches of `batchSize`, running `fn` concurrently within each
+ * batch. Preserves order. Use to cap concurrent outbound requests (e.g. Anthropic API calls).
+ */
 async function runBatched<T, R>(
   items: T[],
   batchSize: number,
@@ -402,6 +412,10 @@ async function runBatched<T, R>(
   return results
 }
 
+/**
+ * Deletes editions (and their stories via cascade) older than `daysToKeep` days.
+ * Called after each successful build to bound table growth over time.
+ */
 async function cleanupOldEditions(db: ReturnType<typeof createDb>, daysToKeep = 90): Promise<void> {
   const cutoff = new Date()
   cutoff.setUTCDate(cutoff.getUTCDate() - daysToKeep)

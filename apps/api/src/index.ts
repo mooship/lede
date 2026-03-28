@@ -15,6 +15,11 @@ import { appRouter, mapStoryRow } from './router.js'
 
 const IMMUTABLE_TTL = 7 * 24 * 3600
 
+/**
+ * Sets `Cache-Control: public, s-maxage=N, stale-while-revalidate=86400` on tRPC responses,
+ * but only when the response body contains non-null/non-empty data. `getSecs` is called after
+ * the handler runs so dynamic TTLs (e.g. time until the next edition) are accurate.
+ */
 function trpcCacheMiddleware(getSecs: () => number) {
   return async (c: Context<{ Bindings: Env }>, next: () => Promise<void>) => {
     await next()
