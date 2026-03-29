@@ -27,7 +27,7 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.29.1",
+    "@cloudflare/vite-plugin": "1.30.2",
     "@fontsource-variable/plus-jakarta-sans": "5.2.8",
     "@fontsource-variable/syne": "5.2.7",
     "@fontsource/opendyslexic": "5.2.5",
