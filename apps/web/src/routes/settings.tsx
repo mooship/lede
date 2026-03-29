@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { css, cx } from '../../styled-system/css'
+import { css } from '../../styled-system/css'
+import { segmentControlWrap, segmentPill } from '../../styled-system/recipes'
 import { PageHeader } from '../components/PageHeader.js'
 import { useSettings } from '../context/settings.js'
 
@@ -25,39 +26,6 @@ const cardClass = css({
   p: '4',
   border: '1px solid',
   borderColor: 'border',
-})
-
-const segmentWrapClass = css({
-  display: 'inline-flex',
-  bg: 'surfaceHigh',
-  borderRadius: '10px',
-  padding: '3px',
-  width: '100%',
-})
-
-const pillBase = css({
-  fontFamily: 'display',
-  fontSize: '0.7rem',
-  fontWeight: '700',
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  background: 'none',
-  border: 'none',
-  borderRadius: '8px',
-  px: '4',
-  py: '2',
-  cursor: 'pointer',
-  transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
-  lineHeight: '1.6',
-  flex: '1',
-  textAlign: 'center',
-  color: 'textMuted',
-})
-
-const pillActiveClass = css({
-  bg: 'surface',
-  color: 'textPrimary',
-  boxShadow: '0 1px 3px token(colors.border)',
 })
 
 const aboutLinksClass = css({
@@ -99,12 +67,12 @@ function SettingsPage() {
         <section className={sectionClass}>
           <span className={sectionLabelClass}>Theme</span>
           <div className={cardClass}>
-            <div className={segmentWrapClass}>
+            <div className={segmentControlWrap({ fullWidth: true })}>
               {(['system', 'light', 'dark'] as const).map((t) => (
                 <button
                   key={t}
                   type="button"
-                  className={cx(pillBase, theme === t && pillActiveClass)}
+                  className={segmentPill({ selected: theme === t, size: 'fluid' })}
                   onClick={() => setTheme(t)}
                   aria-pressed={theme === t}
                 >
@@ -118,12 +86,12 @@ function SettingsPage() {
         <section className={sectionClass}>
           <span className={sectionLabelClass}>Reading Font</span>
           <div className={cardClass}>
-            <div className={segmentWrapClass}>
+            <div className={segmentControlWrap({ fullWidth: true })}>
               {(['default', 'opendyslexic'] as const).map((f) => (
                 <button
                   key={f}
                   type="button"
-                  className={cx(pillBase, font === f && pillActiveClass)}
+                  className={segmentPill({ selected: font === f, size: 'fluid' })}
                   onClick={() => setFont(f)}
                   aria-pressed={font === f}
                 >

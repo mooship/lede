@@ -84,8 +84,91 @@ export default defineConfig({
             transition: 'background-color 0.2s, transform 0.1s',
             position: 'relative',
             boxSizing: 'border-box',
+            borderLeft: '3px solid transparent',
             _hover: { bg: 'surfaceHigh' },
             _active: { transform: 'scale(0.985)', bg: 'surfaceHigh' },
+          },
+          variants: {
+            category: {
+              World: { borderLeftColor: 'world' },
+              Technology: { borderLeftColor: 'tech' },
+              Science: { borderLeftColor: 'science' },
+              'Business / Economy': { borderLeftColor: 'business' },
+              Sport: { borderLeftColor: 'sport' },
+              Culture: { borderLeftColor: 'culture' },
+            },
+          },
+        },
+        badge: {
+          className: 'badge',
+          base: {
+            fontFamily: 'display',
+            fontWeight: '700',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            lineHeight: '1.6',
+            border: '1px solid',
+          },
+          variants: {
+            size: {
+              sm: { fontSize: '0.6rem', padding: '2px 8px' },
+              md: { fontSize: '0.6rem', padding: '3px 10px' },
+            },
+          },
+          defaultVariants: {
+            size: 'sm',
+          },
+        },
+        segmentControlWrap: {
+          className: 'segmentControlWrap',
+          base: {
+            display: 'inline-flex',
+            bg: 'surfaceHigh',
+            borderRadius: '10px',
+            padding: '3px',
+          },
+          variants: {
+            fullWidth: {
+              true: { width: '100%' },
+            },
+          },
+        },
+        segmentPill: {
+          className: 'segmentPill',
+          base: {
+            fontFamily: 'display',
+            fontSize: '0.7rem',
+            fontWeight: '700',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            background: 'none',
+            border: 'none',
+            borderRadius: '8px',
+            py: '2',
+            cursor: 'pointer',
+            transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
+            lineHeight: '1.6',
+            textAlign: 'center',
+            color: 'textMuted',
+          },
+          variants: {
+            selected: {
+              true: {
+                bg: 'surface',
+                color: 'textPrimary',
+                boxShadow: '0 1px 3px token(colors.border)',
+              },
+            },
+            disabled: {
+              true: { color: 'textDim', cursor: 'not-allowed' },
+            },
+            size: {
+              fixed: { minWidth: '80px', px: '5' },
+              fluid: { flex: '1', px: '4' },
+            },
+          },
+          defaultVariants: {
+            size: 'fixed',
           },
         },
       },
