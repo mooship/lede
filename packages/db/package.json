@@ -17,6 +17,8 @@
   },
   "devDependencies": {
     "@tidel/tsconfig": "*",
-    "drizzle-kit": "0.31.10"
+    "@types/ws": "^8.0.0",
+    "drizzle-kit": "0.31.10",
+    "ws": "^8.0.0"
   }
 }

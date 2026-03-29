@@ -221,7 +221,7 @@ vi.mock('@tanstack/react-start', () => ({
 ### Database / Neon
 
 - **Neon HTTP driver** does not support transactions — use sequential inserts
-- **`drizzle-kit migrate` hangs on Node.js 22+** (22, 24, 25, …) — Node.js 21+ ships a native `WebSocket` global that `@neondatabase/serverless` auto-detects but which fails Neon's handshake silently. `drizzle.config.ts` sets `neonConfig.webSocketConstructor = ws` (the `ws` npm package) to fix this. If the CLI still hangs, apply the migration SQL directly via a Node.js `.mjs` script that imports `ws`, sets `neonConfig.webSocketConstructor = ws`, then executes each statement via `neon()`, and finally inserts a row into `drizzle.__drizzle_migrations` with the SHA-256 hash of the migration SQL file content and `Date.now()` as `created_at`.
+- **`drizzle-kit migrate` requires `ws` as an explicit dependency** — Node.js ships a native `WebSocket` global that `@neondatabase/serverless` auto-detects but which fails Neon's handshake silently. `drizzle.config.ts` sets `neonConfig.webSocketConstructor = ws` (the `ws` npm package) to override this. `ws` must be declared as a direct devDependency of `packages/db` — relying on it being hoisted from root as a transitive dependency is not sufficient.
 - **After resetting the DB** (drop/recreate tables), migrations must be re-run with `drizzle-kit migrate` before the pipeline will work again
 - **FK constraint during column type changes** — Postgres refuses to alter a column's type while a foreign key references it. Drop the FK first, run the type changes, then recreate it.
 
