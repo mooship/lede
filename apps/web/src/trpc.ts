@@ -14,9 +14,14 @@ export function createTrpcClient() {
   })
 }
 
+let _serverCaller: ReturnType<typeof createTRPCClient<AppRouter>> | null = null
+
 export function createServerTrpcCaller() {
-  const url = `${process.env.API_URL ?? 'http://localhost:8787'}/trpc`
-  return createTRPCClient<AppRouter>({
-    links: [httpBatchLink({ url })],
-  })
+  if (!_serverCaller) {
+    const url = `${process.env.API_URL ?? 'http://localhost:8787'}/trpc`
+    _serverCaller = createTRPCClient<AppRouter>({
+      links: [httpBatchLink({ url })],
+    })
+  }
+  return _serverCaller
 }

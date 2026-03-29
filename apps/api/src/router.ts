@@ -19,15 +19,6 @@ const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 
 const slotSchema = z.enum(['morning', 'afternoon'])
 
-const categorySchema = z.enum([
-  'World',
-  'Technology',
-  'Science',
-  'Business / Economy',
-  'Sport',
-  'Culture',
-])
-
 export function mapStoryRow(r: {
   id: string
   editionDate: string
@@ -48,7 +39,7 @@ export function mapStoryRow(r: {
     title: r.title,
     description: r.description,
     summary: r.summary,
-    category: categorySchema.parse(r.category) as Category,
+    category: r.category as Category,
     link: r.link,
     pubDate: r.pubDate,
     source: r.source,
@@ -121,7 +112,10 @@ const editionRouter = router({
   byDate: publicProcedure
     .input(
       z.object({
-        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        date: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .refine((v) => !Number.isNaN(new Date(v).getTime()), { message: 'Invalid date' }),
         slot: slotSchema.optional().default('morning'),
       }),
     )

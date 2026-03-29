@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import {
   date,
   foreignKey,
@@ -58,6 +58,8 @@ export const stories = pgTable(
     index('stories_edition_date_slot_idx').on(t.editionDate, t.editionSlot),
     index('stories_category_idx').on(t.category),
     unique('stories_link_edition_slot_unique').on(t.link, t.editionDate, t.editionSlot),
+    index('stories_title_trgm_idx').using('gin', sql`${t.title} gin_trgm_ops`),
+    index('stories_summary_trgm_idx').using('gin', sql`${t.summary} gin_trgm_ops`),
   ],
 )
 

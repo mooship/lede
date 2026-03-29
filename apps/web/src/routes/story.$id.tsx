@@ -143,16 +143,22 @@ function StoryPage() {
         <p className={summaryClass}>{story.summary}</p>
 
         <div className={actionsClass}>
-          <a
-            href={story.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={readLinkClass}
-            style={{ color: accentVar, borderColor: accentVar }}
-            aria-label="Read full article (opens in new tab)"
-          >
-            Read Full Article {'\u2192\uFE0E'}
-          </a>
+          {/^https?:\/\//i.test(story.link) ? (
+            <a
+              href={story.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={readLinkClass}
+              style={{ color: accentVar, borderColor: accentVar }}
+              aria-label="Read full article (opens in new tab)"
+            >
+              Read Full Article {'\u2192\uFE0E'}
+            </a>
+          ) : (
+            <span className={readLinkClass} style={{ color: accentVar, borderColor: accentVar }}>
+              {story.link}
+            </span>
+          )}
           <button
             type="button"
             aria-label="Share this story"

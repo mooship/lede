@@ -2,6 +2,27 @@ import type { ExecutionContext } from '@cloudflare/workers-types'
 import handler from '@tanstack/react-start/server-entry'
 import { msUntilNextEdition } from '@tidel/api'
 
+/** Security headers applied to every response. CSP is omitted until nonce injection is wired up. */
+const SECURITY_HEADERS: Record<string, string> = {
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+}
+
+function applySecurityHeaders(response: Response): Response {
+  const headers = new Headers(response.headers)
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) {
+    headers.set(k, v)
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
+}
+
 declare const __BUILD_ID__: string
 
 const cfCache: Cache | null =
@@ -36,15 +57,18 @@ export default {
       const sMaxAge = Math.max(60, Math.round(msUntilNextEdition() / 1000))
       const headers = new Headers(response.headers)
       headers.set('Cache-Control', `public, s-maxage=${sMaxAge}, stale-while-revalidate=3600`)
-      const withCacheHeaders = new Response(response.body, {
+      for (const [k, v] of Object.entries(SECURITY_HEADERS)) {
+        headers.set(k, v)
+      }
+      const withHeaders = new Response(response.body, {
         status: response.status,
         statusText: response.statusText,
         headers,
       })
-      context.waitUntil(cfCache.put(versionedCacheKey(request), withCacheHeaders.clone()))
-      return withCacheHeaders
+      context.waitUntil(cfCache.put(versionedCacheKey(request), withHeaders.clone()))
+      return withHeaders
     }
 
-    return response
+    return applySecurityHeaders(response)
   },
 }
