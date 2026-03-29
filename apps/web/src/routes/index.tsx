@@ -107,11 +107,28 @@ function IndexPage() {
   const [showBanner, setShowBanner] = useState(false)
 
   useEffect(() => {
-    const ms = msUntilNextEdition()
-    const timer = setTimeout(() => {
-      void router.invalidate()
-    }, ms)
-    return () => clearTimeout(timer)
+    let timer: ReturnType<typeof setTimeout>
+
+    const scheduleRefresh = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        void router.invalidate()
+      }, msUntilNextEdition())
+    }
+
+    scheduleRefresh()
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        scheduleRefresh()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
   }, [router])
 
   useEffect(() => {

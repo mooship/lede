@@ -116,7 +116,7 @@ function buildAtomFeed(
     <link href="${storyUrl}" />
     <published>${pubDate}</published>
     <updated>${pubDate}</updated>
-    <category term="${s.category}" />
+    <category term="${escapeXml(s.category)}" />
     <content type="text">${content}</content>
   </entry>`
     })
@@ -154,7 +154,7 @@ function buildRssFeed(
       <link>${storyUrl}</link>
       <guid isPermaLink="true">${storyUrl}</guid>
       <pubDate>${pubDate}</pubDate>
-      <category>${s.category}</category>
+      <category>${escapeXml(s.category)}</category>
       <description>${description}</description>
     </item>`
     })
@@ -245,6 +245,9 @@ async function handleFeedRequest(
   format: 'atom' | 'rss',
 ): Promise<Response> {
   const slotParam = c.req.query('slot')
+  if (slotParam !== undefined && slotParam !== 'morning' && slotParam !== 'afternoon') {
+    return c.text("Invalid slot. Use 'morning' or 'afternoon'.", 400)
+  }
   const db = createDb(c.env.DATABASE_URL)
   const appUrl = parseWebOrigins(c.env.WEB_ORIGIN)[0] ?? ''
   const data = await fetchFeedData(db, slotParam, todayUTC())

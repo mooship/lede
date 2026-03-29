@@ -133,12 +133,22 @@ function groupByCategory<T extends { category: Category }>(items: T[]): Map<Cate
 export function deduplicateByTitle(
   items: Array<RssItem & { category: Category }>,
 ): Array<RssItem & { category: Category }> {
+  const normCache = new Map<string, string>()
+  const getNorm = (title: string): string => {
+    let n = normCache.get(title)
+    if (n === undefined) {
+      n = normaliseTitle(title)
+      normCache.set(title, n)
+    }
+    return n
+  }
+
   const seen = new Set<string>()
   const seenList: string[] = []
   const result: Array<RssItem & { category: Category }> = []
 
   for (const item of items) {
-    const norm = normaliseTitle(item.title)
+    const norm = getNorm(item.title)
     if (seen.has(norm)) {
       continue
     }
@@ -152,7 +162,7 @@ export function deduplicateByTitle(
       const supersededNorm = seenList[supersededIdx]!
       seen.delete(supersededNorm)
       seenList.splice(supersededIdx, 1)
-      const resultIdx = result.findIndex((r) => normaliseTitle(r.title) === supersededNorm)
+      const resultIdx = result.findIndex((r) => getNorm(r.title) === supersededNorm)
       if (resultIdx !== -1) result.splice(resultIdx, 1)
     }
 
@@ -559,9 +569,7 @@ export async function buildEdition(
     console.error('[buildEdition] Failed to insert stories, rolling back edition:', {
       message: err instanceof Error ? err.message : String(err),
       code: pg.code,
-      detail: pg.detail,
       constraint: pg.constraint,
-      table: pg.table,
     })
     try {
       await db

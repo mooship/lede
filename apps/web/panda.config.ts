@@ -84,16 +84,6 @@ export default defineConfig({
             _hover: { bg: 'surfaceHigh' },
             _active: { transform: 'scale(0.985)', bg: 'surfaceHigh' },
           },
-          variants: {
-            category: {
-              World: {},
-              Technology: {},
-              Science: {},
-              'Business / Economy': {},
-              Sport: {},
-              Culture: {},
-            },
-          },
         },
       },
     },
