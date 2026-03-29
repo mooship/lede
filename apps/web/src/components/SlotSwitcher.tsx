@@ -1,4 +1,5 @@
-import { css, cx } from '../../styled-system/css'
+import { css } from '../../styled-system/css'
+import { segmentControlWrap, segmentPill } from '../../styled-system/recipes'
 import { afternoonLocalTime } from '../utils.js'
 
 const wrapperClass = css({
@@ -17,43 +18,6 @@ const innerClass = css({
   justifyContent: { base: 'center', md: 'flex-start' },
 })
 
-const segmentWrapClass = css({
-  display: 'inline-flex',
-  bg: 'surfaceHigh',
-  borderRadius: '10px',
-  padding: '3px',
-})
-
-const pillBase = css({
-  fontFamily: 'display',
-  fontSize: '0.7rem',
-  fontWeight: '700',
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  background: 'none',
-  border: 'none',
-  borderRadius: '8px',
-  px: '5',
-  py: '2',
-  cursor: 'pointer',
-  transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
-  lineHeight: '1.6',
-  minWidth: '80px',
-  textAlign: 'center',
-  color: 'textMuted',
-})
-
-const pillActiveClass = css({
-  bg: 'surface',
-  color: 'textPrimary',
-  boxShadow: '0 1px 3px token(colors.border)',
-})
-
-const pillDisabledClass = css({
-  color: 'textDim',
-  cursor: 'not-allowed',
-})
-
 interface SlotSwitcherProps {
   activeSlot: 'morning' | 'afternoon'
   onSlotChange: (slot: 'morning' | 'afternoon') => void
@@ -68,10 +32,10 @@ export function SlotSwitcher({
   return (
     <div className={wrapperClass}>
       <div className={innerClass}>
-        <div className={segmentWrapClass}>
+        <div className={segmentControlWrap()}>
           <button
             type="button"
-            className={cx(pillBase, activeSlot === 'morning' && pillActiveClass)}
+            className={segmentPill({ selected: activeSlot === 'morning', size: 'fixed' })}
             onClick={() => onSlotChange('morning')}
             aria-pressed={activeSlot === 'morning'}
           >
@@ -79,12 +43,11 @@ export function SlotSwitcher({
           </button>
           <button
             type="button"
-            className={cx(
-              pillBase,
-              !afternoonAvailable
-                ? pillDisabledClass
-                : activeSlot === 'afternoon' && pillActiveClass,
-            )}
+            className={segmentPill({
+              selected: afternoonAvailable && activeSlot === 'afternoon',
+              disabled: !afternoonAvailable,
+              size: 'fixed',
+            })}
             onClick={() => {
               if (afternoonAvailable) {
                 onSlotChange('afternoon')

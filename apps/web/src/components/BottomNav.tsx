@@ -11,6 +11,8 @@ const navClass = css({
   borderColor: 'border',
   display: { base: 'flex', md: 'none' },
   paddingBottom: 'env(safe-area-inset-bottom)',
+  backgroundColor: 'color-mix(in srgb, var(--colors-bg) 88%, transparent)',
+  backdropFilter: 'blur(12px)',
 })
 
 const tabClass = css({
@@ -123,15 +125,7 @@ export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   return (
-    <nav
-      className={navClass}
-      aria-label="Main navigation"
-      style={{
-        backgroundColor: 'color-mix(in srgb, var(--colors-bg) 88%, transparent)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-      }}
-    >
+    <nav className={navClass} aria-label="Main navigation">
       {TABS.map(({ to, label, Icon, exact }) => {
         const isActive = exact ? pathname === to : pathname.startsWith(to)
         return (

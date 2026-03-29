@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import type { Story } from '@tidel/api'
 import { css } from '../../styled-system/css'
-import { storyCard } from '../../styled-system/recipes'
+import { badge, storyCard } from '../../styled-system/recipes'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 
 type Props = { story: Story; position: number }
@@ -9,17 +9,6 @@ type Props = { story: Story; position: number }
 const linkClass = css({ textDecoration: 'none', display: 'block', height: '100%' })
 
 const headerClass = css({ display: 'flex', justifyContent: 'space-between', alignItems: 'center' })
-
-const badgeClass = css({
-  fontFamily: 'display',
-  fontSize: '0.6rem',
-  fontWeight: '700',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-  padding: '2px 8px',
-  lineHeight: '1.6',
-  border: '1px solid',
-})
 
 const positionClass = css({
   fontFamily: 'display',
@@ -68,7 +57,7 @@ export function StoryCard({ story, position }: Props) {
       <article className={storyCard({ category: story.category })}>
         <div className={headerClass}>
           <span
-            className={badgeClass}
+            className={badge({ size: 'sm' })}
             role="img"
             aria-label={`Category: ${CATEGORY_LABEL[story.category]}`}
             style={{

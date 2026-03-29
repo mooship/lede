@@ -4,6 +4,7 @@ import type { Story } from '@tidel/api'
 import { useState } from 'react'
 import { z } from 'zod'
 import { css } from '../../styled-system/css'
+import { badge } from '../../styled-system/recipes'
 import { CATEGORY_CSS_VAR, CATEGORY_LABEL } from '../categories.js'
 import { Footer } from '../components/Footer.js'
 import { PageHeader } from '../components/PageHeader.js'
@@ -31,17 +32,6 @@ const metaRowClass = css({
   display: 'flex',
   alignItems: 'center',
   gap: '4',
-})
-
-const badgeClass = css({
-  fontFamily: 'display',
-  fontSize: '0.6rem',
-  fontWeight: '700',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-  padding: '3px 10px',
-  lineHeight: '1.6',
-  border: '1px solid',
 })
 
 const sourceClass = css({
@@ -130,7 +120,10 @@ function StoryPage() {
 
       <main className={mainClass}>
         <div className={metaRowClass}>
-          <span className={badgeClass} style={{ color: accentVar, borderColor: accentVar }}>
+          <span
+            className={badge({ size: 'md' })}
+            style={{ color: accentVar, borderColor: accentVar }}
+          >
             {CATEGORY_LABEL[story.category] ?? story.category}
           </span>
           <span className={sourceClass}>{story.source}</span>
