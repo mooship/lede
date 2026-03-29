@@ -14,7 +14,7 @@ const pageClass = css({ minHeight: '100vh', bg: 'bg' })
 const metaValueSmClass = css({ fontSize: '0.9rem' })
 const metaValueWarnClass = css({ color: 'business' })
 const sectionMtClass = css({ marginTop: '2' })
-const tableMbClass = css({ marginBottom: '10px' })
+const tableMbClass = css({ marginBottom: '2.5' })
 const thNarrowClass = css({ width: '120px' })
 const thMediumClass = css({ width: '80px' })
 const thTinyClass = css({ width: '80px' })
@@ -527,7 +527,10 @@ function AdminStatus({ secret }: { secret: string }) {
           <button
             key={s}
             type="button"
-            className={`${slotPillBase} ${buildSlot === s ? slotPillActiveClass : slotPillInactiveClass}`}
+            className={cx(
+              slotPillBase,
+              buildSlot === s ? slotPillActiveClass : slotPillInactiveClass,
+            )}
             onClick={() => setBuildSlot(s)}
             aria-pressed={buildSlot === s}
           >

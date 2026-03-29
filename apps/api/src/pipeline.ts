@@ -158,8 +158,8 @@ export function deduplicateByTitle(
     }
 
     const supersededIdx = seenList.findIndex((s) => norm.includes(s) && s !== norm)
-    if (supersededIdx !== -1) {
-      const supersededNorm = seenList[supersededIdx]!
+    const supersededNorm = seenList[supersededIdx]
+    if (supersededIdx !== -1 && supersededNorm !== undefined) {
       seen.delete(supersededNorm)
       seenList.splice(supersededIdx, 1)
       const resultIdx = result.findIndex((r) => getNorm(r.title) === supersededNorm)

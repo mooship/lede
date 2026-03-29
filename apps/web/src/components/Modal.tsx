@@ -4,7 +4,7 @@ import { css } from '../../styled-system/css'
 const overlayClass = css({
   position: 'fixed',
   inset: '0',
-  bg: 'rgba(0,0,0,0.7)',
+  bg: 'overlay',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

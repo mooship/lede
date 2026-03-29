@@ -64,6 +64,9 @@ export default defineConfig({
           textLight: {
             value: { base: '#555555', _dark: '#c0c0c0' },
           },
+          overlay: {
+            value: { base: 'rgba(0,0,0,0.6)', _dark: 'rgba(0,0,0,0.75)' },
+          },
         },
       },
       recipes: {
