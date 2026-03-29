@@ -171,9 +171,13 @@ tRPC routes use `trpcCacheMiddleware(getSecs)` which sets `Cache-Control` by par
 - Use `css()` from `../../styled-system/css` for all styles. `styled-system/` is generated — run `panda codegen --silent` (or just `npm run dev`/`npm run build`, which do it automatically). Do not edit anything inside `styled-system/`.
 - `styled-system/` is gitignored and generated at build time — `panda codegen --silent` runs before `tsc` and `vite` in every script. The `prepare` hook also runs it on `npm install`.
 - Token names use camelCase in config but become kebab-case CSS vars (e.g. `textMuted` → `--colors-text-muted`). Use the token name in `css()` calls and the CSS var string in `style={}` props via `CATEGORY_CSS_VAR`.
-- Tokens are defined in `apps/web/panda.config.ts` — colors (`bg`, `surface`, `border`, `textPrimary`, `textMuted`, etc.) and fonts (`display` = Syne, `body` = Plus Jakarta Sans Variable). Category accent colours are `world`, `tech`, `science`, `business`, `sport`.
+- Tokens are defined in `apps/web/panda.config.ts` — colors (`bg`, `surface`, `border`, `textPrimary`, `textMuted`, `overlay`, etc.) and fonts (`display` = Syne, `body` = Plus Jakarta Sans Variable). Category accent colours are `world`, `tech`, `science`, `business`, `sport`, `culture`.
 - `CATEGORY_CSS_VAR` in `src/categories.ts` maps each category to its CSS variable string (e.g. `var(--colors-world)`) for use in `style={}` props where a dynamic runtime value is needed alongside a static `className`.
-- `storyCard` recipe in `panda.config.ts` handles hover state and category border colour — no hover `useState` needed in cards.
+- Recipes in `panda.config.ts`:
+  - `storyCard` — hover state and category left-border accent (pass `{ category }` variant); no hover `useState` needed.
+  - `badge` — category label pill with `size` variant (`sm` for cards, `md` for story detail). Apply dynamic color/bg/border via `style={}`.
+  - `segmentControlWrap` — wrapper for pill segment controls; `fullWidth` variant stretches to container width.
+  - `segmentPill` — individual pill button with `selected`, `disabled`, and `size` (`fixed`/`fluid`) variants.
 
 ### DB schema (`packages/db/src/schema.ts`)
 
