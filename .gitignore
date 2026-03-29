@@ -34,3 +34,4 @@ dist-ssr
 .moon/cache
 .claude
 styled-system
+.worktrees
