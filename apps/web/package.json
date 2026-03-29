@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "5.91.3",
-    "@tanstack/react-router": "1.168.1",
+    "@tanstack/react-router": "1.168.7",
     "@tanstack/react-start": "1.167.2",
     "@tidel/api": "*",
     "@trpc/client": "11.14.1",
@@ -27,7 +27,7 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.29.1",
+    "@cloudflare/vite-plugin": "1.30.2",
     "@fontsource-variable/plus-jakarta-sans": "5.2.8",
     "@fontsource-variable/syne": "5.2.7",
     "@fontsource/opendyslexic": "5.2.5",
@@ -42,6 +42,6 @@
     "fontaine": "0.8.0",
     "happy-dom": "20.8.8",
     "vite": "8.0.1",
-    "vitest": "4.1.0"
+    "vitest": "4.1.2"
   }
 }
